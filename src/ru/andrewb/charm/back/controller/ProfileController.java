@@ -2,11 +2,11 @@ package ru.andrewb.charm.back.controller;
 
 import ru.andrewb.charm.back.service.ProfileService;
 
-public class ProfileControllet {
+public class ProfileController {
 
     private final ProfileService service;
 
-    public ProfileControllet(ProfileService service) {
+    public ProfileController(ProfileService service) {
         this.service = service;
     }
 
