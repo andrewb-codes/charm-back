@@ -3,6 +3,7 @@ package ru.andrewb.charm.back.service;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.model.Profile;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ProfileService {
@@ -22,5 +23,16 @@ public class ProfileService {
         return dao.findById(id);
     }
 
-    // TODO delete -> boolean, update -> void, findAll -> List
+    public List<Profile> findAll() {
+        return dao.findAll();
+    }
+
+    public void update(Profile profile) {
+        dao.update(profile);
+    }
+
+    public boolean remove(Long id) {
+        if (id == null) return false;
+        return dao.delete(id);
+    }
 }
