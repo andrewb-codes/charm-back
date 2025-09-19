@@ -31,7 +31,7 @@ public class ProfileService {
         dao.update(profile);
     }
 
-    public boolean remove(Long id) {
+    public boolean delete(Long id) {
         if (id == null) return false;
         return dao.delete(id);
     }
