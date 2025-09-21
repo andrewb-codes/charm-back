@@ -1,90 +1,44 @@
 package ru.andrewb.charm.back.controller;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.service.ProfileService;
 
+import java.io.IOException;
 import java.util.Optional;
 
-public class ProfileController {
+@WebServlet("/profile")
+public class ProfileController extends HttpServlet {
 
-    private final ProfileService service;
+    private final ProfileService service = ProfileService.getInstance();
 
-    public ProfileController(ProfileService service) {
-        this.service = service;
-    }
-
-    public String save(String request) {
-        String[] strings = request.split(",");
-        if (strings.length != 4) return "Bad request: need 4 parameters to save profile.";
-
-        Profile profile = new Profile();
-        profile.setEmail(strings[0]);
-        profile.setName(strings[1]);
-        profile.setSurname(strings[2]);
-        profile.setAbout(strings[3]);
-
-        return service.save(profile).toString();
-    }
-
-    public String findById(String request) {
-        String[] strings = request.split(",");
-        if (strings.length != 1) return "Bad request: need one number parameter.";
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String idParam = req.getParameter("id");
+        if (idParam == null) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Query param: 'id' is required");
+            return;
+        }
 
         long id;
         try {
-            id = Long.parseLong(strings[0]);
-        } catch (NumberFormatException e) {
-            return "Bad request: can`t parse string [" + strings[0] + "] to long.";
+            id = Long.parseLong(idParam);
+            if (id <= 0) throw new NumberFormatException("negative");
+        } catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
+            return;
         }
 
-        Optional<Profile> foundProfile = service.findById(id);
-        if (foundProfile.isEmpty()) return "Not found";
-
-        return foundProfile.get().toString();
-    }
-
-    public String findAll() {
-        return service.findAll().toString();
-    }
-
-    public String update(String request) {
-        String[] strings = request.split(",");
-        if (strings.length != 5) return "Bad request: need 5 parameters to update profile.";
-
-        long id;
-        try {
-            id = Long.parseLong(strings[0]);
-        } catch (NumberFormatException e) {
-            return "Bad request: can`t parse string [" + strings[0] + "] to long.";
+        Optional<Profile> profileOptional = service.findById(id);
+        if (profileOptional.isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
+            return;
         }
-
-        Profile profile = new Profile();
-        profile.setId(id);
-        profile.setEmail(strings[1]);
-        profile.setName(strings[2]);
-        profile.setSurname(strings[3]);
-        profile.setAbout(strings[4]);
-
-        service.update(profile);
-
-        return "Update success.";
-    }
-
-    public String delete(String request) {
-        String[] strings = request.split(",");
-        if (strings.length != 1) return "Bad request: need 1 number parameter.";
-
-        long id;
-        try {
-            id = Long.parseLong(strings[0]);
-        } catch (NumberFormatException e) {
-            return "Bad request: can`t parse string [" + strings[0] + "] to long.";
-        }
-
-        boolean result = service.delete(id);
-
-        if (!result) return "Not found.";
-
-        return "Delete success.";
+        req.setAttribute("profile", profileOptional.get());
+        req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
     }
 }
