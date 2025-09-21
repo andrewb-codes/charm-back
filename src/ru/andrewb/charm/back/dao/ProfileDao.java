@@ -10,12 +10,35 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ProfileDao {
 
+    private static final ProfileDao INSTANCE = new ProfileDao();
+
     private final ConcurrentHashMap<Long, Profile> storage;
     private final AtomicLong idStorage;
 
-    public ProfileDao() {
+    private ProfileDao() {
         this.storage = new ConcurrentHashMap<>();
-        this.idStorage = new AtomicLong();
+
+        Profile profile1 = new Profile();
+        profile1.setId(1L);
+        profile1.setEmail("ivanov@mail.ru");
+        profile1.setName("Ivan");
+        profile1.setSurname("Ivanov");
+        profile1.setAbout("I am QA");
+        this.storage.put(1L, profile1);
+
+        Profile profile2 = new Profile();
+        profile2.setId(2L);
+        profile2.setEmail("sidorova@mail.ru");
+        profile2.setName("Elena");
+        profile2.setSurname("Sidorova");
+        profile2.setAbout("I am Java Dev");
+        this.storage.put(2L, profile2);
+
+        this.idStorage = new AtomicLong(3L);
+    }
+
+    public static ProfileDao getInstance() {
+        return INSTANCE;
     }
 
     public Profile save(Profile profile) {
