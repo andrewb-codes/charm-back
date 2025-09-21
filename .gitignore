@@ -36,3 +36,7 @@ Thumbs.db
 out/
 lib/
 
+
+# IntelliJ
+*.iml
+.idea/
