@@ -12,6 +12,8 @@ import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 
 @WebServlet(value = "/profile", loadOnStartup = 1)
@@ -29,20 +31,8 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String idParam = req.getParameter("id");
-        if (idParam == null) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Query param: 'id' is required");
-            return;
-        }
-
-        long id;
-        try {
-            id = Long.parseLong(idParam);
-            if (id <= 0) throw new NumberFormatException("non-positive");
-        } catch (Exception e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
-            return;
-        }
+        Long id = requirePositiveLong(req, resp);
+        if (id == null) return;
 
         Optional<Profile> profileOptional = service.findById(id);
         if (profileOptional.isEmpty()) {
@@ -55,33 +45,80 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String idParam = req.getParameter("id");
+        Profile profile = createProfile(req, resp);
+        if (profile == null) return;
 
+        long id = service.save(profile).getId();
+        resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Long id = requirePositiveLong(req, resp);
+        if (id == null) return;
+
+        if (service.findById(id).isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
+            return;
+        }
+
+        Profile profile = createProfile(req, resp);
+        if (profile == null) return;
+        profile.setId(id);
+
+        service.update(profile);
+        resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Long id = requirePositiveLong(req, resp);
+        if (id ==null) return;
+
+        boolean removed = service.delete(id);
+        if (!removed) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
+            return;
+        }
+        resp.sendRedirect(req.getContextPath() + "/registration");
+    }
+
+    private Long requirePositiveLong(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String idParam = req.getParameter("id");
+        if (idParam == null || idParam.isBlank()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' is required");
+            return null;
+        }
+        long id;
+        try {
+            id = Long.parseLong(idParam);
+            if (id <= 0) throw new NumberFormatException("non-positive");
+            return id;
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
+            return null;
+        }
+    }
+
+    private Profile createProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Profile profile = new Profile();
         profile.setEmail(req.getParameter("email"));
         profile.setName(req.getParameter("name"));
         profile.setSurname(req.getParameter("surname"));
         profile.setAbout(req.getParameter("about"));
-        profile.setGender(Gender.valueOf(req.getParameter("gender")));
 
-        Long id = null;
-        if (idParam != null && !idParam.isBlank()) {
-            try {
-                id = Long.parseLong(idParam);
-                if (id <= 0) throw new NumberFormatException("non-positive");
-            } catch (NumberFormatException e) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
-                return;
-            }
+        String gp = req.getParameter("gender");
+        if (gp == null || gp.isBlank()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `gender` is required");
+            return null;
         }
-
-        if (id == null) {
-            id = service.save(profile).getId();
-        } else {
-            profile.setId(id);
-            service.update(profile);
+        try {
+            profile.setGender(Gender.valueOf(gp.toUpperCase(Locale.ROOT)));
+        } catch (IllegalArgumentException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Param `gender` must be one of " + Arrays.toString(Gender.values()));
+            return null;
         }
-
-        resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
+        return profile;
     }
 }

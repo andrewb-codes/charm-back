@@ -8,8 +8,8 @@
     <%@ include file="header.html" %>
         <div>
             <form method="post" action="${pageContext.request.contextPath}/profile">
-                <c:if test="${empty requestScope.profile.id}">
-                    <h1>Hello new user!</h1>
+                <c:if test="${!empty requestScope.profile.id}">
+                    <input type="hidden" name="_method" value="PUT">
                 </c:if>
                 <input type="hidden" name="id" value="${requestScope.profile.id}">
                 <table>
@@ -44,6 +44,14 @@
                 </table>
                 <button type="submit">Save</button>
             </form>
+            <c:if test="${!empty requestScope.profile.id}">
+                <form method="post" action="${pageContext.request.contextPath}/profile">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="hidden" name="id" value="${requestScope.profile.id}">
+                    <button type="submit">Delete</button>
+                </form>
+            </c:if>
+
         </div>
         <%@ include file="footer.html" %>
     </body>
