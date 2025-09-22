@@ -21,7 +21,7 @@ public class LikeController extends HttpServlet {
         long id;
         try {
             id = Long.parseLong(idParam);
-            if (id <= 0) throw new NumberFormatException("negative");
+            if (id <= 0) throw new NumberFormatException("non-positive");
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.setContentType("text/plain; charset=UTF-8");
