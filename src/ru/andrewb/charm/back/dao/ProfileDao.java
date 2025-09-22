@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.dao;
 
+import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class ProfileDao {
         profile1.setName("Ivan");
         profile1.setSurname("Ivanov");
         profile1.setAbout("I am QA");
+        profile1.setGender(Gender.MALE);
         this.storage.put(1L, profile1);
 
         Profile profile2 = new Profile();
@@ -32,6 +34,7 @@ public class ProfileDao {
         profile2.setName("Elena");
         profile2.setSurname("Sidorova");
         profile2.setAbout("I am Java Dev");
+        profile2.setGender(Gender.FEMALE);
         this.storage.put(2L, profile2);
 
         this.idStorage = new AtomicLong(3L);
