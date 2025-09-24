@@ -16,17 +16,17 @@ public class HiddenHttpMethodFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        HttpServletRequest req = (HttpServletRequest) servletRequest;
+        HttpServletResponse resp = (HttpServletResponse) servletResponse;
 
-        String paramValue = request.getParameter(METHOD_PARAM);
+        String paramValue = req.getParameter(METHOD_PARAM);
 
-        if ("POST".equals(request.getMethod()) && paramValue != null && !paramValue.isBlank()) {
+        if ("POST".equals(req.getMethod()) && paramValue != null && !paramValue.isBlank()) {
             String method = paramValue.toUpperCase(Locale.ENGLISH);
-            HttpServletRequest wrapper = new HttpMethodRequestWrapper(request, method);
-            filterChain.doFilter(wrapper, response);
+            HttpServletRequest wrapper = new HttpMethodRequestWrapper(req, method);
+            filterChain.doFilter(wrapper, resp);
         } else {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(req, resp);
         }
     }
 
