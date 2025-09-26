@@ -3,6 +3,7 @@ package ru.andrewb.charm.back.dao;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class ProfileDao {
         profile1.setEmail("ivanov@mail.ru");
         profile1.setName("Ivan");
         profile1.setSurname("Ivanov");
+        profile1.setBirthDate(LocalDate.parse("2007-12-03"));
         profile1.setAbout("I am QA");
         profile1.setGender(Gender.MALE);
         this.storage.put(1L, profile1);
@@ -33,6 +35,7 @@ public class ProfileDao {
         profile2.setEmail("sidorova@mail.ru");
         profile2.setName("Elena");
         profile2.setSurname("Sidorova");
+        profile2.setBirthDate(LocalDate.parse("2004-02-03"));
         profile2.setAbout("I am Java Dev");
         profile2.setGender(Gender.FEMALE);
         this.storage.put(2L, profile2);
