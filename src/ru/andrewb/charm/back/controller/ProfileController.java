@@ -8,21 +8,18 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
+import ru.andrewb.charm.back.mapper.ProfileSaveRequestMapper;
 import ru.andrewb.charm.back.model.Gender;
-import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
 
 @WebServlet(value = "/profile", loadOnStartup = 1)
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
+    private final ProfileSaveRequestMapper saveRequestMapper = ProfileSaveRequestMapper.getInstance();
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -56,10 +53,9 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Profile profile = createProfile(req, resp);
-        if (profile == null) return;
-
-        long id = service.save(profile);
+        var dto = saveRequestMapper.map(req, resp);
+        if (dto == null) return;
+        long id = service.save(dto);
         resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
     }
 
@@ -67,17 +63,13 @@ public class ProfileController extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long id = requirePositiveLong(req, resp);
         if (id == null) return;
-
         if (service.findById(id).isEmpty()) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
             return;
         }
-
-        Profile profile = createProfile(req, resp);
-        if (profile == null) return;
-        profile.setId(id);
-
-        service.update(profile);
+        var dto = saveRequestMapper.map(req, resp);
+        if (dto == null) return;
+        service.update(id, dto);
         resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
     }
 
@@ -109,40 +101,5 @@ public class ProfileController extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
             return null;
         }
-    }
-
-    private Profile createProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Profile profile = new Profile();
-        profile.setEmail(req.getParameter("email"));
-        profile.setName(req.getParameter("name"));
-        profile.setSurname(req.getParameter("surname"));
-
-        String bd = req.getParameter("birthDate");
-        if (bd == null || bd.isBlank()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `birthDate` is required");
-            return null;
-        }
-        try {
-            profile.setBirthDate(LocalDate.parse(bd));
-        } catch (DateTimeParseException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `birthDate` must be yyyy-MM-dd");
-            return null;
-        }
-
-        profile.setAbout(req.getParameter("about"));
-
-        String gp = req.getParameter("gender");
-        if (gp == null || gp.isBlank()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `gender` is required");
-            return null;
-        }
-        try {
-            profile.setGender(Gender.valueOf(gp.toUpperCase(Locale.ROOT)));
-        } catch (IllegalArgumentException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Param `gender` must be one of " + Arrays.toString(Gender.values()));
-            return null;
-        }
-        return profile;
     }
 }
