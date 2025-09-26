@@ -26,6 +26,14 @@
                         <td><input type="text" name="surname" value="${requestScope.profile.surname}"></td>
                     </tr>
                     <tr>
+                        <td><h3>${requestScope.wordBundle.getWord("birthdate")}</h3></td>
+                        <td><input type="date" name="birthDate" required value="${requestScope.profile.birthDate}"></td>
+                    </tr>
+                    <tr>
+                        <td><h3>${requestScope.wordBundle.getWord("age")}</h3></td>
+                        <td><h3>${requestScope.profile.age}</h3></td>
+                    </tr>
+                    <tr>
                         <td><h3>${requestScope.wordBundle.getWord("about")}</h3></td>
                         <td><input type="text" name="about" value="${requestScope.profile.about}"></td>
                     </tr>

@@ -1,8 +1,10 @@
-package ru.andrewb.charm.back.model;
+package ru.andrewb.charm.back.dto;
+
+import ru.andrewb.charm.back.model.Gender;
 
 import java.time.LocalDate;
 
-public class Profile {
+public class ProfileGetDto {
 
     private Long id;
     private String email;
@@ -10,6 +12,7 @@ public class Profile {
     private String surname;
     private String about;
     private LocalDate birthDate;
+    private Integer age;
     private Gender gender;
 
     public Long getId() {
@@ -58,6 +61,14 @@ public class Profile {
 
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     public Gender getGender() {

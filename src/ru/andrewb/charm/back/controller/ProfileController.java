@@ -7,11 +7,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
@@ -31,15 +34,23 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String idParam = req.getParameter("id");
+        if (idParam == null || idParam.isBlank()) {
+            var profiles = service.findAll();
+            req.setAttribute("profiles", profiles);
+            req.getRequestDispatcher("/WEB-INF/jsp/profiles.jsp").forward(req, resp);
+            return;
+        }
+
         Long id = requirePositiveLong(req, resp);
         if (id == null) return;
 
-        Optional<Profile> profileOptional = service.findById(id);
-        if (profileOptional.isEmpty()) {
+        Optional<ProfileGetDto> profileGetDtoOptional = service.findById(id);
+        if (profileGetDtoOptional.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
             return;
         }
-        req.setAttribute("profile", profileOptional.get());
+        req.setAttribute("profile", profileGetDtoOptional.get());
         req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
     }
 
@@ -48,7 +59,7 @@ public class ProfileController extends HttpServlet {
         Profile profile = createProfile(req, resp);
         if (profile == null) return;
 
-        long id = service.save(profile).getId();
+        long id = service.save(profile);
         resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
     }
 
@@ -105,6 +116,19 @@ public class ProfileController extends HttpServlet {
         profile.setEmail(req.getParameter("email"));
         profile.setName(req.getParameter("name"));
         profile.setSurname(req.getParameter("surname"));
+
+        String bd = req.getParameter("birthDate");
+        if (bd == null || bd.isBlank()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `birthDate` is required");
+            return null;
+        }
+        try {
+            profile.setBirthDate(LocalDate.parse(bd));
+        } catch (DateTimeParseException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param `birthDate` must be yyyy-MM-dd");
+            return null;
+        }
+
         profile.setAbout(req.getParameter("about"));
 
         String gp = req.getParameter("gender");
