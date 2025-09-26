@@ -2,7 +2,9 @@ package ru.andrewb.charm.back.service;
 
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
+import ru.andrewb.charm.back.dto.ProfileSaveDto;
 import ru.andrewb.charm.back.mapper.ProfileGetDtoMapper;
+import ru.andrewb.charm.back.mapper.ProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 
 import java.util.List;
@@ -15,6 +17,7 @@ public class ProfileService {
     private final ProfileDao dao = ProfileDao.getInstance();
 
     private final ProfileGetDtoMapper profileGetDtoMapper = ProfileGetDtoMapper.getInstance();
+    private final ProfileMapper profileMapper = ProfileMapper.getInstance();
 
     private ProfileService() {
     }
@@ -23,7 +26,8 @@ public class ProfileService {
         return INSTANCE;
     }
 
-    public Long save(Profile profile) {
+    public Long save(ProfileSaveDto dto) {
+        Profile profile = profileMapper.map(dto);
         return dao.save(profile).getId();
     }
 
@@ -36,7 +40,9 @@ public class ProfileService {
         return dao.findAll().stream().map(profileGetDtoMapper::map).toList();
     }
 
-    public void update(Profile profile) {
+    public void update(Long id, ProfileSaveDto dto) {
+        Profile profile = profileMapper.map(dto);
+        profile.setId(id);
         dao.update(profile);
     }
 
