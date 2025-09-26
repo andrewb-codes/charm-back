@@ -16,7 +16,6 @@ public class ProfileMapper implements Mapper<ProfileSaveDto, Profile> {
     @Override
     public Profile map(ProfileSaveDto dto) {
         Profile profile = new Profile();
-        profile.setId(dto.getId());
         profile.setEmail(dto.getEmail());
         profile.setName(dto.getName());
         profile.setSurname(dto.getSurname());
