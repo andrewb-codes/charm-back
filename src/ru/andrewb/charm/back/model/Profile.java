@@ -1,17 +1,15 @@
 package ru.andrewb.charm.back.model;
 
+import java.time.LocalDate;
+
 public class Profile {
 
     private Long id;
-
     private String email;
-
     private String name;
-
     private String surname;
-
     private String about;
-
+    private LocalDate birthDate;
     private Gender gender;
 
     public Long getId() {
@@ -54,22 +52,19 @@ public class Profile {
         this.about = about;
     }
 
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
     public Gender getGender() {
         return gender;
     }
 
     public void setGender(Gender gender) {
         this.gender = gender;
-    }
-
-    @Override
-    public String toString() {
-        return "Profile{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", about='" + about + '\'' +
-                '}';
     }
 }
