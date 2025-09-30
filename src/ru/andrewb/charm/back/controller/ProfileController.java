@@ -8,9 +8,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
-import ru.andrewb.charm.back.mapper.ProfileSaveRequestMapper;
+import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.Gender;
+import ru.andrewb.charm.back.model.Status;
+import ru.andrewb.charm.back.model.exception.BadRequestException;
+import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
+import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
+import ru.andrewb.charm.back.utils.RequestParams;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -19,13 +24,16 @@ import java.util.Optional;
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
-    private final ProfileSaveRequestMapper saveRequestMapper = ProfileSaveRequestMapper.getInstance();
+    private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         ServletContext servletContext = config.getServletContext();
         if (servletContext.getAttribute("genders") == null) {
             servletContext.setAttribute("genders", Gender.values());
+        }
+        if (servletContext.getAttribute("statuses") == null) {
+            servletContext.setAttribute("statuses", Status.values());
         }
     }
 
@@ -39,67 +47,44 @@ public class ProfileController extends HttpServlet {
             return;
         }
 
-        Long id = requirePositiveLong(req, resp);
-        if (id == null) return;
-
-        Optional<ProfileGetDto> profileGetDtoOptional = service.findById(id);
-        if (profileGetDtoOptional.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
+        long id;
+        try {
+            id = RequestParams.requirePositiveLong(req, "id");
+        } catch (BadRequestException e) {
+            resp.sendError(400, e.getMessage());
             return;
         }
-        req.setAttribute("profile", profileGetDtoOptional.get());
+
+        Optional<ProfileGetDto> profileDtoOptional = service.findById(id);
+        if (profileDtoOptional.isEmpty()) {
+            resp.sendError(404, "Profile not found");
+            return;
+        }
+        req.setAttribute("profile", profileDtoOptional.get());
         req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var dto = saveRequestMapper.map(req, resp);
-        if (dto == null) return;
-        long id = service.save(dto);
-        resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
-    }
-
-    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long id = requirePositiveLong(req, resp);
-        if (id == null) return;
-        if (service.findById(id).isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
-            return;
-        }
-        var dto = saveRequestMapper.map(req, resp);
-        if (dto == null) return;
-        service.update(id, dto);
-        resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long id = requirePositiveLong(req, resp);
-        if (id ==null) return;
-
-        boolean removed = service.delete(id);
-        if (!removed) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
-            return;
-        }
-        resp.sendRedirect(req.getContextPath() + "/registration");
-    }
-
-    private Long requirePositiveLong(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String idParam = req.getParameter("id");
-        if (idParam == null || idParam.isBlank()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' is required");
-            return null;
-        }
         long id;
         try {
-            id = Long.parseLong(idParam);
-            if (id <= 0) throw new NumberFormatException("non-positive");
-            return id;
-        } catch (NumberFormatException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Param 'id' must be positive long");
-            return null;
+            id = RequestParams.requirePositiveLong(req, "id");
+        } catch (BadRequestException e) {
+            resp.sendError(400, e.getMessage());
+            return;
+        }
+
+        try {
+            var dto = requestToProfileUpdateDtoMapper.map(req);
+            service.update(id, dto);
+            String referer = req.getHeader("referer");
+            resp.sendRedirect(req.getContextPath() + referer);
+        } catch (NotFoundException e) {
+            resp.sendError(404, e.getMessage());
+        } catch (BadRequestException e) {
+            resp.sendError(400, e.getMessage());
+        } catch (DuplicateEmailException e) {
+            resp.sendError(409, e.getMessage());
         }
     }
 }
