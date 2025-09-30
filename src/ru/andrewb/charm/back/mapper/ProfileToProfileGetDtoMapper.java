@@ -6,21 +6,24 @@ import ru.andrewb.charm.back.model.Profile;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-public class ProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
+public class ProfileToProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
 
-    private static final ProfileGetDtoMapper INSTANCE = new ProfileGetDtoMapper();
+    private static final ProfileToProfileGetDtoMapper INSTANCE = new ProfileToProfileGetDtoMapper();
 
-    private ProfileGetDtoMapper() {
-
+    private ProfileToProfileGetDtoMapper() {
     }
 
-    public static ProfileGetDtoMapper getInstance() {
+    public static ProfileToProfileGetDtoMapper getInstance() {
         return INSTANCE;
     }
 
     @Override
     public ProfileGetDto map(Profile profile) {
-        ProfileGetDto dto = new ProfileGetDto();
+        return map(profile, new ProfileGetDto());
+    }
+
+    @Override
+    public ProfileGetDto map(Profile profile, ProfileGetDto dto) {
         dto.setId(profile.getId());
         dto.setEmail(profile.getEmail());
         dto.setName(profile.getName());
@@ -33,6 +36,7 @@ public class ProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
             dto.setAge(null);
         }
         dto.setGender(profile.getGender());
+        dto.setStatus(profile.getStatus());
         return dto;
     }
 }

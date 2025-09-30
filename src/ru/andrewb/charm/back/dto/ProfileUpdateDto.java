@@ -1,9 +1,11 @@
-package ru.andrewb.charm.back.model;
+package ru.andrewb.charm.back.dto;
+
+import ru.andrewb.charm.back.model.Gender;
+import ru.andrewb.charm.back.model.Status;
 
 import java.time.LocalDate;
 
-public class Profile {
-
+public class ProfileUpdateDto {
     private Long id;
     private String email;
     private String password;
