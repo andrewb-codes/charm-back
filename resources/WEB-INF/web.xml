@@ -32,4 +32,8 @@
         <error-code>409</error-code>
         <location>/WEB-INF/jsp/error409.jsp</location>
     </error-page>
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/jsp/error.jsp</location>
+    </error-page>
 </web-app>
