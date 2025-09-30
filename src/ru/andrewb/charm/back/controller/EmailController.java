@@ -57,11 +57,11 @@ public class EmailController extends HttpServlet {
             service.update(id, dto);
             resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
         } catch (NotFoundException e) {
-            resp.sendError(404, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (DuplicateEmailException e) {
-            resp.sendError(409, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
     }
 }
