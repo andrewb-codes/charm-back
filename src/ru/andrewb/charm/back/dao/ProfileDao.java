@@ -2,13 +2,16 @@ package ru.andrewb.charm.back.dao;
 
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.model.Status;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class ProfileDao {
 
@@ -28,6 +31,7 @@ public class ProfileDao {
         profile1.setBirthDate(LocalDate.parse("2007-12-03"));
         profile1.setAbout("I am QA");
         profile1.setGender(Gender.MALE);
+        profile1.setStatus(Status.ACTIVE);
         this.storage.put(1L, profile1);
 
         Profile profile2 = new Profile();
@@ -38,6 +42,7 @@ public class ProfileDao {
         profile2.setBirthDate(LocalDate.parse("2004-02-03"));
         profile2.setAbout("I am Java Dev");
         profile2.setGender(Gender.FEMALE);
+        profile2.setStatus(Status.ACTIVE);
         this.storage.put(2L, profile2);
 
         this.idStorage = new AtomicLong(3L);
@@ -69,5 +74,15 @@ public class ProfileDao {
 
     public boolean delete(Long id) {
         return (storage.remove(id) != null);
+    }
+
+    public boolean existsEmail(String email, Long excludeId) {
+        if (email == null) return false;
+        String probe = email.trim();
+        return storage.values().stream().anyMatch(p ->
+                p.getEmail() != null
+                && p.getEmail().equalsIgnoreCase(probe)
+                && (excludeId == null || !p.getId().equals(excludeId))
+        );
     }
 }
