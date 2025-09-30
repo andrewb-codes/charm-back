@@ -11,7 +11,6 @@ public class ProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
     private static final ProfileGetDtoMapper INSTANCE = new ProfileGetDtoMapper();
 
     private ProfileGetDtoMapper() {
-
     }
 
     public static ProfileGetDtoMapper getInstance() {
@@ -20,7 +19,11 @@ public class ProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
 
     @Override
     public ProfileGetDto map(Profile profile) {
-        ProfileGetDto dto = new ProfileGetDto();
+        return map(profile, new ProfileGetDto());
+    }
+
+    @Override
+    public ProfileGetDto map(Profile profile, ProfileGetDto dto) {
         dto.setId(profile.getId());
         dto.setEmail(profile.getEmail());
         dto.setName(profile.getName());
