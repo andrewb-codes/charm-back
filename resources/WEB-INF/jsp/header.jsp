@@ -5,6 +5,5 @@
         <button name="lang" value="ru">ru</button>
         <button name="lang" value="en">en</button>
     </form>
-    <h3>${requestScope.wordBundle.getWord("lang")}: ${empty cookie["lang"] ? 'en' : cookie["lang"].value}</h3>
     <hr>
 </div>
