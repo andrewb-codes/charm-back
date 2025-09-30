@@ -51,13 +51,13 @@ public class ProfileController extends HttpServlet {
         try {
             id = RequestParams.requirePositiveLong(req, "id");
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             return;
         }
 
         Optional<ProfileGetDto> profileDtoOptional = service.findById(id);
         if (profileDtoOptional.isEmpty()) {
-            resp.sendError(404, "Profile not found");
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
             return;
         }
         req.setAttribute("profile", profileDtoOptional.get());
@@ -70,7 +70,7 @@ public class ProfileController extends HttpServlet {
         try {
             id = RequestParams.requirePositiveLong(req, "id");
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             return;
         }
 
@@ -80,11 +80,11 @@ public class ProfileController extends HttpServlet {
             String referer = req.getHeader("referer");
             resp.sendRedirect(req.getContextPath() + referer);
         } catch (NotFoundException e) {
-            resp.sendError(404, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (DuplicateEmailException e) {
-            resp.sendError(409, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
     }
 }

@@ -33,9 +33,9 @@ public class RegistrationController extends HttpServlet {
             Long id = service.save(dto);
             resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (DuplicateEmailException e) {
-            resp.sendError(409, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
     }
 
@@ -45,7 +45,7 @@ public class RegistrationController extends HttpServlet {
         try {
             id = RequestParams.requirePositiveLong(req, "id");
         } catch (BadRequestException e) {
-            resp.sendError(400, e.getMessage());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             return;
         }
 
