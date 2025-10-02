@@ -5,6 +5,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
@@ -18,6 +20,8 @@ import java.util.Optional;
 
 @WebServlet("/email")
 public class EmailController extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailController.class);
 
     private final ProfileService service = ProfileService.getInstance();
 
@@ -55,6 +59,7 @@ public class EmailController extends HttpServlet {
         try {
             var dto = requestToProfileUpdateDtoMapper.map(req);
             service.update(id, dto);
+            log.info("[{}] Email changed: id={}, newEmail={}", rid(req), id, dto.getEmail());
             resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -63,5 +68,10 @@ public class EmailController extends HttpServlet {
         } catch (DuplicateEmailException e) {
             resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
+    }
+
+    private static String rid(HttpServletRequest req) {
+        Object v = req.getAttribute("rid");
+        return v == null ? "-" : v.toString();
     }
 }

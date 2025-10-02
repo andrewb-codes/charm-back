@@ -5,6 +5,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 import ru.andrewb.charm.back.mapper.RequestToRegistrationDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
@@ -16,6 +18,8 @@ import java.io.IOException;
 
 @WebServlet("/registration")
 public class RegistrationController extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(RegistrationController.class);
 
     private final ProfileService service = ProfileService.getInstance();
 
@@ -30,6 +34,7 @@ public class RegistrationController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             RegistrationDto dto = requestToRegistrationDtoMapper.map(req);
+            log.info("[{}] Registration ok: email={}", rid(req), dto.getEmail());
             Long id = service.save(dto);
             resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
         } catch (BadRequestException e) {
@@ -49,8 +54,19 @@ public class RegistrationController extends HttpServlet {
             return;
         }
 
-        service.delete(id);
+        boolean deleted = service.delete(id);
+        if (deleted) {
+            log.info("[{}] Profile deleted: id={}", rid(req), id);
+        } else {
+            log.warn("[{}] Delete ignored (not found): id={}", rid(req), id);
+        }
+
         resp.sendRedirect(req.getContextPath() + "/registration");
 
+    }
+
+    private static String rid(HttpServletRequest req) {
+        Object v = req.getAttribute("rid");
+        return v == null ? "-" : v.toString();
     }
 }
