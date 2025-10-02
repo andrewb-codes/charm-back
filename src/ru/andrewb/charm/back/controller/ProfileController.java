@@ -7,6 +7,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.Gender;
@@ -22,6 +24,8 @@ import java.util.Optional;
 
 @WebServlet(value = "/profile", loadOnStartup = 1)
 public class ProfileController extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(ProfileController.class);
 
     private final ProfileService service = ProfileService.getInstance();
     private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
@@ -77,6 +81,7 @@ public class ProfileController extends HttpServlet {
         try {
             var dto = requestToProfileUpdateDtoMapper.map(req);
             service.update(id, dto);
+            log.info("[{}] Profile updated: id={}", rid(req), id);
             String referer = req.getHeader("referer");
             resp.sendRedirect(req.getContextPath() + referer);
         } catch (NotFoundException e) {
@@ -86,5 +91,10 @@ public class ProfileController extends HttpServlet {
         } catch (DuplicateEmailException e) {
             resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
+    }
+
+    private static String rid(HttpServletRequest req) {
+        Object v = req.getAttribute("rid");
+        return v == null ? "-" : v.toString();
     }
 }

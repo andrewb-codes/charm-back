@@ -11,11 +11,11 @@
                 <table>
                     <tr>
                         <td><h3>${requestScope.wordBundle.getWord("email")}</h3></td>
-                        <td><input type="email" name="email" placeholder="user@charm.ru"></td>
+                        <td><input type="email" name="email" required placeholder="user@charm.ru"></td>
                     </tr>
                     <tr>
                         <td><h3>${requestScope.wordBundle.getWord("password")}</h3></td>
-                        <td><input type="password" name="password"></td>
+                        <td><input type="password" required name="password"></td>
                     </tr>
                 </table>
                 <button type="submit">${requestScope.wordBundle.getWord("save")}</button>
