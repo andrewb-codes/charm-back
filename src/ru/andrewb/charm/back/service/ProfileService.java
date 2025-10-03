@@ -50,23 +50,36 @@ public class ProfileService {
         return dao.findById(id).map(profileToProfileGetDtoMapper::map);
     }
 
+    public ProfileGetDto findByIdOrThrow(long id) {
+        return dao.findById(id)
+                .map(profileToProfileGetDtoMapper::map)
+                .orElseThrow(() -> new NotFoundException("profile not found"));
+    }
+
     public List<ProfileGetDto> findAll() {
         return dao.findAll().stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 
-    public void update(Long id, ProfileUpdateDto dto) {
+    public void update(long id, ProfileUpdateDto dto) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("profile not found"));
 
+        String normalizedEmail = null;
         if (dto.getEmail() != null) {
-            String email = normalizeEmail(dto.getEmail());
-            requireValidEmail(email);
-            if (dao.existsEmail(email, id)) throw new DuplicateEmailException("email already exists");
-            dto.setEmail(email);
+            normalizedEmail = normalizeEmail(dto.getEmail());
+            requireValidEmail(normalizedEmail);
+
+            if (!normalizedEmail.equalsIgnoreCase(existing.getEmail())
+                    && dao.existsEmail(normalizedEmail, id)) {
+                throw new DuplicateEmailException("email already exists");
+            }
         }
 
         Profile profile = profileUpdateDtoToProfileMapper.map(dto, existing);
         profile.setId(id);
+        if (normalizedEmail != null) {
+            profile.setEmail(normalizedEmail);
+        }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
         dao.update(profile);
