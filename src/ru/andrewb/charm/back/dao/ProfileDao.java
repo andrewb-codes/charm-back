@@ -8,10 +8,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class ProfileDao {
 
@@ -81,8 +79,8 @@ public class ProfileDao {
         String probe = email.trim();
         return storage.values().stream().anyMatch(p ->
                 p.getEmail() != null
-                && p.getEmail().equalsIgnoreCase(probe)
-                && (excludeId == null || !p.getId().equals(excludeId))
+                        && p.getEmail().equalsIgnoreCase(probe)
+                        && (excludeId == null || !p.getId().equals(excludeId))
         );
     }
 }

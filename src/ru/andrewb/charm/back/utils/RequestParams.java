@@ -1,12 +1,11 @@
 package ru.andrewb.charm.back.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 
-
+@UtilityClass
 public final class RequestParams {
-    private RequestParams() {}
-
     public static long requirePositiveLong(HttpServletRequest req, String name) {
         String raw = req.getParameter(name);
         if (raw == null || raw.isBlank()) {
