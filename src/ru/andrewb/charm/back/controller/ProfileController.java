@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
@@ -20,7 +19,6 @@ import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.utils.RequestParams;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @WebServlet(value = "/profile", loadOnStartup = 1)
 public class ProfileController extends HttpServlet {
@@ -51,39 +49,28 @@ public class ProfileController extends HttpServlet {
             return;
         }
 
-        long id;
         try {
-            id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParams.requirePositiveLong(req, "id");
+            var dto = service.findByIdOrThrow(id);
+            req.setAttribute("profile", dto);
+            req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            return;
+        } catch (NotFoundException e) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         }
-
-        Optional<ProfileGetDto> profileDtoOptional = service.findById(id);
-        if (profileDtoOptional.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Profile not found");
-            return;
-        }
-        req.setAttribute("profile", profileDtoOptional.get());
-        req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        long id;
         try {
-            id = RequestParams.requirePositiveLong(req, "id");
-        } catch (BadRequestException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            return;
-        }
-
-        try {
+            long id = RequestParams.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
+
             service.update(id, dto);
             log.info("[{}] Profile updated: id={}", rid(req), id);
-            String referer = req.getHeader("referer");
-            resp.sendRedirect(req.getContextPath() + referer);
+
+            resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (BadRequestException e) {
