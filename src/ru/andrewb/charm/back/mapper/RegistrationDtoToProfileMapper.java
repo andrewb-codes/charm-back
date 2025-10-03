@@ -1,15 +1,15 @@
 package ru.andrewb.charm.back.mapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.Status;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegistrationDtoToProfileMapper implements Mapper<RegistrationDto, Profile> {
 
     private static final RegistrationDtoToProfileMapper INSTANCE = new RegistrationDtoToProfileMapper();
-
-    private RegistrationDtoToProfileMapper() {
-    }
 
     public static RegistrationDtoToProfileMapper getInstance() {
         return INSTANCE;

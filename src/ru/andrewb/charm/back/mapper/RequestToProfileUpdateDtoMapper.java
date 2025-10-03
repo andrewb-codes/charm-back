@@ -1,6 +1,8 @@
 package ru.andrewb.charm.back.mapper;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
@@ -11,11 +13,10 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Locale;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletRequest, ProfileUpdateDto> {
 
     private static final RequestToProfileUpdateDtoMapper INSTANCE = new RequestToProfileUpdateDtoMapper();
-
-    private RequestToProfileUpdateDtoMapper() {};
 
     public static RequestToProfileUpdateDtoMapper getInstance() {
         return INSTANCE;

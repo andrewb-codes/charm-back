@@ -5,8 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
@@ -17,9 +16,8 @@ import ru.andrewb.charm.back.utils.RequestParams;
 import java.io.IOException;
 
 @WebServlet("/email")
+@Slf4j
 public class EmailController extends HttpServlet {
-
-    private static final Logger log = LoggerFactory.getLogger(EmailController.class);
 
     private final ProfileService service = ProfileService.getInstance();
 

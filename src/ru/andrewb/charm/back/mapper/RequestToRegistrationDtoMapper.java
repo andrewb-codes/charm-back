@@ -1,14 +1,14 @@
 package ru.andrewb.charm.back.mapper;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToRegistrationDtoMapper implements Mapper<HttpServletRequest, RegistrationDto> {
 
     private static final RequestToRegistrationDtoMapper INSTANCE = new RequestToRegistrationDtoMapper();
-
-    public RequestToRegistrationDtoMapper() {
-    }
 
     public static RequestToRegistrationDtoMapper getInstance() {
         return INSTANCE;
