@@ -1,7 +1,5 @@
 package ru.andrewb.charm.back.controller;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,8 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
-import ru.andrewb.charm.back.model.Gender;
-import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
@@ -19,23 +15,12 @@ import ru.andrewb.charm.back.utils.RequestParams;
 
 import java.io.IOException;
 
-@WebServlet(value = "/profile", loadOnStartup = 1)
+@WebServlet("/profile")
 @Slf4j
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
     private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        ServletContext servletContext = config.getServletContext();
-        if (servletContext.getAttribute("genders") == null) {
-            servletContext.setAttribute("genders", Gender.values());
-        }
-        if (servletContext.getAttribute("statuses") == null) {
-            servletContext.setAttribute("statuses", Status.values());
-        }
-    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
