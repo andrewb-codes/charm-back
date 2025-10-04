@@ -9,9 +9,8 @@
 <%@ include file="header.jsp" %>
 <div>
     <h3 style="color: red">${requestScope.wordBundle.getWord("email-warning")}</h3>
-    <form method="post" action="${pageContext.request.contextPath}/email">
+    <form method="post" action="${pageContext.request.contextPath}/email?id=${requestScope.profile.id}">
         <input type="hidden" name="_method" value="put"/>
-        <input type="hidden" name="id" value="${requestScope.profile.id}">
         <table>
             <tr>
                 <td><h3>${requestScope.wordBundle.getWord("email")}</h3></td>
