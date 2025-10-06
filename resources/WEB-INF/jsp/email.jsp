@@ -8,17 +8,28 @@
 <body>
 <%@ include file="header.jsp" %>
 <div>
-    <h3 style="color: red">${requestScope.wordBundle.getWord("email-warning")}</h3>
-    <form method="post" action="${pageContext.request.contextPath}/email?id=${requestScope.profile.id}">
+    <h3 style="color: red">${wordBundle.getWord("email-warning")}</h3>
+    <form method="post" action="${pageContext.request.contextPath}/email?id=${profile.id}">
         <input type="hidden" name="_method" value="put"/>
         <table>
             <tr>
-                <td><h3>${requestScope.wordBundle.getWord("email")}</h3></td>
-                <td><input type="email" name="email" value="${requestScope.profile.email}"></td>
+                <td><h3>${wordBundle.getWord("email")}</h3></td>
+                <td>
+                    <input type="email" name="email"
+                           value="${(fields != null && fields['email'] != null) ? fields['email'] : profile.email}">
+                </td>
             </tr>
         </table>
-        <button type="submit">${requestScope.wordBundle.getWord("save")}</button>
+        <button type="submit">${wordBundle.getWord("save")}</button>
     </form>
+
+    <c:if test="${not empty errors}">
+        <div style="color: red">
+            <c:forEach var="error" items="${errors}">
+                <p>${wordBundle.getWord(error)}</p>
+            </c:forEach>
+        </div>
+    </c:if>
 </div>
 <%@ include file="footer.jsp" %>
 </body>

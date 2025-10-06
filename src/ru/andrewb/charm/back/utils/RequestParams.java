@@ -19,4 +19,9 @@ public final class RequestParams {
             throw new BadRequestException("Param '" + name + "' must be positive long");
         }
     }
+
+    public static String rid(HttpServletRequest req) {
+        Object v = req.getAttribute("rid");
+        return v == null ? "-" : v.toString();
+    }
 }
