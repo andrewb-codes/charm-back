@@ -22,12 +22,13 @@ public class WordBundle {
     public String getWord(String key) {
         String result;
         try {
-            result = resourceBundle.getString(key.toLowerCase());
-        } catch (MissingResourceException | ClassCastException e) {
-            result = key;
-        } catch (Exception e) {
-            result = "* empty *";
+            return resourceBundle.getString(key);
+        } catch (MissingResourceException e1) {
+            try {
+                return resourceBundle.getString(key.toLowerCase());
+            } catch (MissingResourceException e2) {
+                return key;
+            }
         }
-        return result;
     }
 }

@@ -10,13 +10,13 @@ import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.mapper.RegistrationDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
-import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.utils.Emails;
+import ru.andrewb.charm.back.utils.Passwords;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileService {
@@ -36,12 +36,16 @@ public class ProfileService {
     }
 
     public Long save(RegistrationDto dto) {
-        String email = normalizeEmail(dto.getEmail());
-        requireValidEmail(email);
+        String email = Emails.requireValidOrThrow(dto.getEmail());
         if (dao.existsEmail(email, null)) {
             throw new DuplicateEmailException("email already exists");
         }
+
+        String pwd = Passwords.requireValidOrThrow(dto.getPassword(), 6);
+
         Profile p = registrationDtoToProfileMapper.map(dto);
+        p.setEmail(email);
+        p.setPassword(pwd);
         return dao.save(p).getId();
     }
 
@@ -64,46 +68,28 @@ public class ProfileService {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("profile not found"));
 
-        String normalizedEmail = null;
+        String newEmailNormalized = null;
         if (dto.getEmail() != null) {
-            normalizedEmail = normalizeEmail(dto.getEmail());
-            requireValidEmail(normalizedEmail);
+            newEmailNormalized = Emails.requireValidOrThrow(dto.getEmail());
 
-            if (!normalizedEmail.equalsIgnoreCase(existing.getEmail())
-                    && dao.existsEmail(normalizedEmail, id)) {
+            if (!newEmailNormalized.equalsIgnoreCase(existing.getEmail())
+                    && dao.existsEmail(newEmailNormalized, id)) {
                 throw new DuplicateEmailException("email already exists");
             }
         }
 
-        Profile profile = profileUpdateDtoToProfileMapper.map(dto, existing);
-        profile.setId(id);
-        if (normalizedEmail != null) {
-            profile.setEmail(normalizedEmail);
+        Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
+        p.setId(id);
+        if (newEmailNormalized != null) {
+            p.setEmail(newEmailNormalized);
         }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
-        dao.update(profile);
+        dao.update(p);
     }
 
     public boolean delete(Long id) {
         if (id == null) return false;
         return dao.delete(id);
-    }
-
-    private static final Pattern EMAIL_RE = Pattern.compile(
-            "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$",
-            Pattern.CASE_INSENSITIVE
-    );
-
-    private static String normalizeEmail(String email) {
-        return email == null ? null : email.trim();
-    }
-
-    private void requireValidEmail(String email) {
-        String e = normalizeEmail(email);
-        if (e == null || e.isBlank())
-            throw new BadRequestException("email is required");
-        if (!EMAIL_RE.matcher(e).matches())
-            throw new BadRequestException("invalid email");
     }
 }
