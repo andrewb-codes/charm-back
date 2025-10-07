@@ -8,7 +8,7 @@
     <body>
         <%@ include file="header.jsp" %>
         <div>
-            <form method="post" action="${pageContext.request.contextPath}/profile">
+            <form method="post" action="${pageContext.request.contextPath}/profile" enctype="multipart/form-data">
                 <input type="hidden" name="_method" value="PUT">
                 <input type="hidden" name="id" value="${profile.id}">
                 <table>
@@ -56,6 +56,19 @@
                                     </option>
                                 </c:forEach>
                             </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><h3>${wordBundle.getWord("photo")}</h3></td>
+                        <td>
+                            <c:if test="${not empty profile.photo}">
+                                <img src="${pageContext.request.contextPath}/content/profile/${profile.id}/${profile.photo}"
+                                     alt="photo" height="300">
+                            </c:if>
+                            <br>
+                            <input type="button" value="${wordBundle.getWord('update')}"
+                                   onclick="document.getElementById('file').click();"/>
+                            <input type="file" name="photo" id="file" accept="image/*" style="display:none;">
                         </td>
                     </tr>
                 </table>

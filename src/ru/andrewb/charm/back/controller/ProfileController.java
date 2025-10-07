@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.controller;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import static ru.andrewb.charm.back.utils.RequestParams.rid;
 
 @WebServlet("/profile")
 @Slf4j
+@MultipartConfig
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();

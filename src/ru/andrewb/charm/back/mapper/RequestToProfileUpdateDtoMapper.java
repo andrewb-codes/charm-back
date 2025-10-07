@@ -3,6 +3,7 @@ package ru.andrewb.charm.back.mapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
@@ -27,6 +28,7 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
         return map(req, new ProfileUpdateDto());
     }
 
+    @SneakyThrows
     @Override
     public ProfileUpdateDto map(HttpServletRequest req, ProfileUpdateDto dto) {
         String email = req.getParameter("email");
@@ -63,9 +65,18 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
                 throw new BadRequestException("status must be one of " + Arrays.toString(Status.values()));
             }
         }
+
+        String ct = req.getContentType();
+        if (ct != null && ct.toLowerCase().startsWith("multipart/")) {
+            try {
+                dto.setPhoto(req.getPart("photo"));
+            } catch (Exception ignore) {
+
+            }
+        }
+
         return dto;
     }
-
 
     private static String trimToNull(String s) {
         if (s == null) return null;

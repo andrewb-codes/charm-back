@@ -37,6 +37,7 @@ public class ProfileToProfileGetDtoMapper implements Mapper<Profile, ProfileGetD
         }
         dto.setGender(profile.getGender());
         dto.setStatus(profile.getStatus());
+        dto.setPhoto(profile.getPhoto());
         return dto;
     }
 }
