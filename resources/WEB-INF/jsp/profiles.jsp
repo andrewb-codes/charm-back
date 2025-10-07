@@ -28,6 +28,7 @@
                             <form action="${pageContext.request.contextPath}/profile" method="post">
                                 <input type="hidden" name="_method" value="put"/>
                                 <input type="hidden" name="id" value="${profile.id}">
+                                <input type="hidden" name="from" value="list"/>
                                 <c:set var="s" value="${profile.status}"/>
                                 <select name="status">
                                     <option value="" disabled <c:if test="${empty s}">selected</c:if> hidden>
