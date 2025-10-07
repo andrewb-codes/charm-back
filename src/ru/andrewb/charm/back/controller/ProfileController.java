@@ -69,19 +69,27 @@ public class ProfileController extends HttpServlet {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
+            boolean fromList = "list".equals(req.getParameter("from"));
+            String redirectUrl = fromList
+                    ? req.getContextPath() + "/profile"
+                    : req.getContextPath() + "/profile?id=" + id;
+
+
             var vr = profileUpdateValidator.validate(dto);
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
-                Flash.putField(req, "name", dto.getName());
-                Flash.putField(req, "surname", dto.getSurname());
-                Flash.putField(req, "about", dto.getAbout());
-                resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
+                if (!fromList) {
+                    Flash.putField(req, "name", dto.getName());
+                    Flash.putField(req, "surname", dto.getSurname());
+                    Flash.putField(req, "about", dto.getAbout());
+                }
+                resp.sendRedirect(redirectUrl);
                 return;
             }
 
             service.update(id, dto);
             log.info("[{}] Profile updated: id={}", rid(req), id);
-            resp.sendRedirect(req.getContextPath() + "/profile?id=" + id);
+            resp.sendRedirect(redirectUrl);
 
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
