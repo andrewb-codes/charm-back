@@ -27,4 +27,5 @@ public class ProfileGetDto {
     private LocalDate birthDate;
     private Gender gender;
     private Status status;
+    private String photo;
 }

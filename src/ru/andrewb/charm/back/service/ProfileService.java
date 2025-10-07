@@ -2,6 +2,7 @@ package ru.andrewb.charm.back.service;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
@@ -15,6 +16,7 @@ import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.utils.Emails;
 import ru.andrewb.charm.back.utils.Passwords;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,8 @@ public class ProfileService {
     private static final ProfileService INSTANCE = new ProfileService();
 
     private final ProfileDao dao = ProfileDao.getInstance();
+
+    private final ContentService contentService = ContentService.getInstance();
 
     private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper = ProfileToProfileGetDtoMapper.getInstance();
 
@@ -64,6 +68,7 @@ public class ProfileService {
         return dao.findAll().stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 
+    @SneakyThrows
     public void update(long id, ProfileUpdateDto dto) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("profile not found"));
@@ -82,6 +87,13 @@ public class ProfileService {
         p.setId(id);
         if (newEmailNormalized != null) {
             p.setEmail(newEmailNormalized);
+        }
+
+        var part = dto.getPhoto();
+        if (part != null && part.getSize() > 0) {
+            String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+            contentService.upload("/profile/" + id + "/" + fileName, part.getInputStream());
+            p.setPhoto(fileName);
         }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)

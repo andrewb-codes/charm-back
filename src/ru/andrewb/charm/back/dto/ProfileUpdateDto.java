@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.dto;
 
+import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,10 +19,11 @@ public class ProfileUpdateDto {
     private String name;
     @ToString.Include
     private String surname;
-    
+
     private String password;
     private String about;
     private LocalDate birthDate;
     private Gender gender;
     private Status status;
+    private Part photo;
 }
