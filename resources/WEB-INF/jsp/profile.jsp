@@ -38,14 +38,14 @@
                     </c:if>
                     <tr>
                         <td><h3>${wordBundle.getWord("about")}</h3></td>
-                        <td><input type="text" name="about" required
+                        <td><input type="text" name="about"
                                    value="${(fields != null && fields['about'] != null) ? fields['about'] : profile.about}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("gender")}</h3></td>
                         <td>
                             <c:set var="g" value="${profile.gender}"/>
-                            <select name="gender" required>
+                            <select name="gender">
                                 <option value="" disabled <c:if test="${empty g}">selected</c:if>>
                                     ${wordBundle.getWord("select-gender")}
                                 </option>
