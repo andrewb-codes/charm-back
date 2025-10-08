@@ -7,11 +7,15 @@
 </head>
 <body>
 <%@ include file="header.jsp" %>
-<div>
-    <h3 style="color: red">${wordBundle.getWord("email-warning")}</h3>
-    <form method="post" action="${pageContext.request.contextPath}/email?id=${profile.id}">
+<c:set var="cpath" value="${pageContext.request.contextPath}"/>
+
+<div class="container">
+    <h3 class="center-text" style="color: red">${wordBundle.getWord("email-warning")}</h3>
+
+    <form method="post" action="${cpath}/email?id=${profile.id}">
         <input type="hidden" name="_method" value="put"/>
-        <table>
+
+        <table class="table--form">
             <tr>
                 <td><h3>${wordBundle.getWord("email")}</h3></td>
                 <td>
@@ -20,11 +24,35 @@
                 </td>
             </tr>
         </table>
-        <button type="submit">${wordBundle.getWord("save")}</button>
+
+        <div class="row center" style="gap: var(--space-3); margin-top: var(--space-2);">
+            <input type="image"
+                   class="icon-lg"
+                   src="${cpath}/content/app/img/floppy-disk.png"
+                   alt="${wordBundle.getWord('save')}"
+                   title="${wordBundle.getWord('save')}"/>
+        </div>
     </form>
 
+    <c:if test="${!empty profile.id}">
+        <form method="post"
+              action="${cpath}/registration"
+              style="margin-top: var(--space-2);">
+            <input type="hidden" name="_method" value="delete">
+            <input type="hidden" name="id" value="${profile.id}">
+            <div class="row center">
+                <input type="image"
+                       class="icon-lg"
+                       src="${cpath}/content/app/img/cross.png"
+                       alt="${wordBundle.getWord('delete')}"
+                       title="${wordBundle.getWord('delete')}"
+                       onclick="return confirm('Delete this profile?');"/>
+            </div>
+        </form>
+    </c:if>
+
     <c:if test="${not empty errors}">
-        <div style="color: red">
+        <div style="color: red; margin-top: var(--space-2);">
             <c:forEach var="error" items="${errors}">
                 <p>${wordBundle.getWord(error)}</p>
             </c:forEach>

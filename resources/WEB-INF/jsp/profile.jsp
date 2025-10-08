@@ -7,28 +7,27 @@
     </head>
     <body>
         <%@ include file="header.jsp" %>
-        <div>
-            <form method="post" action="${pageContext.request.contextPath}/profile" enctype="multipart/form-data">
+        <c:set var="cpath" value="${pageContext.request.contextPath}"/>
+
+        <div class="container">
+            <form method="post" action="${cpath}/profile" enctype="multipart/form-data">
                 <input type="hidden" name="_method" value="PUT">
                 <input type="hidden" name="id" value="${profile.id}">
-                <table>
-                    <tr>
-                        <td><h3>${wordBundle.getWord("email")}</h3></td>
-                        <td><a href="${pageContext.request.contextPath}/email?id=${profile.id}">${profile.email}</a></td>
-                    </tr>
+
+                <table class="table--form">
                     <tr>
                         <td><h3>${wordBundle.getWord("name")}</h3></td>
-                        <td><input type="text" name="name" required
+                        <td><input type="text" name="name"
                                    value="${(fields != null && fields['name'] != null) ? fields['name'] : profile.name}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("surname")}</h3></td>
-                        <td><input type="text" name="surname" required
+                        <td><input type="text" name="surname"
                                    value="${(fields != null && fields['surname'] != null) ? fields['surname'] : profile.surname}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("birthdate")}</h3></td>
-                        <td><input type="date" name="birthDate" required
+                        <td><input type="date" name="birthDate"
                                    value="${profile.birthDate}"></td>
                     </tr>
                     <c:if test="${!empty profile.birthDate}">
@@ -62,8 +61,7 @@
                         <td><h3>${wordBundle.getWord("photo")}</h3></td>
                         <td>
                             <c:if test="${not empty profile.photo}">
-                                <img src="${pageContext.request.contextPath}/content/profile/${profile.id}/${profile.photo}"
-                                     alt="photo" height="300">
+                                <img class="photo" src="${cpath}/content/profile/${profile.id}/${profile.photo}" alt="photo">
                             </c:if>
                             <br>
                             <input type="button" value="${wordBundle.getWord('update')}"
@@ -72,19 +70,23 @@
                         </td>
                     </tr>
                 </table>
-                <button type="submit">${wordBundle.getWord("save")}</button>
+
+                <!-- панель иконок: сохранить + перейти к e-mail -->
+                <div class="row center mt-2" style="gap: var(--space-3);">
+                    <input type="image" class="icon-lg"
+                           src="${cpath}/content/app/img/floppy-disk.png"
+                           alt="${wordBundle.getWord('save')}" title="${wordBundle.getWord('save')}"/>
+
+                    <a class="btn-reset"
+                       href="${cpath}/email?id=${profile.id}"
+                       title="${wordBundle.getWord('email')}" aria-label="${wordBundle.getWord('email')}">
+                        <img class="icon-lg" src="${cpath}/content/app/img/key.png" alt="@">
+                    </a>
+                </div>
             </form>
 
-            <c:if test="${!empty profile.id}">
-                <form method="post" action="${pageContext.request.contextPath}/registration">
-                    <input type="hidden" name="_method" value="delete">
-                    <input type="hidden" name="id" value="${profile.id}">
-                    <button type="submit">${wordBundle.getWord("delete")}</button>
-                </form>
-            </c:if>
-
             <c:if test="${not empty errors}">
-                <div style="color:red">
+                <div style="color:red; margin-top: var(--space-2);">
                     <c:forEach var="error" items="${errors}">
                         <p>${wordBundle.getWord(error)}</p>
                     </c:forEach>
