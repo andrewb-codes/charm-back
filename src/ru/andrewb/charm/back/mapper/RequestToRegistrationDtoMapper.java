@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 
+import static ru.andrewb.charm.back.utils.Strings.stripToNull;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToRegistrationDtoMapper implements Mapper<HttpServletRequest, RegistrationDto> {
 
@@ -21,10 +23,8 @@ public class RequestToRegistrationDtoMapper implements Mapper<HttpServletRequest
 
     @Override
     public RegistrationDto map(HttpServletRequest req, RegistrationDto dto) {
-        String email = req.getParameter("email");
-        dto.setEmail(email == null ? null : email.trim());
-        String pwd = req.getParameter("password");
-        dto.setPassword(pwd == null ? null : pwd.trim());
+        dto.setEmail(stripToNull(req.getParameter("email")));
+        dto.setPassword(stripToNull(req.getParameter("password")));
         return dto;
     }
 }
