@@ -14,6 +14,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Locale;
 
+import static ru.andrewb.charm.back.utils.Strings.stripToNull;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletRequest, ProfileUpdateDto> {
 
@@ -31,16 +33,12 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
     @SneakyThrows
     @Override
     public ProfileUpdateDto map(HttpServletRequest req, ProfileUpdateDto dto) {
-        String email = req.getParameter("email");
-        if (email != null && !email.isBlank()) {
-            dto.setEmail(email.trim());
-        }
-        dto.setName(trimToNull(req.getParameter("name")));
-        dto.setSurname(trimToNull(req.getParameter("surname")));
-        dto.setAbout(trimToNull(req.getParameter("about")));
+        dto.setName(stripToNull(req.getParameter("name")));
+        dto.setSurname(stripToNull(req.getParameter("surname")));
+        dto.setAbout(stripToNull(req.getParameter("about")));
 
-        String bd = req.getParameter("birthDate");
-        if (bd != null && !bd.isBlank()) {
+        String bd = stripToNull(req.getParameter("birthDate"));
+        if (bd != null) {
             try {
                 dto.setBirthDate(LocalDate.parse(bd));
             } catch (DateTimeParseException e) {
@@ -48,8 +46,8 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
             }
         }
 
-        String gp = req.getParameter("gender");
-        if (gp != null && !gp.isBlank()) {
+        String gp = stripToNull(req.getParameter("gender"));
+        if (gp != null) {
             try {
                 dto.setGender(Gender.valueOf(gp.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
@@ -57,8 +55,8 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
             }
         }
 
-        String st = req.getParameter("status");
-        if (st != null && !st.isBlank()) {
+        String st = stripToNull(req.getParameter("status"));
+        if (st != null) {
             try {
                 dto.setStatus(Status.valueOf(st.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
@@ -76,11 +74,5 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
         }
 
         return dto;
-    }
-
-    private static String trimToNull(String s) {
-        if (s == null) return null;
-        s = s.trim();
-        return s.isEmpty() ? null : s;
     }
 }

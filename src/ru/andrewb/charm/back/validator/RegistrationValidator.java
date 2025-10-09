@@ -3,11 +3,11 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.RegistrationDto;
+import ru.andrewb.charm.back.utils.Emails;
+import ru.andrewb.charm.back.utils.Passwords;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegistrationValidator implements Validator<RegistrationDto> {
-
-    private final EmailValidator emailValidator = EmailValidator.getInstance();
 
     private static final RegistrationValidator INSTANCE = new RegistrationValidator();
 
@@ -24,11 +24,17 @@ public class RegistrationValidator implements Validator<RegistrationDto> {
             return vr;
         }
 
-        var emailVr = emailValidator.validate(dto.getEmail());
-        vr.merge(emailVr);
+        String email = Emails.normalize(dto.getEmail());
+        boolean hasEmail = Emails.hasText(email);
+        if (!hasEmail) {
+            vr.addError("error.email.required");
+        } else if (!Emails.matchesFormat(email)) {
+            vr.addError("error.email.invalid");
+        }
 
-        String pwd = dto.getPassword() == null ? null : dto.getPassword().trim();
-        if (pwd == null || pwd.isBlank()) {
+        String pwd = Passwords.normalize(dto.getPassword());
+        boolean hasPwd = Passwords.hasText(pwd);
+        if (!hasPwd) {
             vr.addError("error.password.required");
         } else if (pwd.length() < 6) {
             vr.addError("error.password.short");

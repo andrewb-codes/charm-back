@@ -14,13 +14,10 @@ import java.time.LocalDate;
 @ToString(onlyExplicitlyIncluded = true)
 public class ProfileUpdateDto {
     @ToString.Include
-    private String email;
-    @ToString.Include
     private String name;
     @ToString.Include
     private String surname;
 
-    private String password;
     private String about;
     private LocalDate birthDate;
     private Gender gender;

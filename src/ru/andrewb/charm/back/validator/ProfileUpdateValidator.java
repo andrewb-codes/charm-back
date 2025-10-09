@@ -19,7 +19,6 @@ public class ProfileUpdateValidator implements Validator<ProfileUpdateDto> {
     @Override
     public ValidationResult validate(ProfileUpdateDto dto) {
         var vr = new ValidationResult();
-
         if (dto == null) {
             vr.addError("error.dto.required");
             return vr;
@@ -34,9 +33,10 @@ public class ProfileUpdateValidator implements Validator<ProfileUpdateDto> {
         if (dto.getAbout() != null && dto.getAbout().length() > 1000) {
             vr.addError("error.about.tooLong");
         }
+
         if (dto.getBirthDate() != null) {
+            LocalDate today = LocalDate.now();
             var bd = dto.getBirthDate();
-            var today = LocalDate.now();
 
             if (bd.isAfter(today)) {
                 vr.addError("error.birthdate.future");
@@ -50,6 +50,7 @@ public class ProfileUpdateValidator implements Validator<ProfileUpdateDto> {
                 vr.addError("error.birthdate.underage");
             }
         }
+
         return vr;
     }
 }

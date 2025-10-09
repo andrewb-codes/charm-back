@@ -71,20 +71,21 @@
                     </tr>
                 </table>
 
-                <!-- панель иконок: сохранить + перейти к e-mail -->
+                <!-- Icons panel (save, settings) -->
                 <div class="row center mt-2" style="gap: var(--space-3);">
                     <input type="image" class="icon-lg"
                            src="${cpath}/content/app/img/floppy-disk.png"
                            alt="${wordBundle.getWord('save')}" title="${wordBundle.getWord('save')}"/>
 
                     <a class="btn-reset"
-                       href="${cpath}/email?id=${profile.id}"
-                       title="${wordBundle.getWord('email')}" aria-label="${wordBundle.getWord('email')}">
+                       href="${cpath}/settings?id=${profile.id}"
+                       title="${wordBundle.getWord('settings')}" aria-label="${wordBundle.getWord('settings')}">
                         <img class="icon-lg" src="${cpath}/content/app/img/key.png" alt="@">
                     </a>
                 </div>
             </form>
 
+            <!-- Form errors -->
             <c:if test="${not empty errors}">
                 <div style="color:red; margin-top: var(--space-2);">
                     <c:forEach var="error" items="${errors}">

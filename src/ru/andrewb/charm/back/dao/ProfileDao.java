@@ -24,6 +24,7 @@ public class ProfileDao {
         Profile profile1 = new Profile();
         profile1.setId(1L);
         profile1.setEmail("ivanov@mail.ru");
+        profile1.setPassword("123");
         profile1.setName("Ivan");
         profile1.setSurname("Ivanov");
         profile1.setBirthDate(LocalDate.parse("2007-12-03"));
@@ -35,6 +36,7 @@ public class ProfileDao {
         Profile profile2 = new Profile();
         profile2.setId(2L);
         profile2.setEmail("sidorova@mail.ru");
+        profile2.setPassword("456");
         profile2.setName("Elena");
         profile2.setSurname("Sidorova");
         profile2.setBirthDate(LocalDate.parse("2004-02-03"));
