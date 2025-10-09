@@ -18,7 +18,7 @@ public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
     public ValidationResult validate(PasswordChangeDto dto) {
         var vr = new ValidationResult();
         if (dto == null) {
-            vr.addError("error.dto.required");
+            vr.addError("error.password.dto-required");
             return vr;
         }
 
@@ -42,10 +42,6 @@ public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
             vr.addError("error.password.confirm-required");
         } else if (!confirmPwd.equals(newPwd)) {
             vr.addError("error.password.mismatch");
-        }
-
-        if (hasNewPwd && newPwd.equals(currPwd)) {
-            vr.addError("error.password.same-as-current");
         }
 
         return vr;

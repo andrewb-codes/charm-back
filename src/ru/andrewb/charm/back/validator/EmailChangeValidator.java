@@ -19,7 +19,7 @@ public class EmailChangeValidator implements Validator<EmailChangeDto> {
     public ValidationResult validate(EmailChangeDto dto) {
         var vr = new ValidationResult();
         if (dto == null) {
-            vr.addError("error.dto.required");
+            vr.addError("error.email.dto-required");
             return vr;
         }
 
