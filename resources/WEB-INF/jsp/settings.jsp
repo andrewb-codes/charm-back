@@ -41,9 +41,9 @@
 
         <!-- E-mail errors -->
         <c:if test="${not empty errors}">
-            <div style="warning mt-1">
+            <div class="warning mt-1">
                 <c:forEach var="error" items="${errors}">
-                    <c:if test="${fn:startsWith(error, 'error.email.') || fn:startsWith(error, 'error.dto.')}">
+                    <c:if test="${fn:startsWith(error, 'error.email.')}">
                         <p>${wordBundle.getWord(error)}</p>
                     </c:if>
                 </c:forEach>
