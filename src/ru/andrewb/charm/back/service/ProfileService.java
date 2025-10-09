@@ -4,13 +4,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dao.ProfileDao;
-import ru.andrewb.charm.back.dto.ProfileGetDto;
-import ru.andrewb.charm.back.dto.ProfileUpdateDto;
-import ru.andrewb.charm.back.dto.RegistrationDto;
+import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.mapper.RegistrationDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.utils.Emails;
@@ -73,21 +72,7 @@ public class ProfileService {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("profile not found"));
 
-        String newEmailNormalized = null;
-        if (dto.getEmail() != null) {
-            newEmailNormalized = Emails.requireValidOrThrow(dto.getEmail());
-
-            if (!newEmailNormalized.equalsIgnoreCase(existing.getEmail())
-                    && dao.existsEmail(newEmailNormalized, id)) {
-                throw new DuplicateEmailException("email already exists");
-            }
-        }
-
         Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
-        p.setId(id);
-        if (newEmailNormalized != null) {
-            p.setEmail(newEmailNormalized);
-        }
 
         var part = dto.getPhoto();
         if (part != null && part.getSize() > 0) {
@@ -97,6 +82,45 @@ public class ProfileService {
         }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
+        dao.update(p);
+    }
+
+    public void changeEmail(long id, EmailChangeDto dto) {
+        var p = dao.findById(id)
+                .orElseThrow(() -> new NotFoundException("profile not found"));
+
+        String currPwd = Passwords.normalize(dto.getCurrentPassword());
+        if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
+            throw new BadRequestException("invalid password");
+        }
+
+        String newEmail = Emails.requireValidOrThrow(dto.getNewEmail());
+        if (!newEmail.equalsIgnoreCase(p.getEmail())) {
+            throw new BadRequestException("same as current email");
+        }
+        if (dao.existsEmail(newEmail, id)) {
+            throw new DuplicateEmailException("email already exists");
+        }
+
+        p.setEmail(newEmail);
+        dao.update(p);
+    }
+
+    public void changePassword(long id, PasswordChangeDto dto) {
+        var p = dao.findById(id)
+                .orElseThrow(() -> new NotFoundException("profile not found"));
+
+        String currPwd = Passwords.normalize(dto.getCurrentPassword());
+        if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
+            throw new BadRequestException("invalid password");
+        }
+
+        String newPwd = Passwords.requireValidOrThrow(dto.getNewPassword(), 6);
+        if (newPwd.equals(currPwd)) {
+            throw new BadRequestException("same as current password");
+        }
+
+        p.setPassword(newPwd);
         dao.update(p);
     }
 
