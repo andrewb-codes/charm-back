@@ -7,9 +7,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
-import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.utils.RequestParams;
@@ -95,8 +95,35 @@ public class ProfileController extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (DuplicateEmailException e) {
-            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        long id;
+        try {
+            id = RequestParams.requirePositiveLong(req, "id");
+        } catch (BadRequestException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            return;
+        }
+
+        boolean deleted = service.delete(id);
+        var sessionUser = (UserDetailsDto) req.getSession().getAttribute("userDetails");
+
+        if (deleted) {
+            log.info("[{}] Profile deleted: id={}", rid(req), id);
+
+            if (sessionUser != null && sessionUser.getId() != null && sessionUser.getId().equals(id)) {
+                req.getSession().invalidate();
+                resp.sendRedirect(req.getContextPath() + "/login");
+                return;
+            }
+        } else {
+            log.warn("[{}] Delete ignored (not found): id={}", rid(req), id);
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/profile");
+
     }
 }

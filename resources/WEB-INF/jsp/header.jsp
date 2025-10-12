@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="cpath" value="${pageContext.request.contextPath}"/>
 
 <div class="container">
@@ -16,6 +17,23 @@
                 <img src="${cpath}/content/app/img/en.png" alt="">
             </button>
         </form>
+
+        <c:choose>
+            <c:when test="${not empty sessionScope.userDetails}">
+                <form method="post" action="${cpath}/logout">
+                    <button class="btn-reset" type="submit"
+                            aria-label="${wordBundle.getWord('logout')}"
+                            onclick="return confirm('Logout?');">
+                        <img src="${cpath}/content/app/img/key.png" alt="">
+                    </button>
+                </form>
+            </c:when>
+            <c:otherwise>
+                <a href="${cpath}/login" aria-label="${wordBundle.getWord('login')}">
+                    <img src="${cpath}/content/app/img/key.png" alt="">
+                </a>
+            </c:otherwise>
+        </c:choose>
     </header>
     <hr class="divider">
 </div>

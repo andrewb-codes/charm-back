@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
+import ru.andrewb.charm.back.mapper.ProfileToUserDetailsDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.mapper.RegistrationDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
@@ -33,6 +34,8 @@ public class ProfileService {
     private final RegistrationDtoToProfileMapper registrationDtoToProfileMapper = RegistrationDtoToProfileMapper.getInstance();
 
     private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper = ProfileUpdateDtoToProfileMapper.getInstance();
+
+    private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper = ProfileToUserDetailsDtoMapper.getInstance();
 
     public static ProfileService getInstance() {
         return INSTANCE;
@@ -85,6 +88,11 @@ public class ProfileService {
         dao.update(p);
     }
 
+    public boolean delete(Long id) {
+        if (id == null) return false;
+        return dao.delete(id);
+    }
+
     public void changeEmail(long id, EmailChangeDto dto) {
         var p = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("profile not found"));
@@ -95,7 +103,7 @@ public class ProfileService {
         }
 
         String newEmail = Emails.requireValidOrThrow(dto.getNewEmail());
-        if (!newEmail.equalsIgnoreCase(p.getEmail())) {
+        if (newEmail.equalsIgnoreCase(p.getEmail())) {
             throw new BadRequestException("same as current email");
         }
         if (dao.existsEmail(newEmail, id)) {
@@ -124,8 +132,16 @@ public class ProfileService {
         dao.update(p);
     }
 
-    public boolean delete(Long id) {
-        if (id == null) return false;
-        return dao.delete(id);
+    public UserDetailsDto login(LoginDto dto) {
+        String email = Emails.requireValidOrThrow(dto.getEmail());
+        var existing = dao.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("profile not found"));
+
+        String pwd = Passwords.normalize(dto.getPassword());
+        if (!existing.getPassword().equals(pwd)) {
+            throw new BadRequestException("invalid password");
+        }
+
+        return profileToUserDetailsDtoMapper.map(existing);
     }
 }
