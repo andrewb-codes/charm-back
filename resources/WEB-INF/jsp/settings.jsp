@@ -94,7 +94,7 @@
 
     <c:if test="${!empty profile.id}">
         <form method="post"
-              action="${cpath}/registration"
+              action="${cpath}/profile"
               style="margin-top: var(--space-2);">
             <input type="hidden" name="_method" value="delete">
             <input type="hidden" name="id" value="${profile.id}">

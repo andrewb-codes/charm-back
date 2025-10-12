@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RegistrationDto {
+public class LoginDto {
     @ToString.Include
     String email;
 

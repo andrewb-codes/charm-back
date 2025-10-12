@@ -2,6 +2,7 @@ package ru.andrewb.charm.back.dao;
 
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ public class ProfileDao {
         profile1.setAbout("I am QA");
         profile1.setGender(Gender.MALE);
         profile1.setStatus(Status.ACTIVE);
+        profile1.setRole(Role.ADMIN);
         this.storage.put(1L, profile1);
 
         Profile profile2 = new Profile();
@@ -43,6 +45,7 @@ public class ProfileDao {
         profile2.setAbout("I am Java Dev");
         profile2.setGender(Gender.FEMALE);
         profile2.setStatus(Status.ACTIVE);
+        profile2.setRole(Role.USER);
         this.storage.put(2L, profile2);
 
         this.idStorage = new AtomicLong(3L);
@@ -84,5 +87,13 @@ public class ProfileDao {
                         && p.getEmail().equalsIgnoreCase(probe)
                         && (excludeId == null || !p.getId().equals(excludeId))
         );
+    }
+
+    public Optional<Profile> findByEmail(String email) {
+        if (email == null) return Optional.empty();
+        String probe = email.trim();
+        return storage.values().stream()
+                .filter(p -> p.getEmail() != null && p.getEmail().equalsIgnoreCase(probe))
+                .findFirst();
     }
 }

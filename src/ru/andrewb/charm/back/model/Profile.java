@@ -1,29 +1,33 @@
 package ru.andrewb.charm.back.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
 @Data
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Profile {
     @EqualsAndHashCode.Include
-    private Long id;
+    Long id;
 
     @ToString.Include
-    private String email;
+    String email;
     @ToString.Include
-    private String name;
+    String name;
     @ToString.Include
-    private String surname;
+    String surname;
 
-    private String password;
-    private String about;
-    private LocalDate birthDate;
-    private Gender gender;
-    private Status status;
-    private String photo;
+    String password;
+    String about;
+    LocalDate birthDate;
+    Gender gender;
+    Status status;
+    String photo;
+    Role role;
 }

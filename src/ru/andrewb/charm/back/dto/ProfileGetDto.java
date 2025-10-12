@@ -1,9 +1,12 @@
 package ru.andrewb.charm.back.dto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 import ru.andrewb.charm.back.model.Gender;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 import java.time.LocalDate;
@@ -11,21 +14,23 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProfileGetDto {
     @ToString.Include
-    private Long id;
+    Long id;
     @ToString.Include
-    private String email;
+    String email;
     @ToString.Include
-    private String name;
+    String name;
     @ToString.Include
-    private String surname;
+    String surname;
     @ToString.Include
-    private Integer age;
+    Integer age;
 
-    private String about;
-    private LocalDate birthDate;
-    private Gender gender;
-    private Status status;
-    private String photo;
+    String about;
+    LocalDate birthDate;
+    Gender gender;
+    Status status;
+    String photo;
+    Role role;
 }

@@ -1,9 +1,11 @@
 package ru.andrewb.charm.back.dto;
 
 import jakarta.servlet.http.Part;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
 
@@ -12,15 +14,16 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProfileUpdateDto {
     @ToString.Include
-    private String name;
+    String name;
     @ToString.Include
-    private String surname;
+    String surname;
 
-    private String about;
-    private LocalDate birthDate;
-    private Gender gender;
-    private Status status;
-    private Part photo;
+    String about;
+    LocalDate birthDate;
+    Gender gender;
+    Status status;
+    Part photo;
 }

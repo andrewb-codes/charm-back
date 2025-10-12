@@ -1,12 +1,15 @@
 package ru.andrewb.charm.back.dto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class PasswordChangeDto {
-    private String currentPassword;
-    private String newPassword;
-    private String confirmPassword;
+    String currentPassword;
+    String newPassword;
+    String confirmPassword;
 }
