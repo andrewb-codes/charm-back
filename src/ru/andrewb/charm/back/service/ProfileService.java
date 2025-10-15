@@ -78,9 +78,13 @@ public class ProfileService {
         Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
 
         var part = dto.getPhoto();
+        var old = existing.getPhoto();
         if (part != null && part.getSize() > 0) {
+            if (old != null && !old.isBlank()) {
+                contentService.delete("profile", String.valueOf(id), old);
+            }
             String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-            contentService.upload("/profile/" + id + "/" + fileName, part.getInputStream());
+            contentService.upload(part.getInputStream(), "profile", String.valueOf(id), fileName);
             p.setPhoto(fileName);
         }
 
@@ -90,6 +94,7 @@ public class ProfileService {
 
     public boolean delete(Long id) {
         if (id == null) return false;
+        contentService.deleteTree("profile", String.valueOf(id));
         return dao.delete(id);
     }
 

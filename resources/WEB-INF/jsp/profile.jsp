@@ -82,6 +82,12 @@
                        title="${wordBundle.getWord('settings')}" aria-label="${wordBundle.getWord('settings')}">
                         <img class="icon-sm" src="${cpath}/content/app/img/settings.png" alt="@">
                     </a>
+
+                    <a class="btn-reset"
+                       href="${cpath}/profile/pdf?id=${profile.id}"
+                       title="${wordBundle.getWord('pdf')}" aria-label="${wordBundle.getWord('pdf')}">
+                        <img class="icon-sm" src="${cpath}/content/app/img/pdf-file.png" alt="pdf">
+                    </a>
                 </div>
             </form>
 

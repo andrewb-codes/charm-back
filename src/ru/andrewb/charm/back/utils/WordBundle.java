@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.service;
+package ru.andrewb.charm.back.utils;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
