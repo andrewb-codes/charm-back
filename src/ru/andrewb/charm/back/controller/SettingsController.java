@@ -13,7 +13,10 @@ import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-@WebServlet("/settings")
+import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+
+@WebServlet(SETTINGS_URL)
 public class SettingsController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -35,8 +38,8 @@ public class SettingsController extends HttpServlet {
                 }
             }
 
-            req.getRequestDispatcher("/WEB-INF/jsp/settings.jsp").forward(req, resp);
-            
+            req.getRequestDispatcher(getJspPath("/settings")).forward(req, resp);
+
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (NotFoundException e) {

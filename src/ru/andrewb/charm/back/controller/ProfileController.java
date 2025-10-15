@@ -1,5 +1,8 @@
 package ru.andrewb.charm.back.controller;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -8,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
+import ru.andrewb.charm.back.mapper.ProfileGetDtoToPdfMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
@@ -17,10 +21,13 @@ import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
+import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
 
-@WebServlet("/profile")
+@WebServlet(PROFILE_URL + "/*")
 @Slf4j
 @MultipartConfig
 public class ProfileController extends HttpServlet {
@@ -28,6 +35,7 @@ public class ProfileController extends HttpServlet {
     private final ProfileService service = ProfileService.getInstance();
     private final ProfileUpdateValidator profileUpdateValidator = ProfileUpdateValidator.getInstance();
     private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
+    private final ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper = ProfileGetDtoToPdfMapper.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -35,7 +43,7 @@ public class ProfileController extends HttpServlet {
         if (idParam == null || idParam.isBlank()) {
             var profiles = service.findAll();
             req.setAttribute("profiles", profiles);
-            req.getRequestDispatcher("/WEB-INF/jsp/profiles.jsp").forward(req, resp);
+            req.getRequestDispatcher(getJspPath("/profiles")).forward(req, resp);
             return;
         }
 
@@ -43,6 +51,23 @@ public class ProfileController extends HttpServlet {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = service.findByIdOrThrow(id);
             req.setAttribute("profile", dto);
+
+            String pathInfo = req.getPathInfo();
+            if ("/pdf".equals(pathInfo)) {
+                resp.setHeader("Content-Disposition", "attachment; filename=\"profile-" + id + ".pdf\"");
+                resp.setContentType("application/pdf");
+
+                try (OutputStream out = resp.getOutputStream()) {
+                    Document pdf = new Document();
+                    PdfWriter.getInstance(pdf, out);
+                    profileGetDtoToPdfMapper.map(dto, pdf);
+                } catch (DocumentException e) {
+                    throw new IOException(e);
+                }
+
+                log.info("[{}] PDF downloaded: id={}", rid(req), id);
+                return;
+            }
 
             var flash = Flash.consume(req);
             if (flash != null) {
@@ -54,7 +79,7 @@ public class ProfileController extends HttpServlet {
                 }
             }
 
-            req.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(req, resp);
+            req.getRequestDispatcher(getJspPath("/profile")).forward(req, resp);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

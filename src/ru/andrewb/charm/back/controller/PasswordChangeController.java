@@ -17,8 +17,9 @@ import ru.andrewb.charm.back.web.flash.Flash;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
+import static ru.andrewb.charm.back.utils.UrlUtils.PASSWORD_URL;
 
-@WebServlet("/password")
+@WebServlet(PASSWORD_URL)
 @Slf4j
 public class PasswordChangeController extends HttpServlet {
 

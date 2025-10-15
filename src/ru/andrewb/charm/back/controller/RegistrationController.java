@@ -16,8 +16,10 @@ import ru.andrewb.charm.back.web.flash.Flash;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
+import static ru.andrewb.charm.back.utils.UrlUtils.REGISTRATION_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
 
-@WebServlet("/registration")
+@WebServlet(REGISTRATION_URL)
 @Slf4j
 public class RegistrationController extends HttpServlet {
 
@@ -37,7 +39,7 @@ public class RegistrationController extends HttpServlet {
             }
         }
 
-        req.getRequestDispatcher("/WEB-INF/jsp/registration.jsp").forward(req, resp);
+        req.getRequestDispatcher(getJspPath("/registration")).forward(req, resp);
     }
 
     @Override

@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import ru.andrewb.charm.back.service.WordBundle;
+import ru.andrewb.charm.back.utils.WordBundle;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,10 +22,10 @@ public class LanguageFilter implements Filter {
         Cookie[] cookies = req.getCookies() == null ? new Cookie[]{} : req.getCookies();
 
         String lang = Arrays.stream(cookies)
-                        .filter(cookie -> "lang".equals(cookie.getName()))
-                                .map(Cookie::getValue)
-                                        .findFirst()
-                                                .orElse("en");
+                .filter(cookie -> "lang".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse("en");
 
         WordBundle wordBundle = new WordBundle(lang);
 

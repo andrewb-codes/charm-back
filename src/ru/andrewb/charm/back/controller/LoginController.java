@@ -17,8 +17,10 @@ import ru.andrewb.charm.back.web.flash.Flash;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
+import static ru.andrewb.charm.back.utils.UrlUtils.LOGIN_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
 
-@WebServlet("/login")
+@WebServlet(LOGIN_URL)
 @Slf4j
 public class LoginController extends HttpServlet {
 
@@ -44,7 +46,7 @@ public class LoginController extends HttpServlet {
             }
         }
 
-        req.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
+        req.getRequestDispatcher(getJspPath("/login")).forward(req, resp);
     }
 
     @Override

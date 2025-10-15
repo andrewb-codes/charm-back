@@ -10,8 +10,9 @@ import ru.andrewb.charm.back.dto.UserDetailsDto;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
+import static ru.andrewb.charm.back.utils.UrlUtils.LOGOUT_URL;
 
-@WebServlet("/logout")
+@WebServlet(LOGOUT_URL)
 @Slf4j
 public class LogoutController extends HttpServlet {
 
