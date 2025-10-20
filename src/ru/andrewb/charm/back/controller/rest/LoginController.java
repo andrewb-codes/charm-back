@@ -1,13 +1,13 @@
 package ru.andrewb.charm.back.controller.rest;
 
 import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.LoginDto;
+import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.validator.LoginValidator;
@@ -24,12 +24,12 @@ public class LoginController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
     private final LoginValidator loginValidator = LoginValidator.getInstance();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try (BufferedReader reader = req.getReader()) {
-            var dto = objectMapper.readValue(reader, LoginDto.class);
+            var dto = jsonMapper.readValue(reader, LoginDto.class);
 
             var vr = loginValidator.validate(dto);
             if (vr.isNotValid()) {

@@ -7,6 +7,7 @@ public class UrlUtils {
 
     public static final String INDEX_URL = "/";
     public static final String PROFILE_URL = "/profile";
+    public static final String PROFILES_URL = "/profiles";
     public static final String SETTINGS_URL = "/settings";
     public static final String EMAIL_URL = "/email";
     public static final String PASSWORD_URL = "/password";
@@ -18,6 +19,7 @@ public class UrlUtils {
     public static final String REST_URL = "/api/v1";
     public static final String LOGIN_REST_URL = REST_URL + LOGIN_URL;
     public static final String PROFILE_REST_URL = REST_URL + PROFILE_URL;
+    public static final String PROFILES_REST_URL = REST_URL + PROFILES_URL;
 
     public static String getJspPath(String url) {
         return "/WEB-INF/jsp" + url + ".jsp";

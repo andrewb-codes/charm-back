@@ -1,7 +1,6 @@
 package ru.andrewb.charm.back.controller.rest;
 
 import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
+import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
@@ -25,9 +25,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_REST_URL;
 import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_REST_URL;
 
-@WebServlet(PROFILE_REST_URL)
+@WebServlet(urlPatterns = {PROFILE_REST_URL, PROFILES_REST_URL})
 @Slf4j
 @MultipartConfig
 public class ProfileController extends HttpServlet {
@@ -37,7 +38,7 @@ public class ProfileController extends HttpServlet {
     private final ProfileUpdateValidator profileUpdateValidator = ProfileUpdateValidator.getInstance();
     private final RegistrationValidator registrationValidator = RegistrationValidator.getInstance();
     private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -48,13 +49,13 @@ public class ProfileController extends HttpServlet {
                 long id = RequestParams.requirePositiveLong(req, "id");
                 var dtoOpt = service.findById(id);
                 if (dtoOpt.isPresent()) {
-                    objectMapper.writeValue(w, dtoOpt.get());
+                    jsonMapper.writeValue(w, dtoOpt.get());
                 } else {
                     req.setAttribute("errors", List.of("error.profile.not-found"));
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
             } else {
-                objectMapper.writeValue(w, service.findAll());
+                jsonMapper.writeValue(w, service.findAll());
             }
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
@@ -68,7 +69,7 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try (BufferedReader r = req.getReader()) {
-            var dto = objectMapper.readValue(r, RegistrationDto.class);
+            var dto = jsonMapper.readValue(r, RegistrationDto.class);
 
             var vr = registrationValidator.validate(dto);
             if (vr.isNotValid()) {

@@ -1,11 +1,11 @@
 package ru.andrewb.charm.back.controller.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.utils.WordBundle;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ import static ru.andrewb.charm.back.security.SecurityRules.isRest;
 @Slf4j
 public class ErrorFilter implements Filter {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -68,7 +68,7 @@ public class ErrorFilter implements Filter {
 
             if (code != null) resp.setStatus(code);
             resp.setContentType("application/json;charset=UTF-8");
-            objectMapper.writeValue(resp.getWriter(), body);
+            jsonMapper.writeValue(resp.getWriter(), body);
             return;
         }
 
