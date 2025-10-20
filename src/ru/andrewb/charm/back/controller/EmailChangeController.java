@@ -1,6 +1,5 @@
 package ru.andrewb.charm.back.controller;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +18,7 @@ import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
 import static ru.andrewb.charm.back.utils.UrlUtils.EMAIL_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
 
 @WebServlet(EMAIL_URL)
 @Slf4j
@@ -29,7 +29,7 @@ public class EmailChangeController extends HttpServlet {
     private final RequestToEmailChangeDtoMapper emailChangeDtoMapper = RequestToEmailChangeDtoMapper.getInstance();
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = emailChangeDtoMapper.map(req);
@@ -38,13 +38,13 @@ public class EmailChangeController extends HttpServlet {
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
                 Flash.putField(req, "email", dto.getNewEmail());
-                resp.sendRedirect(req.getContextPath() + "/settings?id=" + id);
+                resp.sendRedirect(req.getContextPath() + SETTINGS_URL + "?id=" + id);
                 return;
             }
 
             service.changeEmail(id, dto);
             log.info("[{}] Email changed: id={}", rid(req), id);
-            resp.sendRedirect(req.getContextPath() + "/settings?id=" + id);
+            resp.sendRedirect(req.getContextPath() + SETTINGS_URL + "?id=" + id);
 
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());

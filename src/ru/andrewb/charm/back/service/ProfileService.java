@@ -26,15 +26,11 @@ public class ProfileService {
     private static final ProfileService INSTANCE = new ProfileService();
 
     private final ProfileDao dao = ProfileDao.getInstance();
-
     private final ContentService contentService = ContentService.getInstance();
 
     private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper = ProfileToProfileGetDtoMapper.getInstance();
-
     private final RegistrationDtoToProfileMapper registrationDtoToProfileMapper = RegistrationDtoToProfileMapper.getInstance();
-
     private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper = ProfileUpdateDtoToProfileMapper.getInstance();
-
     private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper = ProfileToUserDetailsDtoMapper.getInstance();
 
     public static ProfileService getInstance() {
@@ -44,7 +40,7 @@ public class ProfileService {
     public Long save(RegistrationDto dto) {
         String email = Emails.requireValidOrThrow(dto.getEmail());
         if (dao.existsEmail(email, null)) {
-            throw new DuplicateEmailException("email already exists");
+            throw new DuplicateEmailException("error.email.exists");
         }
 
         String pwd = Passwords.requireValidOrThrow(dto.getPassword(), 6);
@@ -63,7 +59,7 @@ public class ProfileService {
     public ProfileGetDto findByIdOrThrow(long id) {
         return dao.findById(id)
                 .map(profileToProfileGetDtoMapper::map)
-                .orElseThrow(() -> new NotFoundException("profile not found"));
+                .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
     }
 
     public List<ProfileGetDto> findAll() {
@@ -73,7 +69,7 @@ public class ProfileService {
     @SneakyThrows
     public void update(long id, ProfileUpdateDto dto) {
         var existing = dao.findById(id)
-                .orElseThrow(() -> new NotFoundException("profile not found"));
+                .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
         Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
 
@@ -100,19 +96,19 @@ public class ProfileService {
 
     public void changeEmail(long id, EmailChangeDto dto) {
         var p = dao.findById(id)
-                .orElseThrow(() -> new NotFoundException("profile not found"));
+                .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
         String currPwd = Passwords.normalize(dto.getCurrentPassword());
         if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
-            throw new BadRequestException("invalid password");
+            throw new BadRequestException("error.password.invalid-current");
         }
 
         String newEmail = Emails.requireValidOrThrow(dto.getNewEmail());
         if (newEmail.equalsIgnoreCase(p.getEmail())) {
-            throw new BadRequestException("same as current email");
+            throw new BadRequestException("error.email.same-as-current");
         }
         if (dao.existsEmail(newEmail, id)) {
-            throw new DuplicateEmailException("email already exists");
+            throw new DuplicateEmailException("error.email.exists");
         }
 
         p.setEmail(newEmail);
@@ -121,16 +117,16 @@ public class ProfileService {
 
     public void changePassword(long id, PasswordChangeDto dto) {
         var p = dao.findById(id)
-                .orElseThrow(() -> new NotFoundException("profile not found"));
+                .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
         String currPwd = Passwords.normalize(dto.getCurrentPassword());
         if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
-            throw new BadRequestException("invalid password");
+            throw new BadRequestException("error.password.invalid-current");
         }
 
         String newPwd = Passwords.requireValidOrThrow(dto.getNewPassword(), 6);
         if (newPwd.equals(currPwd)) {
-            throw new BadRequestException("same as current password");
+            throw new BadRequestException("error.password.same-as-current");
         }
 
         p.setPassword(newPwd);
@@ -140,11 +136,11 @@ public class ProfileService {
     public UserDetailsDto login(LoginDto dto) {
         String email = Emails.requireValidOrThrow(dto.getEmail());
         var existing = dao.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("profile not found"));
+                .orElseThrow(() -> new BadRequestException("error.login.bad-credentials"));
 
         String pwd = Passwords.normalize(dto.getPassword());
         if (!existing.getPassword().equals(pwd)) {
-            throw new BadRequestException("invalid password");
+            throw new BadRequestException("error.login.bad-credentials");
         }
 
         return profileToUserDetailsDtoMapper.map(existing);

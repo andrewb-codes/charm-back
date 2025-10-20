@@ -1,6 +1,5 @@
 package ru.andrewb.charm.back.controller;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +19,8 @@ public class ContentController extends HttpServlet {
     public static final ContentService contentService = ContentService.getInstance();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String prefix = req.getContextPath() + "/content";
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String prefix = req.getContextPath() + CONTENT_URL;
         String contentPath = req.getRequestURI().substring(prefix.length());
 
         String fileName = contentPath.substring(contentPath.lastIndexOf('/') + 1);

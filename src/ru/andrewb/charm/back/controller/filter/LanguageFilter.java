@@ -11,7 +11,7 @@ import ru.andrewb.charm.back.utils.WordBundle;
 import java.io.IOException;
 import java.util.Arrays;
 
-@WebFilter("/*")
+@WebFilter(value = "/*", dispatcherTypes = {DispatcherType.REQUEST, DispatcherType.ERROR})
 public class LanguageFilter implements Filter {
 
     @Override

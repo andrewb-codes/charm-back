@@ -24,8 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.UrlUtils.*;
 
 @WebServlet(PROFILE_URL + "/*")
 @Slf4j
@@ -89,15 +88,15 @@ public class ProfileController extends HttpServlet {
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
             boolean fromList = "list".equals(req.getParameter("from"));
             String redirectUrl = fromList
-                    ? req.getContextPath() + "/profile"
-                    : req.getContextPath() + "/profile?id=" + id;
+                    ? req.getContextPath() + PROFILE_URL
+                    : req.getContextPath() + PROFILE_URL + "?id=" + id;
 
 
             var vr = profileUpdateValidator.validate(dto);
@@ -124,7 +123,7 @@ public class ProfileController extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         long id;
         try {
             id = RequestParams.requirePositiveLong(req, "id");
@@ -141,14 +140,14 @@ public class ProfileController extends HttpServlet {
 
             if (sessionUser != null && sessionUser.getId() != null && sessionUser.getId().equals(id)) {
                 req.getSession().invalidate();
-                resp.sendRedirect(req.getContextPath() + "/login");
+                resp.sendRedirect(req.getContextPath() + LOGIN_URL);
                 return;
             }
         } else {
             log.warn("[{}] Delete ignored (not found): id={}", rid(req), id);
         }
 
-        resp.sendRedirect(req.getContextPath() + "/profile");
+        resp.sendRedirect(req.getContextPath() + PROFILE_URL);
 
     }
 }
