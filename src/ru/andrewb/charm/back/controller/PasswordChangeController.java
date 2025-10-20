@@ -1,6 +1,5 @@
 package ru.andrewb.charm.back.controller;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +17,7 @@ import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
 import static ru.andrewb.charm.back.utils.UrlUtils.PASSWORD_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
 
 @WebServlet(PASSWORD_URL)
 @Slf4j
@@ -28,7 +28,7 @@ public class PasswordChangeController extends HttpServlet {
     private final RequestToPasswordChangeDtoMapper passwordChangeDtoMapper = RequestToPasswordChangeDtoMapper.getInstance();
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = passwordChangeDtoMapper.map(req);
@@ -37,13 +37,13 @@ public class PasswordChangeController extends HttpServlet {
 
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
-                resp.sendRedirect(req.getContextPath() + "/settings?id=" + id);
+                resp.sendRedirect(req.getContextPath() + SETTINGS_URL + "?id=" + id);
                 return;
             }
 
             service.changePassword(id, dto);
             log.info("[{}] Password changed: id={}", rid(req), id);
-            resp.sendRedirect(req.getContextPath() + "/settings?id=" + id);
+            resp.sendRedirect(req.getContextPath() + SETTINGS_URL + "?id=" + id);
 
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());

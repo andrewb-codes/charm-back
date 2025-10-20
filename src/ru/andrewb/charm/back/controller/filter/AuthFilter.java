@@ -9,14 +9,14 @@ import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.model.Role;
 
 import java.io.IOException;
-import java.util.Set;
+
+import static ru.andrewb.charm.back.security.SecurityRules.*;
+import static ru.andrewb.charm.back.utils.UrlUtils.LOGIN_URL;
+import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_URL;
+
 
 @WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
 public class AuthFilter implements Filter {
-
-    private static final Set<String> PUBLIC = Set.of(
-            "/", "/login", "/registration", "/lang", "/content", "/logout"
-    );
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -27,34 +27,66 @@ public class AuthFilter implements Filter {
         String path = req.getServletPath();
         if (path == null || path.isBlank()) path = "/";
 
-        if (PUBLIC.contains(path)) {
-            filterChain.doFilter(req, resp);
-            return;
-        }
+        boolean rest = isRest(path);
+        UserDetailsDto user = (UserDetailsDto) req.getSession().getAttribute("userDetails");
+        boolean authenticated = (user != null);
+        boolean isAdmin = authenticated && user.getRole() == Role.ADMIN;
 
-        var userDetails = (UserDetailsDto) req.getSession().getAttribute("userDetails");
-        if (userDetails == null) {
-            resp.sendRedirect(ctx + "/login");
-            return;
-        }
 
-        boolean isAdmin = userDetails.getRole() == Role.ADMIN;
-        String requestId = req.getParameter("id");
-
-        if ("/profile".equals(path) && (requestId == null || requestId.isBlank())) {
-            if (isAdmin) {
+        // === REST ===
+        if (rest) {
+            // Public rest
+            if (PUBLIC_REST.contains(path)) {
                 filterChain.doFilter(req, resp);
-            } else {
-                resp.sendRedirect(ctx + "/profile?id=" + userDetails.getId());
+                return;
             }
+            // Other rest (only for admin)
+            if (!authenticated) {
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+            if (!isAdmin) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+            filterChain.doFilter(req, resp);
             return;
         }
 
-        boolean isSelf = requestId != null && requestId.equals(String.valueOf(userDetails.getId()));
-        if (isAdmin || isSelf) {
+        // === UI ===
+        if (PUBLIC_UI.contains(path)) {
             filterChain.doFilter(req, resp);
-        } else {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
+
+        if (!authenticated) {
+            resp.sendRedirect(ctx + LOGIN_URL);
+            return;
+        }
+
+        // "/profile" (no "id" param)
+        String requestId = req.getParameter("id");
+        if (PROFILE_URL.equals(path)) {
+            if (requestId == null || requestId.isBlank()) {
+                if (isAdmin) {
+                    filterChain.doFilter(req, resp); // Admin can go to profiles list
+                } else {
+                    // Redirect user to his profile
+                    resp.sendRedirect(ctx + PROFILE_URL + "?id=" + user.getId());
+                }
+                return;
+            }
+        }
+
+        // check self or admin only if "id" in request
+        if (requestId != null && !requestId.isBlank()) {
+            boolean isSelf = String.valueOf(user.getId()).equals(requestId);
+            if (!isAdmin && !isSelf) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
+        // otherwise (no "id" in request) - controller will decide
+        filterChain.doFilter(req, resp);
     }
 }

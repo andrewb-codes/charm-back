@@ -1,6 +1,5 @@
 package ru.andrewb.charm.back.controller;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +14,7 @@ import static ru.andrewb.charm.back.utils.UrlUtils.LANG_URL;
 public class LanguageController extends HttpServlet {
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String lang = req.getParameter("lang");
         String value = "en";
         if ("ru".equals(lang)) value = "ru";

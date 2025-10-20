@@ -18,14 +18,14 @@ public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
     public ValidationResult validate(PasswordChangeDto dto) {
         var vr = new ValidationResult();
         if (dto == null) {
-            vr.addError("error.password.dto-required");
+            vr.addError("error.dto.required");
             return vr;
         }
 
         String currPwd = Passwords.normalize(dto.getCurrentPassword());
         boolean hasCurrPwd = Passwords.hasText(currPwd);
         if (!hasCurrPwd) {
-            vr.addError("error.password.required");
+            vr.addError("error.password.current-required");
         }
 
         String newPwd = Passwords.normalize(dto.getNewPassword());

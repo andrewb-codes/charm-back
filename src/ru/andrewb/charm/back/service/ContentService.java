@@ -15,14 +15,16 @@ import java.util.Comparator;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static ru.andrewb.charm.back.utils.UrlUtils.BASE_CONTENT_PATH;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentService {
 
     private static final ContentService INSTANCE = new ContentService();
 
-    private final Path basePath = Path.of(BASE_CONTENT_PATH).toAbsolutePath().normalize();
+    public static final String DEFAULT_BASE = "/Users/andrew/Downloads";
+    private final Path basePath = Path.of(
+            System.getProperty("charm.content.base", System.getenv().getOrDefault("CHARM_CONTENT_BASE", DEFAULT_BASE))
+    ).toAbsolutePath().normalize();
 
     public static ContentService getInstance() {
         return INSTANCE;
@@ -37,7 +39,7 @@ public class ContentService {
                 in.transferTo(out);
             }
         } catch (IllegalArgumentException | SecurityException e) {
-            throw new BadRequestException("invalid content path");
+            throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -51,14 +53,14 @@ public class ContentService {
         try {
             Path full = getAbsolutePath(contentPath);
             if (!Files.exists(full)) {
-                throw new NotFoundException("resource not found");
+                throw new NotFoundException("error.content.not-found");
             }
             try (InputStream in = Files.newInputStream(full)) {
                 in.transferTo(out);
                 out.flush();
             }
         } catch (IllegalArgumentException | SecurityException e) {
-            throw new BadRequestException("invalid content path");
+            throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +75,7 @@ public class ContentService {
         try {
             return getAbsolutePath(contentPath);
         } catch (IllegalArgumentException | SecurityException e) {
-            throw new BadRequestException("invalid content path");
+            throw new BadRequestException("error.content.invalid-path");
         }
     }
 
@@ -84,7 +86,7 @@ public class ContentService {
             }
             return getAbsolutePath(String.join("/", segments));
         } catch (IllegalArgumentException | SecurityException e) {
-            throw new BadRequestException("invalid content path");
+            throw new BadRequestException("error.content.invalid-path");
         }
     }
 

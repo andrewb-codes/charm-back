@@ -16,8 +16,7 @@ import ru.andrewb.charm.back.web.flash.Flash;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
-import static ru.andrewb.charm.back.utils.UrlUtils.REGISTRATION_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.UrlUtils.*;
 
 @WebServlet(REGISTRATION_URL)
 @Slf4j
@@ -43,7 +42,7 @@ public class RegistrationController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             var dto = requestToRegistrationDtoMapper.map(req);
 
@@ -51,13 +50,13 @@ public class RegistrationController extends HttpServlet {
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
                 Flash.putField(req, "email", dto.getEmail());
-                resp.sendRedirect(req.getContextPath() + "/registration");
+                resp.sendRedirect(req.getContextPath() + REGISTRATION_URL);
                 return;
             }
 
             log.info("[{}] Registration ok: email={}", rid(req), dto.getEmail());
             service.save(dto);
-            resp.sendRedirect(req.getContextPath() + "/login");
+            resp.sendRedirect(req.getContextPath() + LOGIN_URL);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

@@ -19,7 +19,7 @@ public class EmailChangeValidator implements Validator<EmailChangeDto> {
     public ValidationResult validate(EmailChangeDto dto) {
         var vr = new ValidationResult();
         if (dto == null) {
-            vr.addError("error.email.dto-required");
+            vr.addError("error.dto.required");
             return vr;
         }
 
@@ -34,7 +34,7 @@ public class EmailChangeValidator implements Validator<EmailChangeDto> {
         String currPwd = Passwords.normalize(dto.getCurrentPassword());
         boolean hasCurrPwd = Passwords.hasText(currPwd);
         if (!hasCurrPwd) {
-            vr.addError("error.email.password-required");
+            vr.addError("error.password.current-required");
         }
 
         return vr;

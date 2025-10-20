@@ -11,7 +11,6 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
 import java.util.Locale;
 
 import static ru.andrewb.charm.back.utils.Strings.stripToNull;
@@ -42,7 +41,7 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
             try {
                 dto.setBirthDate(LocalDate.parse(bd));
             } catch (DateTimeParseException e) {
-                throw new BadRequestException("birthDate must be yyyy-MM-dd");
+                throw new BadRequestException("error.birthdate.format");
             }
         }
 
@@ -51,7 +50,7 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
             try {
                 dto.setGender(Gender.valueOf(gp.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException("gender must be one of " + Arrays.toString(Gender.values()));
+                throw new BadRequestException("error.gender.invalid");
             }
         }
 
@@ -60,7 +59,7 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
             try {
                 dto.setStatus(Status.valueOf(st.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException("status must be one of " + Arrays.toString(Status.values()));
+                throw new BadRequestException("error.status.invalid");
             }
         }
 
