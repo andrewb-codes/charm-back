@@ -34,9 +34,9 @@ public class ProfileUpdateValidator implements Validator<ProfileUpdateDto> {
             vr.addError("error.about.too-long");
         }
 
-        if (dto.getBirthDate() != null) {
+        if (dto.getBirthdate() != null) {
             LocalDate today = LocalDate.now();
-            var bd = dto.getBirthDate();
+            var bd = dto.getBirthdate();
 
             if (bd.isAfter(today)) {
                 vr.addError("error.birthdate.future");

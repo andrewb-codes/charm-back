@@ -36,10 +36,10 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
         dto.setSurname(stripToNull(req.getParameter("surname")));
         dto.setAbout(stripToNull(req.getParameter("about")));
 
-        String bd = stripToNull(req.getParameter("birthDate"));
+        String bd = stripToNull(req.getParameter("birthdate"));
         if (bd != null) {
             try {
-                dto.setBirthDate(LocalDate.parse(bd));
+                dto.setBirthdate(LocalDate.parse(bd));
             } catch (DateTimeParseException e) {
                 throw new BadRequestException("error.birthdate.format");
             }

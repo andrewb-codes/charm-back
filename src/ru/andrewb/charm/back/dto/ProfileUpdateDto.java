@@ -22,7 +22,7 @@ public class ProfileUpdateDto {
     String surname;
 
     String about;
-    LocalDate birthDate;
+    LocalDate birthdate;
     Gender gender;
     Status status;
     Part photo;

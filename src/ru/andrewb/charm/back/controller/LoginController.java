@@ -60,8 +60,8 @@ public class LoginController extends HttpServlet {
                 return;
             }
 
-            log.info("[{}] Login ok: email={}", rid(req), dto.getEmail());
             var userDetails = service.login(dto);
+            log.info("[{}] Login ok: email={}", rid(req), dto.getEmail());
             req.getSession().setAttribute("userDetails", userDetails);
             resp.sendRedirect(req.getContextPath() + PROFILE_URL + "?id=" + userDetails.getId());
 

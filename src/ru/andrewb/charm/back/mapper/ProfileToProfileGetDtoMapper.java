@@ -29,9 +29,9 @@ public class ProfileToProfileGetDtoMapper implements Mapper<Profile, ProfileGetD
         dto.setName(profile.getName());
         dto.setSurname(profile.getSurname());
         dto.setAbout(profile.getAbout());
-        dto.setBirthDate(profile.getBirthDate());
-        if (profile.getBirthDate() != null) {
-            dto.setAge(Math.toIntExact(ChronoUnit.YEARS.between(profile.getBirthDate(), LocalDate.now())));
+        dto.setBirthdate(profile.getBirthdate());
+        if (profile.getBirthdate() != null) {
+            dto.setAge(Math.toIntExact(ChronoUnit.YEARS.between(profile.getBirthdate(), LocalDate.now())));
         } else {
             dto.setAge(null);
         }
