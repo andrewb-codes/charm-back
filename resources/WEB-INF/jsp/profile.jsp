@@ -27,10 +27,10 @@
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("birthdate")}</h3></td>
-                        <td><input type="date" name="birthDate"
-                                   value="${profile.birthDate}"></td>
+                        <td><input type="date" name="birthdate"
+                                   value="${profile.birthdate}"></td>
                     </tr>
-                    <c:if test="${!empty profile.birthDate}">
+                    <c:if test="${!empty profile.birthdate}">
                         <tr>
                             <td><h3>${wordBundle.getWord("age")}</h3></td>
                             <td><h3>${profile.age}</h3></td>

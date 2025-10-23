@@ -54,8 +54,8 @@ public class RegistrationController extends HttpServlet {
                 return;
             }
 
-            log.info("[{}] Registration ok: email={}", rid(req), dto.getEmail());
             service.save(dto);
+            log.info("[{}] Registration ok: email={}", rid(req), dto.getEmail());
             resp.sendRedirect(req.getContextPath() + LOGIN_URL);
 
         } catch (BadRequestException e) {

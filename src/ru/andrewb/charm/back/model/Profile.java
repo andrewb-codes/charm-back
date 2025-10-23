@@ -25,7 +25,7 @@ public class Profile {
 
     String password;
     String about;
-    LocalDate birthDate;
+    LocalDate birthdate;
     Gender gender;
     Status status;
     String photo;
