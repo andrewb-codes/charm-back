@@ -10,6 +10,60 @@
 <c:set var="cpath" value="${pageContext.request.contextPath}"/>
 
 <div class="container">
+    <!-- Filtration -->
+    <form method="get" action="${cpath}/profiles" class="filters">
+        <div class="field">
+            <label for="f-email">${wordBundle.getWord("email")}</label>
+            <input id="f-email" type="text" name="emailStartsWith"
+                   value="${filter != null ? filter.emailStartsWith : ''}">
+        </div>
+
+        <div class="field">
+            <label for="f-name">${wordBundle.getWord("name")}</label>
+            <input id="f-name" type="text" name="nameStartsWith"
+                   value="${filter != null ? filter.nameStartsWith : ''}">
+        </div>
+
+        <div class="field">
+            <label for="f-surname">${wordBundle.getWord("surname")}</label>
+            <input id="f-surname" type="text" name="surnameStartsWith"
+                   value="${filter != null ? filter.surnameStartsWith : ''}">
+        </div>
+
+        <div class="field">
+            <label for="f-status">${wordBundle.getWord("status")}</label>
+            <c:set var="fs" value="${filter != null ? filter.status : null}"/>
+            <select id="f-status" name="status">
+                <option value=""></option>
+                <c:forEach var="st" items="${applicationScope.statuses}">
+                    <option value="${st}" <c:if test="${st == fs}">selected</c:if>>
+                    ${wordBundle.getWord(st)}
+                    </option>
+                </c:forEach>
+            </select>
+        </div>
+
+        <div class="field field--age">
+            <label for="f-gteAge">${wordBundle.getWord("age")}</label>
+            <input id="f-gteAge" type="number" name="gteAge" min="18" max="120"
+                   value="${filter != null && filter.greaterAndEqualAgeBound != null ? filter.greaterAndEqualAgeBound : ''}"
+                   style="width:72px;">
+            <span>–</span>
+            <input id="f-ltAge" type="number" name="ltAge" min="18" max="120"
+                   value="${filter != null && filter.lowerAgeBound != null ? filter.lowerAgeBound : ''}"
+                   style="width:72px;">
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-reset" title="${wordBundle.getWord('update')}" aria-label="Apply">
+                <img class="icon-lg" src="${cpath}/content/app/img/filter.png" alt="">
+            </button>
+            <a class="btn-reset" href="${cpath}/profiles" title="Reset" aria-label="Reset">
+                <img class="icon-lg" src="${cpath}/content/app/img/cross.png" alt="x">
+            </a>
+        </div>
+    </form>
+
     <table class="table--list">
         <colgroup>
             <col style="width:6ch">          <!-- id -->

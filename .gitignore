@@ -37,6 +37,11 @@ out/
 lib/
 
 
-# IntelliJ
+### IntelliJ ###
 *.iml
 .idea/
+
+### Local/profiles with secrets ###
+application-local.properties
+application-*.local.properties
+application-*.secret.properties

@@ -25,10 +25,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_REST_URL;
 import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_REST_URL;
 
-@WebServlet(urlPatterns = {PROFILE_REST_URL, PROFILES_REST_URL})
+@WebServlet(PROFILE_REST_URL)
 @Slf4j
 @MultipartConfig
 public class ProfileController extends HttpServlet {
@@ -44,18 +43,13 @@ public class ProfileController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json;charset=UTF-8");
         try (PrintWriter w = resp.getWriter()) {
-            String idParam = req.getParameter("id");
-            if (idParam != null && !idParam.isBlank()) {
-                long id = RequestParams.requirePositiveLong(req, "id");
-                var dtoOpt = service.findById(id);
-                if (dtoOpt.isPresent()) {
-                    jsonMapper.writeValue(w, dtoOpt.get());
-                } else {
-                    req.setAttribute("errors", List.of("error.profile.not-found"));
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                }
+            long id = RequestParams.requirePositiveLong(req, "id");
+            var dtoOpt = service.findById(id);
+            if (dtoOpt.isPresent()) {
+                jsonMapper.writeValue(w, dtoOpt.get());
             } else {
-                jsonMapper.writeValue(w, service.findAll());
+                req.setAttribute("errors", List.of("error.profile.not-found"));
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
