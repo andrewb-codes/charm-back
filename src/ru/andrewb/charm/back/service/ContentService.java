@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.utils.Config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,9 +22,8 @@ public class ContentService {
 
     private static final ContentService INSTANCE = new ContentService();
 
-    public static final String DEFAULT_BASE = "/Users/andrew/Downloads";
-    private final Path basePath = Path.of(
-            System.getProperty("charm.content.base", System.getenv().getOrDefault("CHARM_CONTENT_BASE", DEFAULT_BASE))
+    private static final Path BASE_PATH = Path.of(
+            Config.required("app.content.base-path")
     ).toAbsolutePath().normalize();
 
     public static ContentService getInstance() {
@@ -128,8 +128,8 @@ public class ContentService {
             throw new IllegalArgumentException("contentPath is required");
         }
         String clean = contentPath.startsWith("/") ? contentPath.substring(1) : contentPath;
-        Path full = basePath.resolve(clean).normalize();
-        if (!full.startsWith(basePath)) {
+        Path full = BASE_PATH.resolve(clean).normalize();
+        if (!full.startsWith(BASE_PATH)) {
             throw new SecurityException("invalid content path");
         }
         return full;

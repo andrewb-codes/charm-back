@@ -62,8 +62,8 @@ public class ProfileService {
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
     }
 
-    public List<ProfileGetDto> findAll() {
-        return dao.findAll().stream().map(profileToProfileGetDtoMapper::map).toList();
+    public List<ProfileGetDto> findAll(ProfileFilter filter) {
+        return dao.findAll(filter).stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 
     @SneakyThrows

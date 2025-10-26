@@ -83,4 +83,37 @@
 
     /* footer */
     .footer { text-align: center; }
+
+    /* --- Profiles filters --- */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px 16px;
+      align-items: center;
+      margin: 0 0 var(--space-3) 0;
+    }
+
+    .filters .field {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filters .field--age {
+      grid-template-columns: 110px auto auto auto;
+    }
+
+    .filters .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .filters input[type="text"],
+    .filters select {
+      width: 100%;
+      max-width: 100%;
+    }
 </style>
