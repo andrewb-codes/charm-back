@@ -4,6 +4,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import ru.andrewb.charm.back.dto.sort.SortBy;
+import ru.andrewb.charm.back.dto.sort.SortOrder;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 @Getter
@@ -15,5 +18,9 @@ public class ProfileFilter {
     String surnameStartsWith;
     Integer lowerAgeBound;
     Integer greaterAndEqualAgeBound;
+    Role role;
     Status status;
+
+    SortBy sortBy;
+    SortOrder sortOrder;
 }
