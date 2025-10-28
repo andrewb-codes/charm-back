@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.ProfileFilter;
+import ru.andrewb.charm.back.dto.sort.SortBy;
+import ru.andrewb.charm.back.dto.sort.SortOrder;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 import static ru.andrewb.charm.back.utils.Strings.stripToNull;
@@ -34,13 +37,28 @@ public class RequestToProfileFilterMapper implements Mapper<HttpServletRequest, 
         filter.setLowerAgeBound(ltAge);
         filter.setGreaterAndEqualAgeBound(gteAge);
 
+        String r = stripToNull(req.getParameter("role"));
+        if (r != null) {
+            try {
+                filter.setRole(Role.valueOf(r.toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
         String st = stripToNull(req.getParameter("status"));
         if (st != null) {
             try {
                 filter.setStatus(Status.valueOf(st.toUpperCase()));
-            } catch (IllegalArgumentException ignore) {
+            } catch (IllegalArgumentException ignored) {
             }
         }
+
+        filter.setSortBy(SortBy.fromParam(req.getParameter("sortBy")));
+
+        SortOrder so = "desc".equalsIgnoreCase(stripToNull(req.getParameter("sortOrder")))
+                ? SortOrder.DESC
+                : SortOrder.ASC;
+        filter.setSortOrder(so);
 
         return filter;
     }

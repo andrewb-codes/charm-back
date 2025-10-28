@@ -1,5 +1,8 @@
 package ru.andrewb.charm.back.dto;
 
+import ru.andrewb.charm.back.dto.sort.SortBy;
+import ru.andrewb.charm.back.dto.sort.SortOrder;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 import java.sql.Date;
@@ -53,7 +56,7 @@ public class ProfileSelectQueryBuilder {
 
     public ProfileSelectQueryBuilder addNameStartsWithFilter(String nameStartsWith) {
         if (nameStartsWith == null) return this;
-        sb.append(" and name ilike ?");
+        sb.append(" and \"name\" ilike ?");
         args.add(nameStartsWith + "%");
         return this;
     }
@@ -81,10 +84,30 @@ public class ProfileSelectQueryBuilder {
         return this;
     }
 
+    public ProfileSelectQueryBuilder addRoleFilter(Role role) {
+        if (role == null) return this;
+        sb.append(" and role = ?");
+        args.add(role.toString());
+        return this;
+    }
+
     public ProfileSelectQueryBuilder addStatusFilter(Status status) {
         if (status == null) return this;
         sb.append(" and status = ?");
         args.add(status.toString());
+        return this;
+    }
+
+    public ProfileSelectQueryBuilder orderBy(SortBy sortBy, SortOrder sortOrder) {
+        SortBy by = (sortBy == null) ? SortBy.ID : sortBy;
+        SortOrder order = (sortOrder == null) ? SortOrder.ASC : sortOrder;
+
+        if (by == SortBy.BIRTHDATE) {
+            order = order.flip();
+        }
+
+        sb.append(" order by ").append(by.getColumn()).append(' ')
+                .append(order).append(" nulls last");
         return this;
     }
 

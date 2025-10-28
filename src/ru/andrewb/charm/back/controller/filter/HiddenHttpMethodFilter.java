@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.andrewb.charm.back.model.Gender;
+import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
 import java.io.IOException;
@@ -24,6 +25,9 @@ public class HiddenHttpMethodFilter implements Filter {
         }
         if (servletContext.getAttribute("statuses") == null) {
             servletContext.setAttribute("statuses", Status.values());
+        }
+        if (servletContext.getAttribute("roles") == null) {
+            servletContext.setAttribute("roles", Role.values());
         }
     }
 

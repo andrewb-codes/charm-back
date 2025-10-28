@@ -15,6 +15,7 @@ import ru.andrewb.charm.back.mapper.ProfileGetDtoToPdfMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.security.SecurityRules;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.utils.RequestParams;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
@@ -85,11 +86,19 @@ public class ProfileController extends HttpServlet {
             long id = RequestParams.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
+            final String ctx = req.getContextPath();
             boolean fromList = "list".equals(req.getParameter("from"));
-            String redirectUrl = fromList
-                    ? req.getContextPath() + PROFILE_URL
-                    : req.getContextPath() + PROFILE_URL + "?id=" + id;
 
+            String redirectUrl = fromList
+                    ? ctx + PROFILES_URL
+                    : ctx + PROFILE_URL + "?id=" + id;
+
+            String back = req.getParameter("back");
+            if (SecurityRules.isSafeInternalRedirect(ctx, back, PROFILES_URL, PROFILE_URL)) {
+                if (fromList || back.startsWith(ctx + PROFILES_URL)) {
+                    redirectUrl = back;
+                }
+            }
 
             var vr = profileUpdateValidator.validate(dto);
             if (vr.isNotValid()) {
@@ -140,6 +149,13 @@ public class ProfileController extends HttpServlet {
         }
 
         resp.sendRedirect(req.getContextPath() + PROFILE_URL);
+    }
 
+    private static boolean isSafeBack(String back, String ctx) {
+        if (back == null || back.isBlank()) return false;
+        if (back.contains("\r") || back.contains("\n")) return false;
+        String profiles = ctx + PROFILES_URL;
+        String profile = ctx + PROFILE_URL;
+        return back.startsWith(profiles) || back.startsWith(profile);
     }
 }
