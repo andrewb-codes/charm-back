@@ -30,12 +30,8 @@ public class RequestToProfileFilterMapper implements Mapper<HttpServletRequest, 
         filter.setEmailStartsWith(stripToNull(req.getParameter("emailStartsWith")));
         filter.setNameStartsWith(stripToNull(req.getParameter("nameStartsWith")));
         filter.setSurnameStartsWith(stripToNull(req.getParameter("surnameStartsWith")));
-
-        Integer ltAge = parseInt(req.getParameter("ltAge"));
-        Integer gteAge = parseInt(req.getParameter("gteAge"));
-
-        filter.setLowerAgeBound(ltAge);
-        filter.setGreaterAndEqualAgeBound(gteAge);
+        filter.setLowerAgeBound(parseInt(req.getParameter("ltAge")));
+        filter.setGreaterAndEqualAgeBound(parseInt(req.getParameter("gteAge")));
 
         String r = stripToNull(req.getParameter("role"));
         if (r != null) {
@@ -44,7 +40,6 @@ public class RequestToProfileFilterMapper implements Mapper<HttpServletRequest, 
             } catch (IllegalArgumentException ignored) {
             }
         }
-
         String st = stripToNull(req.getParameter("status"));
         if (st != null) {
             try {
@@ -52,13 +47,22 @@ public class RequestToProfileFilterMapper implements Mapper<HttpServletRequest, 
             } catch (IllegalArgumentException ignored) {
             }
         }
-
-        filter.setSortBy(SortBy.fromParam(req.getParameter("sortBy")));
-
-        SortOrder so = "desc".equalsIgnoreCase(stripToNull(req.getParameter("sortOrder")))
-                ? SortOrder.DESC
-                : SortOrder.ASC;
-        filter.setSortOrder(so);
+        String sb = stripToNull(req.getParameter("sortBy"));
+        if (sb != null) {
+            try {
+                filter.setSortBy(SortBy.valueOf(sb.toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        String so = stripToNull(req.getParameter("sortOrder"));
+        if (so != null) {
+            try {
+                filter.setSortOrder(SortOrder.valueOf(so.toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        filter.setPage(parseInt(req.getParameter("page")));
+        filter.setPageSize(parseInt(req.getParameter("pageSize")));
 
         return filter;
     }

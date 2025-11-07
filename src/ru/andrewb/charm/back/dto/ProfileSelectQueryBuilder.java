@@ -99,15 +99,21 @@ public class ProfileSelectQueryBuilder {
     }
 
     public ProfileSelectQueryBuilder orderBy(SortBy sortBy, SortOrder sortOrder) {
-        SortBy by = (sortBy == null) ? SortBy.ID : sortBy;
-        SortOrder order = (sortOrder == null) ? SortOrder.ASC : sortOrder;
-
-        if (by == SortBy.BIRTHDATE) {
-            order = order.flip();
+        if (sortBy == SortBy.BIRTHDATE) {
+            sortOrder = sortOrder.flip();
         }
 
-        sb.append(" order by ").append(by.getColumn()).append(' ')
-                .append(order).append(" nulls last");
+        sb.append(" order by ").append(sortBy.getColumn()).append(' ').append(sortOrder)
+                .append(" nulls last");
+        return this;
+    }
+
+    public ProfileSelectQueryBuilder pageAndPageSize(Integer page, Integer pageSize) {
+        int limit = pageSize;
+        int offset = limit * (page - 1);
+        sb.append(" limit ? offset ?");
+        args.add(limit);
+        args.add(offset);
         return this;
     }
 

@@ -19,13 +19,4 @@ public enum SortBy {
     public String getColumn() {
         return column;
     }
-
-    public static SortBy fromParam(String s) {
-        if (s == null || s.isBlank()) return null;
-        try {
-            return valueOf(s.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
 }

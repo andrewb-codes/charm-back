@@ -12,26 +12,16 @@ import java.util.List;
 @UtilityClass
 public class ConnectionManager {
 
-    private static final String URL =
-            Config.required("app.datasource.url");
-    private static final String USER =
-            Config.required("app.datasource.username");
-    private static final String PASSWORD =
-            Config.required("app.datasource.password");
-    private static final String DRIVER =
-            Config.getOrDefault("app.datasource.driver-class-name", "org.postgresql.Driver");
-    private static final String FETCH_SIZE_STR =
-            Config.get("app.datasource.fetch-size");
-    public static final int FETCH_SIZE =
-            Integer.parseInt(FETCH_SIZE_STR != null ? FETCH_SIZE_STR : "100");
-    private static final String MAX_ROWS_STR =
-            Config.get("app.datasource.max-rows");
-    public static final int MAX_ROWS =
-            Integer.parseInt(MAX_ROWS_STR != null ? MAX_ROWS_STR : "1000");
-    private static final String QUERY_TIMEOUT_STR =
-            Config.get("app.datasource.query-timeout");
-    public static final int QUERY_TIMEOUT =
-            Integer.parseInt(QUERY_TIMEOUT_STR != null ? QUERY_TIMEOUT_STR : "10");
+    private static final String URL = Config.required("app.datasource.url");
+    private static final String USER = Config.required("app.datasource.username");
+    private static final String PASSWORD = Config.required("app.datasource.password");
+    private static final String DRIVER = Config.getOrDefault("app.datasource.driver-class-name", "org.postgresql.Driver");
+    private static final String FETCH_SIZE_STR = Config.get("app.datasource.fetch-size");
+    public static final int FETCH_SIZE = Integer.parseInt(FETCH_SIZE_STR != null ? FETCH_SIZE_STR : "100");
+    private static final String MAX_ROWS_STR = Config.get("app.datasource.max-rows");
+    public static final int MAX_ROWS = Integer.parseInt(MAX_ROWS_STR != null ? MAX_ROWS_STR : "1000");
+    private static final String QUERY_TIMEOUT_STR = Config.get("app.datasource.query-timeout");
+    public static final int QUERY_TIMEOUT = Integer.parseInt(QUERY_TIMEOUT_STR != null ? QUERY_TIMEOUT_STR : "10");
 
     static {
         if (DRIVER != null) {

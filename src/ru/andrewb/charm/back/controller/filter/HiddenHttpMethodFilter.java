@@ -12,6 +12,8 @@ import ru.andrewb.charm.back.model.Status;
 import java.io.IOException;
 import java.util.Locale;
 
+import static ru.andrewb.charm.back.profiles.ProfileDefaults.AVAILABLE_PAGE_SIZES;
+
 @WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
 public class HiddenHttpMethodFilter implements Filter {
 
@@ -28,6 +30,9 @@ public class HiddenHttpMethodFilter implements Filter {
         }
         if (servletContext.getAttribute("roles") == null) {
             servletContext.setAttribute("roles", Role.values());
+        }
+        if (servletContext.getAttribute("availablePageSizes") == null) {
+            servletContext.setAttribute("availablePageSizes", AVAILABLE_PAGE_SIZES);
         }
     }
 
