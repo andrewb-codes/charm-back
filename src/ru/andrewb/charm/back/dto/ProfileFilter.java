@@ -23,4 +23,7 @@ public class ProfileFilter {
 
     SortBy sortBy;
     SortOrder sortOrder;
+
+    Integer page;
+    Integer pageSize;
 }

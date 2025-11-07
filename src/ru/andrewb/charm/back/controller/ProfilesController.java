@@ -8,10 +8,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.ProfileFilter;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
+import ru.andrewb.charm.back.profiles.ProfileDefaults;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
 
+import static ru.andrewb.charm.back.utils.BeanUtils.copyProperties;
 import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_URL;
 import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
 
@@ -24,9 +26,24 @@ public class ProfilesController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ProfileFilter filter = requestToProfileFilterMapper.map(req);
-        req.setAttribute("profiles", service.findAll(filter));
-        req.setAttribute("filter", filter);
+        var f = requestToProfileFilterMapper.map(req);
+        ProfileDefaults.normalize(f);
+
+        var probe = new ProfileFilter();
+        copyProperties(f, probe);
+        probe.setPageSize(f.getPageSize() + 1);
+
+        var items = service.findAll(probe);
+        boolean hasNext = items.size() > f.getPageSize();
+        if (hasNext) items = items.subList(0, f.getPageSize());
+
+        boolean hasPrev = f.getPage() > 1;
+
+
+        req.setAttribute("profiles", items);
+        req.setAttribute("filter", f);
+        req.setAttribute("hasPrev", hasPrev);
+        req.setAttribute("hasNext", hasNext);
 
         req.getRequestDispatcher(getJspPath("/profiles")).forward(req, resp);
     }

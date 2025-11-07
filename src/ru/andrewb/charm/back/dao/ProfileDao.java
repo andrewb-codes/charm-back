@@ -97,6 +97,7 @@ public class ProfileDao {
                 .addRoleFilter(filter.getRole())
                 .addStatusFilter(filter.getStatus())
                 .orderBy(filter.getSortBy(), filter.getSortOrder())
+                .pageAndPageSize(filter.getPage(), filter.getPageSize())
                 .build();
 
         try (Connection conn = ConnectionManager.getConnection();
