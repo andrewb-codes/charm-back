@@ -3,20 +3,18 @@ package ru.andrewb.charm.back.dao;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import ru.andrewb.charm.back.dto.ProfileFilter;
-import ru.andrewb.charm.back.dto.ProfileSelectQueryBuilder;
-import ru.andrewb.charm.back.dto.ProfileUpdateQueryBuilder;
-import ru.andrewb.charm.back.dto.Query;
-import ru.andrewb.charm.back.model.Gender;
+import ru.andrewb.charm.back.dto.*;
+import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
+import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
-import ru.andrewb.charm.back.model.Role;
-import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.utils.ConnectionManager;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import static ru.andrewb.charm.back.utils.ConnectionManager.*;
@@ -34,10 +32,36 @@ public class ProfileDao {
             "select 1 from profile where email = ?";
     private static final String SQL_EXISTS_EMAIL_EXCLUDING_ID =
             "select 1 from profile where email = ? and id <> ?";
+    private static final String SQL_FIND_SUITABLE = """
+            WITH cup AS (
+                SELECT id, gender, birthdate
+                FROM profile
+                WHERE id = ?
+            )
+            SELECT p.id, p.name, p.surname, p.birthdate, p.about, p.photo
+            FROM profile p
+            JOIN cup ON true
+            LEFT JOIN profile_like l
+              ON l.from_profile = cup.id    -- голосовал ТЕКУЩИЙ пользователь
+             AND l.to_profile   = p.id      -- за эту анкету
+            WHERE l.from_profile IS NULL    -- текущий пользователь ещё не голосовал за p
+              AND p.id <> cup.id
+              AND p.status = 'ACTIVE'
+              -- пол: фильтр включается только если он известен у текущего юзера
+              AND (cup.gender IS NULL OR (p.gender IS NOT NULL AND p.gender <> cup.gender))
+              -- возрастное окно ±5 лет: включается только если известна ДР у текущего юзера
+              AND (cup.birthdate IS NULL
+                   OR p.birthdate BETWEEN (cup.birthdate - INTERVAL '5 years')
+                                    AND   (cup.birthdate + INTERVAL '5 years'))
+            ORDER BY RANDOM()
+            LIMIT ?
+            """;
+
+    private static final ResultSetToProfileMapper rsToProfileMapper = ResultSetToProfileMapper.getInstance();
+    private static final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper = ResultSetToProfileSimpleDtoMapper.getInstance();
 
     @SneakyThrows
     public static ProfileDao getInstance() {
-
         return INSTANCE;
     }
 
@@ -63,7 +87,7 @@ public class ProfileDao {
              PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapToProfile(rs));
+                    return Optional.of(rsToProfileMapper.map(rs));
                 }
                 return Optional.empty();
             }
@@ -78,7 +102,7 @@ public class ProfileDao {
              PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapToProfile(rs));
+                    return Optional.of(rsToProfileMapper.map(rs));
                 }
                 return Optional.empty();
             }
@@ -109,7 +133,7 @@ public class ProfileDao {
             try (ResultSet rs = ps.executeQuery()) {
                 List<Profile> profiles = new ArrayList<>();
                 while (rs.next()) {
-                    profiles.add(mapToProfile(rs));
+                    profiles.add(rsToProfileMapper.map(rs));
                 }
                 return profiles;
             }
@@ -174,33 +198,20 @@ public class ProfileDao {
         }
     }
 
-    private Profile mapToProfile(ResultSet rs) throws SQLException {
-        Profile p = new Profile();
-        p.setId(rs.getLong("id"));
-        p.setEmail(rs.getString("email"));
-        p.setPassword(rs.getString("password"));
-        p.setName(rs.getString("name"));
-        p.setSurname(rs.getString("surname"));
-
-        Date birthdate = rs.getDate("birthdate");
-        if (birthdate != null) {
-            p.setBirthdate(birthdate.toLocalDate());
+    public List<ProfileSimpleDto> findSuitableForUser(Long userId, int limit) {
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_SUITABLE)) {
+            ps.setObject(1, userId);
+            ps.setInt(2, Math.max(1, limit));
+            try (ResultSet rs = ps.executeQuery()) {
+                List<ProfileSimpleDto> profiles = new ArrayList<>();
+                while (rs.next()) {
+                    profiles.add(rsToProfileSimpleDtoMapper.map(rs));
+                }
+                return profiles;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        p.setAbout(rs.getString("about"));
-        p.setPhoto(rs.getString("photo"));
-
-        String gender = rs.getString("gender");
-        if (gender != null) {
-            p.setGender(Gender.valueOf(gender.toUpperCase(Locale.ROOT)));
-        }
-        String status = rs.getString("status");
-        if (status != null) {
-            p.setStatus(Status.valueOf(status.toUpperCase(Locale.ROOT)));
-        }
-        String role = rs.getString("role");
-        if (role != null) {
-            p.setRole(Role.valueOf(role.toUpperCase(Locale.ROOT)));
-        }
-        return p;
     }
 }

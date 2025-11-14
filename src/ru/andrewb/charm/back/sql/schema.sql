@@ -20,6 +20,7 @@ create table profile_like (
     from_profile    bigint not null references profile (id),
     to_profile      bigint not null references profile (id),
     is_like         boolean not null,
+    is_match        boolean not null,
     created_date    timestamp not null default current_timestamp,
     primary key (from_profile, to_profile)
 );
