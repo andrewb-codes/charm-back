@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.profiles;
+package ru.andrewb.charm.back.normalizer;
 
 import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.dto.ProfileFilter;
@@ -8,7 +8,7 @@ import ru.andrewb.charm.back.dto.sort.SortOrder;
 import java.util.List;
 
 @UtilityClass
-public class ProfileDefaults {
+public class ProfileFilterDefaults {
     public static final SortBy DEFAULT_SORT_BY = SortBy.ID;
     public static final SortOrder DEFAULT_SORT_ORDER = SortOrder.ASC;
     public static final int DEFAULT_PAGE = 1;

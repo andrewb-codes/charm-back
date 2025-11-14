@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.ProfileFilter;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
-import ru.andrewb.charm.back.profiles.ProfileDefaults;
+import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class ProfilesController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var f = requestToProfileFilterMapper.map(req);
-        ProfileDefaults.normalize(f);
+        ProfileFilterDefaults.normalize(f);
 
         var probe = new ProfileFilter();
         copyProperties(f, probe);
