@@ -34,7 +34,6 @@ build/
 Thumbs.db
 .smarttomcat/
 out/
-lib/
 
 
 ### IntelliJ ###
