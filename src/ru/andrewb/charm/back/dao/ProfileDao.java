@@ -2,36 +2,37 @@ package ru.andrewb.charm.back.dao;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.utils.ConnectionManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.andrewb.charm.back.utils.ConnectionManager.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileDao {
-
-    private static final ProfileDao INSTANCE = new ProfileDao();
-
+    //language=POSTGRES-PSQL
     private static final String SQL_INSERT =
-            "insert into profile(email, password) values (?, ?) returning id";
+            "INSERT INTO profile(email, password) VALUES (?, ?) RETURNING id";
+    //language=POSTGRES-PSQL
+    public static final String SQL_UPDATE_STATUSES =
+            "UPDATE profile SET status = ? WHERE id = ANY ( ? )";
+    //language=POSTGRES-PSQL
     private static final String SQL_DELETE_BY_ID =
-            "delete from profile where id = ?";
+            "DELETE FROM profile WHERE id = ?";
+    //language=POSTGRES-PSQL
     private static final String SQL_EXISTS_EMAIL =
-            "select 1 from profile where email = ?";
+            "SELECT 1 FROM profile WHERE email = ?";
+    //language=POSTGRES-PSQL
     private static final String SQL_EXISTS_EMAIL_EXCLUDING_ID =
-            "select 1 from profile where email = ? and id <> ?";
+            "SELECT 1 FROM profile WHERE email = ? AND id <> ?";
+    //language=POSTGRES-PSQL
     private static final String SQL_FIND_SUITABLE = """
             WITH cup AS (
                 SELECT id, gender, birthdate
@@ -56,11 +57,22 @@ public class ProfileDao {
             ORDER BY RANDOM()
             LIMIT ?
             """;
+    // language=POSTGRES-PSQL
+    public static final String SQL_FIND_MATCHES = """
+            SELECT p.*
+            FROM profile p
+            JOIN profile_like l ON p.id = l.to_profile
+            WHERE l.from_profile = ? AND l.is_match = true
+            ORDER BY l.created_date DESC
+            LIMIT ?
+            OFFSET ?
+            """;
+
+    private static final ProfileDao INSTANCE = new ProfileDao();
 
     private static final ResultSetToProfileMapper rsToProfileMapper = ResultSetToProfileMapper.getInstance();
     private static final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper = ResultSetToProfileSimpleDtoMapper.getInstance();
 
-    @SneakyThrows
     public static ProfileDao getInstance() {
         return INSTANCE;
     }
@@ -142,6 +154,25 @@ public class ProfileDao {
         }
     }
 
+    public List<Profile> findMatches(Long id, int limit, int offset) {
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_MATCHES)) {
+            ps.setLong(1, id);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Profile> profiles = new ArrayList<>();
+                while (rs.next()) {
+                    profiles.add(rsToProfileMapper.map(rs));
+                }
+                return profiles;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void update(Profile profile) {
         Query query = new ProfileUpdateQueryBuilder()
                 .addEmail(profile.getEmail())
@@ -159,6 +190,53 @@ public class ProfileDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void updateStatuses(List<ProfileUpdateStatusDto> dtoList) {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_STATUSES)) {
+                Map<Status, Set<Long>> updateMap =
+                        dtoList.stream().collect(Collectors.groupingBy(
+                                        ProfileUpdateStatusDto::getStatus,
+                                        Collectors.mapping(ProfileUpdateStatusDto::getId, Collectors.toSet())
+                                )
+                        );
+                for (Map.Entry<Status, Set<Long>> entry : updateMap.entrySet()) {
+                    Long[] idArray = entry.getValue().toArray(new Long[0]);
+                    Array sqlArray = null;
+                    try {
+                        sqlArray = conn.createArrayOf("bigint", idArray);
+                        ps.setString(1, entry.getKey().toString());
+                        ps.setArray(2, sqlArray);
+                        ps.addBatch();
+                    } finally {
+                        if (sqlArray != null) sqlArray.free();
+                    }
+                }
+                ps.executeBatch();
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
+            }
+            throw new RuntimeException(e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
         }
     }
 

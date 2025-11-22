@@ -17,6 +17,7 @@ public class UrlUtils {
     public static final String LANG_URL = "/lang";
     public static final String CONTENT_URL = "/content";
     public static final String CHARM_URL = "/charm";
+    public static final String MATCHES_URL = "/matches";
     public static final String REST_URL = "/api/v1";
     public static final String LOGIN_REST_URL = REST_URL + LOGIN_URL;
     public static final String PROFILE_REST_URL = REST_URL + PROFILE_URL;
