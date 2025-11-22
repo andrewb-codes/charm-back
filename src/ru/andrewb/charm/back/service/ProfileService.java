@@ -2,7 +2,6 @@ package ru.andrewb.charm.back.service;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
@@ -13,6 +12,7 @@ import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.model.exception.StorageException;
 import ru.andrewb.charm.back.utils.Emails;
 import ru.andrewb.charm.back.utils.Passwords;
 
@@ -66,7 +66,12 @@ public class ProfileService {
         return dao.findAll(filter).stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 
-    @SneakyThrows
+    public List<ProfileGetDto> findMatches(Long id, int limit, int offset) {
+        return dao.findMatches(id, limit, offset).stream()
+                .map(profileToProfileGetDtoMapper::map)
+                .toList();
+    }
+
     public void update(long id, ProfileUpdateDto dto) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
@@ -76,16 +81,25 @@ public class ProfileService {
         var part = dto.getPhoto();
         var old = existing.getPhoto();
         if (part != null && part.getSize() > 0) {
-            if (old != null && !old.isBlank()) {
-                contentService.delete("profile", String.valueOf(id), old);
+            try {
+                if (old != null && !old.isBlank()) {
+                    contentService.delete("profile", String.valueOf(id), old);
+                }
+                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                contentService.upload(part.getInputStream(), "profile", String.valueOf(id), fileName);
+                p.setPhoto(fileName);
+            } catch (Exception e) {
+                throw new StorageException("error.service.photo", e);
             }
-            String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-            contentService.upload(part.getInputStream(), "profile", String.valueOf(id), fileName);
-            p.setPhoto(fileName);
         }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
         dao.update(p);
+    }
+
+    public void updateStatuses(List<ProfileUpdateStatusDto> dtoList) {
+        if (dtoList.isEmpty()) return;
+        dao.updateStatuses(dtoList);
     }
 
     public boolean delete(Long id) {

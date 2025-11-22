@@ -7,11 +7,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.ProfileFilter;
+import ru.andrewb.charm.back.dto.ProfileUpdateStatusDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
+import ru.andrewb.charm.back.mapper.RequestToProfileUpdateStatusDtoMapper;
 import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
+import ru.andrewb.charm.back.security.SecurityRules;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
+import java.util.List;
 
 import static ru.andrewb.charm.back.utils.BeanUtils.copyProperties;
 import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_URL;
@@ -23,6 +27,9 @@ public class ProfilesController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
     private final RequestToProfileFilterMapper requestToProfileFilterMapper = RequestToProfileFilterMapper.getInstance();
+    private final RequestToProfileUpdateStatusDtoMapper requestToProfileUpdateStatusMapper =
+            RequestToProfileUpdateStatusDtoMapper.getInstance();
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -46,5 +53,20 @@ public class ProfilesController extends HttpServlet {
         req.setAttribute("hasNext", hasNext);
 
         req.getRequestDispatcher(getJspPath("/profiles")).forward(req, resp);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        List<ProfileUpdateStatusDto> dtoList = requestToProfileUpdateStatusMapper.map(req);
+        service.updateStatuses(dtoList);
+
+        String ctx = req.getContextPath();
+        String back = req.getParameter("back");
+        if (SecurityRules.isSafeInternalRedirect(ctx, back, PROFILES_URL)) {
+            resp.sendRedirect(back);
+        } else {
+            resp.sendRedirect(ctx + PROFILES_URL);
+        }
+
     }
 }

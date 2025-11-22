@@ -93,176 +93,178 @@
     <c:set var="sortBy" value="${filter.sortBy}"/>
     <c:set var="sortOrder"  value="${filter.sortOrder}"/>
 
-    <table class="table--list">
-        <colgroup>
-            <col style="width:6ch">     <!-- id -->
-            <col style="width:20%">     <!-- email -->
-            <col style="width:14%">     <!-- name -->
-            <col style="width:14%">     <!-- surname -->
-            <col style="width:7ch">     <!-- age -->
-            <col style="width:10%">     <!-- role -->
-            <col>                       <!-- status -->
-        </colgroup>
+    <form action="${cpath}/profiles" method="post" class="bulk-status-form">
+        <input type="hidden" name="_method" value="put"/>
 
-        <c:url var="urlId" value="${cpath}/profiles">
-            <c:param name="sortBy" value="ID"/>
-            <c:param name="sortOrder" value="${sortBy=='ID' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+        <c:set var="qs" value="${pageContext.request.queryString}" />
+        <input type="hidden" name="back"
+               value="${cpath}/profiles${empty qs ? '' : '?'}${fn:escapeXml(qs)}" />
 
-        <c:url var="urlEmail" value="${cpath}/profiles">
-            <c:param name="sortBy" value="EMAIL"/>
-            <c:param name="sortOrder" value="${sortBy=='EMAIL' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+        <!-- Save -->
+        <div class="row" style="justify-content:flex-end;margin:8px 0;">
+            <button type="submit" class="btn-reset">${wordBundle.getWord('save')}</button>
+        </div>
+        <table class="table--list">
+            <colgroup>
+                <col style="width:6ch">     <!-- id -->
+                <col style="width:20%">     <!-- email -->
+                <col style="width:14%">     <!-- name -->
+                <col style="width:14%">     <!-- surname -->
+                <col style="width:7ch">     <!-- age -->
+                <col style="width:10%">     <!-- role -->
+                <col>                 <!-- status -->
+            </colgroup>
 
-        <c:url var="urlName" value="${cpath}/profiles">
-            <c:param name="sortBy" value="NAME"/>
-            <c:param name="sortOrder" value="${sortBy=='NAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+            <c:url var="urlId" value="${cpath}/profiles">
+                <c:param name="sortBy" value="ID"/>
+                <c:param name="sortOrder" value="${sortBy=='ID' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <c:url var="urlSurname" value="${cpath}/profiles">
-            <c:param name="sortBy" value="SURNAME"/>
-            <c:param name="sortOrder" value="${sortBy=='SURNAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+            <c:url var="urlEmail" value="${cpath}/profiles">
+                <c:param name="sortBy" value="EMAIL"/>
+                <c:param name="sortOrder" value="${sortBy=='EMAIL' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <c:url var="urlBirthdate" value="${cpath}/profiles">
-            <c:param name="sortBy" value="BIRTHDATE"/>
-            <c:param name="sortOrder" value="${sortBy=='BIRTHDATE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+            <c:url var="urlName" value="${cpath}/profiles">
+                <c:param name="sortBy" value="NAME"/>
+                <c:param name="sortOrder" value="${sortBy=='NAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <c:url var="urlRole" value="${cpath}/profiles">
-            <c:param name="sortBy" value="ROLE"/>
-            <c:param name="sortOrder" value="${sortBy=='ROLE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+            <c:url var="urlSurname" value="${cpath}/profiles">
+                <c:param name="sortBy" value="SURNAME"/>
+                <c:param name="sortOrder" value="${sortBy=='SURNAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <c:url var="urlStatus" value="${cpath}/profiles">
-            <c:param name="sortBy" value="STATUS"/>
-            <c:param name="sortOrder" value="${sortBy=='STATUS' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
-            <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
-            <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
-            <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
-            <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
-            <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
-            <c:param name="role" value="${filter.role}"/>
-            <c:param name="status" value="${filter.status}"/>
-            <c:param name="page" value="1"/>
-            <c:param name="pageSize" value="${filter.pageSize}"/>
-        </c:url>
+            <c:url var="urlBirthdate" value="${cpath}/profiles">
+                <c:param name="sortBy" value="BIRTHDATE"/>
+                <c:param name="sortOrder" value="${sortBy=='BIRTHDATE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <tr>
-            <td><a class="th-sort" href="${urlId}">id
-                <span class="arrow"><c:if test="${sortBy=='ID'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlEmail}">${wordBundle.getWord('email')}
-                <span class="arrow"><c:if test="${sortBy=='EMAIL'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlName}">${wordBundle.getWord('name')}
-                <span class="arrow"><c:if test="${sortBy=='NAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlSurname}">${wordBundle.getWord('surname')}
-                <span class="arrow"><c:if test="${sortBy=='SURNAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlBirthdate}">${wordBundle.getWord('age')}
-                <span class="arrow"><c:if test="${sortBy=='BIRTHDATE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlRole}">${wordBundle.getWord('role')}
-                <span class="arrow"><c:if test="${sortBy=='ROLE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-            <td><a class="th-sort" href="${urlStatus}">${wordBundle.getWord('status')}
-                <span class="arrow"><c:if test="${sortBy=='STATUS'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
-            </a></td>
-        </tr>
+            <c:url var="urlRole" value="${cpath}/profiles">
+                <c:param name="sortBy" value="ROLE"/>
+                <c:param name="sortOrder" value="${sortBy=='ROLE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
 
-        <c:forEach var="profile" items="${profiles}">
+            <c:url var="urlStatus" value="${cpath}/profiles">
+                <c:param name="sortBy" value="STATUS"/>
+                <c:param name="sortOrder" value="${sortBy=='STATUS' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
+                <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
+                <c:param name="nameStartsWith" value="${filter.nameStartsWith}"/>
+                <c:param name="surnameStartsWith" value="${filter.surnameStartsWith}"/>
+                <c:param name="gteAge" value="${filter.greaterAndEqualAgeBound}"/>
+                <c:param name="ltAge" value="${filter.lowerAgeBound}"/>
+                <c:param name="role" value="${filter.role}"/>
+                <c:param name="status" value="${filter.status}"/>
+                <c:param name="page" value="1"/>
+                <c:param name="pageSize" value="${filter.pageSize}"/>
+            </c:url>
+
             <tr>
-                <td><h4>${profile.id}</h4></td>
-                <td><h4>${profile.email}</h4></td>
-                <td><h4>${profile.name}</h4></td>
-                <td><h4>${profile.surname}</h4></td>
-                <td><h4>${profile.age}</h4></td>
-                <td><h4>${wordBundle.getWord(profile.role)}</h4></td>
-                <td>
-                    <form action="${cpath}/profile" method="post" class="row" style="gap:12px; align-items:center;">
-                        <input type="hidden" name="_method" value="put"/>
-                        <input type="hidden" name="id" value="${profile.id}">
-                        <input type="hidden" name="from" value="list"/>
+                <td><a class="th-sort" href="${urlId}">id
+                    <span class="arrow"><c:if test="${sortBy=='ID'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlEmail}">${wordBundle.getWord('email')}
+                    <span class="arrow"><c:if test="${sortBy=='EMAIL'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlName}">${wordBundle.getWord('name')}
+                    <span class="arrow"><c:if test="${sortBy=='NAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlSurname}">${wordBundle.getWord('surname')}
+                    <span class="arrow"><c:if test="${sortBy=='SURNAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlBirthdate}">${wordBundle.getWord('age')}
+                    <span class="arrow"><c:if test="${sortBy=='BIRTHDATE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlRole}">${wordBundle.getWord('role')}
+                    <span class="arrow"><c:if test="${sortBy=='ROLE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+                <td><a class="th-sort" href="${urlStatus}">${wordBundle.getWord('status')}
+                    <span class="arrow"><c:if test="${sortBy=='STATUS'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
+                </a></td>
+            </tr>
 
-                        <c:set var="qs" value="${pageContext.request.queryString}" />
-                        <input type="hidden" name="back" value="${cpath}/profiles${empty qs ? '' : '?'}${qs}" />
-
-                        <c:set var="s" value="${profile.status}"/>
-                        <select name="status">
-                            <option value="" disabled <c:if test="${empty s}">selected</c:if> hidden>
-                            ${wordBundle.getWord(profile.status)}
-                            </option>
+            <c:forEach var="profile" items="${profiles}">
+                <tr>
+                    <td><h4><c:out value="${profile.id}"/></h4></td>
+                    <td><h4><c:out value="${profile.email}"/></h4></td>
+                    <td><h4><c:out value="${profile.name}"/></h4></td>
+                    <td><h4><c:out value="${profile.surname}"/></h4></td>
+                    <td><h4><c:out value="${profile.age}"/></h4></td>
+                    <td><h4><c:out value="${wordBundle.getWord(profile.role)}"/></h4></td>
+                    <td class="row" style="gap:12px; align-items:center;">
+                        <select name="statusesWithIds" aria-label="Set status">
+                            <option value="skip" selected>—</option>
                             <c:forEach var="status" items="${applicationScope.statuses}">
-                                <option value="${status}" <c:if test="${status == s}">selected</c:if>>
-                                ${wordBundle.getWord(status)}
+                                <option value="${status}_${profile.id}">
+                                    <c:out value="${wordBundle.getWord(status)}"/>
                                 </option>
                             </c:forEach>
                         </select>
-
-                        <input type="image" class="icon-lg"
-                               src="${cpath}/content/app/img/floppy-disk.png"
-                               alt="${wordBundle.getWord('save')}" title="${wordBundle.getWord('save')}"/>
-                    </form>
-                </td>
-            </tr>
-        </c:forEach>
-    </table>
+                        <span style="opacity:.6; margin-left:8px;">
+                            (<c:out value="${wordBundle.getWord(profile.status)}"/>)
+                        </span>
+                    </td>
+                </tr>
+            </c:forEach>
+        </table>
+        <div class="row" style="justify-content:flex-end;margin:8px 0;">
+            <button type="submit" class="btn-reset">${wordBundle.getWord('save')}</button>
+        </div>
+    </form>
 
     <!-- Go to page (manual) -->
     <form method="get" action="${cpath}/profiles" class="row" style="gap:12px; align-items:center; margin:12px 0;">

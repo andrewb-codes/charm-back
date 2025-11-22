@@ -32,7 +32,11 @@ public class ProfileLikeDao {
                     ON CONFLICT (from_profile, to_profile)
                     DO UPDATE SET is_like = ?, is_match = ?
                 """;
-        try (Connection conn = ConnectionManager.getConnection()) {
+
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getConnection();
+            conn.setAutoCommit(false);
 
             boolean matchedNow = false;
             if (isLike) {
@@ -48,17 +52,32 @@ public class ProfileLikeDao {
             try (PreparedStatement psInsert = conn.prepareStatement(SQL_INSERT)) {
                 if (matchedNow) {
                     fillInsert(psInsert, fromProfileId, toProfileId, true, true);
-                    psInsert.executeUpdate();
+                    psInsert.addBatch();
                     fillInsert(psInsert, toProfileId, fromProfileId, true, true);
-                    psInsert.executeUpdate();
+                    psInsert.addBatch();
+                    psInsert.executeBatch();
                 } else {
                     fillInsert(psInsert, fromProfileId, toProfileId, isLike, false);
                     psInsert.executeUpdate();
                 }
             }
-
-        } catch (SQLException e) {
+            conn.commit();
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
+            }
             throw new RuntimeException(e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
         }
     }
 

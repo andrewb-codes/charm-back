@@ -1,8 +1,10 @@
 package ru.andrewb.charm.back.normalizer;
 
+import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.dto.Action;
 import ru.andrewb.charm.back.dto.CharmDto;
 
+@UtilityClass
 public class CharmDtoDefaults {
 
     public static final Action DEFAULT_ACTION = Action.SKIP;
@@ -11,7 +13,7 @@ public class CharmDtoDefaults {
         if (dto.getAction() == null) {
             dto.setAction(DEFAULT_ACTION);
         }
-   
+
         if (dto.getAction() == Action.SKIP) {
             dto.setToProfileId(null);
         }
