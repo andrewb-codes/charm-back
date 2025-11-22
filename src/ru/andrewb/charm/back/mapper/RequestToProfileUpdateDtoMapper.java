@@ -3,7 +3,6 @@ package ru.andrewb.charm.back.mapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
@@ -29,7 +28,6 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
         return map(req, new ProfileUpdateDto());
     }
 
-    @SneakyThrows
     @Override
     public ProfileUpdateDto map(HttpServletRequest req, ProfileUpdateDto dto) {
         dto.setName(stripToNull(req.getParameter("name")));

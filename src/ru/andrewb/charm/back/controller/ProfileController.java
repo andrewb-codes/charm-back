@@ -87,27 +87,19 @@ public class ProfileController extends HttpServlet {
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
             final String ctx = req.getContextPath();
-            boolean fromList = "list".equals(req.getParameter("from"));
-
-            String redirectUrl = fromList
-                    ? ctx + PROFILES_URL
-                    : ctx + PROFILE_URL + "?id=" + id;
+            String redirectUrl = ctx + PROFILE_URL + "?id=" + id;
 
             String back = req.getParameter("back");
             if (SecurityRules.isSafeInternalRedirect(ctx, back, PROFILES_URL, PROFILE_URL)) {
-                if (fromList || back.startsWith(ctx + PROFILES_URL)) {
-                    redirectUrl = back;
-                }
+                redirectUrl = back;
             }
 
             var vr = profileUpdateValidator.validate(dto);
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
-                if (!fromList) {
-                    Flash.putField(req, "name", dto.getName());
-                    Flash.putField(req, "surname", dto.getSurname());
-                    Flash.putField(req, "about", dto.getAbout());
-                }
+                Flash.putField(req, "name", dto.getName());
+                Flash.putField(req, "surname", dto.getSurname());
+                Flash.putField(req, "about", dto.getAbout());
                 resp.sendRedirect(redirectUrl);
                 return;
             }
@@ -149,13 +141,5 @@ public class ProfileController extends HttpServlet {
         }
 
         resp.sendRedirect(req.getContextPath() + PROFILE_URL);
-    }
-
-    private static boolean isSafeBack(String back, String ctx) {
-        if (back == null || back.isBlank()) return false;
-        if (back.contains("\r") || back.contains("\n")) return false;
-        String profiles = ctx + PROFILES_URL;
-        String profile = ctx + PROFILE_URL;
-        return back.startsWith(profiles) || back.startsWith(profile);
     }
 }
