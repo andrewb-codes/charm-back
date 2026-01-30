@@ -1,13 +1,16 @@
 package ru.andrewb.charm.back.utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.dto.Query;
 
+import javax.sql.DataSource;
+import java.io.Closeable;
+import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 
 @UtilityClass
 public class ConnectionManager {
@@ -22,27 +25,61 @@ public class ConnectionManager {
     public static final int MAX_ROWS = Integer.parseInt(MAX_ROWS_STR != null ? MAX_ROWS_STR : "1000");
     private static final String QUERY_TIMEOUT_STR = Config.get("app.datasource.query-timeout");
     public static final int QUERY_TIMEOUT = Integer.parseInt(QUERY_TIMEOUT_STR != null ? QUERY_TIMEOUT_STR : "10");
+    private static final String POOL_SIZE_STR = Config.get("app.datasource.pool.size");
+    public static final int POOL_SIZE = Integer.parseInt(POOL_SIZE_STR != null ? POOL_SIZE_STR : "10");
+    private static final String ACQUIRE_TIMEOUT_STR = Config.get("app.datasource.pool.acquire-timeout-ms");
+    public static final long ACQUIRE_TIMEOUT_MS = Long.parseLong(ACQUIRE_TIMEOUT_STR != null ? ACQUIRE_TIMEOUT_STR : "3000");
+
+    private static volatile DataSource dataSource;
 
     static {
-        if (DRIVER != null) {
-            try {
-                Class.forName(DRIVER);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+        init();
+    }
+
+    private static void init() {
+        try {
+            if (DRIVER != null) Class.forName(DRIVER);
+
+            if (Config.getFF("use-custom-pool")) {
+                dataSource = new CustomDataSource(URL, USER, PASSWORD, POOL_SIZE, ACQUIRE_TIMEOUT_MS);
+            } else {
+                var config = new HikariConfig();
+                config.setJdbcUrl(URL);
+                config.setUsername(USER);
+                config.setPassword(PASSWORD);
+                config.setMaximumPoolSize(POOL_SIZE);
+                config.setMinimumIdle(5);
+                config.setConnectionTimeout(10000);
+                config.setIdleTimeout(60000);
+                config.setMaxLifetime(1800000);
+
+                dataSource = new HikariDataSource(config);
             }
+
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to init ConnectionManager", e);
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+     public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
     public static PreparedStatement getPreparedStmt(Connection conn, Query query) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(query.sql());
-        List<Object> args = query.args();
+        ps.setFetchSize(FETCH_SIZE);
+        ps.setMaxRows(MAX_ROWS);
+        ps.setQueryTimeout(QUERY_TIMEOUT);
+
+        var args = query.args();
         for (int i = 0; i < args.size(); i++) {
             ps.setObject(i + 1, args.get(i));
         }
         return ps;
+    }
+
+    public static void closePool() throws IOException {
+        var ds = dataSource;
+        if (ds != null) ((Closeable) ds).close();
     }
 }

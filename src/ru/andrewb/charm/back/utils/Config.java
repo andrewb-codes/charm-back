@@ -37,6 +37,10 @@ public class Config {
         return FILE_PROPS.getProperty(key);
     }
 
+    public static boolean getFF(String ffKey) {
+        return Boolean.parseBoolean(get("app.ff." + ffKey));
+    }
+
     public static String getOrDefault(String key, String def) {
         String v = get(key);
         return (v != null) ? v : def;
