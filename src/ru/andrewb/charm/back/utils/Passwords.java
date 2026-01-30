@@ -21,10 +21,10 @@ public class Passwords {
     public static String requireValidOrThrow(String rawPassword, int minLen) {
         String pwd = Passwords.normalize(rawPassword);
         if (!Passwords.hasText(pwd)) {
-            throw new BadRequestException("password is required");
+            throw new BadRequestException("error.password.required");
         }
         if (!Passwords.lengthAtLeast(pwd, minLen)) {
-            throw new BadRequestException("invalid password");
+            throw new BadRequestException("error.password.too-short");
         }
         return pwd;
     }

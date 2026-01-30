@@ -1,16 +1,20 @@
-truncate table profile_like;
-truncate table profile restart identity cascade;
+TRUNCATE TABLE profile_like;
+TRUNCATE TABLE profile RESTART IDENTITY CASCADE;
 
-insert into profile (email, password, name, surname, birthdate, about, gender, status, role) values
-('admin@charm.ru', 'qwerty', 'Admin', null, null, null, null, 'INACTIVE', 'ADMIN'),
-('ivanov@mail.ru', '123', 'Ivan', 'Ivanov', '2001-12-03', 'I am QA', 'MALE','ACTIVE', 'USER'),
-('sidorova@mail.ru', '456', 'Elena', 'Sidorova', '1999-09-01', 'I am Java Dev', 'FEMALE', 'ACTIVE', 'USER');
+INSERT INTO profile (email, password, "name", surname, birthdate, about, gender, status, role)
+VALUES
+    ('admin@charm.ru',   'qwerty', 'Admin',  NULL,         NULL,               NULL,           NULL,     'INACTIVE','ADMIN'),
+    ('ivanov@mail.ru',   '123',    'Ivan',   'Ivanov',     '2001-12-03'::DATE, 'I am QA',      'MALE',   'ACTIVE',  'USER'),
+    ('sidorova@mail.ru', '456',    'Elena',  'Sidorova',   '1999-09-01'::DATE, 'I am Java Dev','FEMALE', 'ACTIVE',  'USER');
 
-insert into profile_like (from_profile, to_profile, is_like, is_match)
-select p1."id", p2."id", true, true
-from profile p1, profile p2
-where p1.email='ivanov@mail.ru' and p2.email='sidorova@mail.ru'
-union all
-select p2."id", p1."id", true, true
-from profile p1, profile p2
-where p1.email='ivanov@mail.ru' and p2.email='sidorova@mail.ru';
+INSERT INTO profile_like (a_profile, b_profile, liked_a, liked_b)
+SELECT LEAST(p1.id, p2.id), GREATEST(p1.id, p2.id), TRUE, TRUE
+FROM profile p1, profile p2
+WHERE p1.email = 'ivanov@mail.ru' AND p2.email = 'sidorova@mail.ru';
+
+INSERT INTO profile_like (a_profile, b_profile, liked_a, liked_b)
+SELECT LEAST(p1.id, p2.id), GREATEST(p1.id, p2.id),
+       CASE WHEN p1.id < p2.id THEN TRUE ELSE NULL END,
+       CASE WHEN p1.id < p2.id THEN NULL ELSE TRUE END
+FROM profile p1, profile p2
+WHERE p1.email = 'sidorova@mail.ru' AND p2.email = 'admin@charm.ru';

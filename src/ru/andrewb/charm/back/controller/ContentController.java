@@ -4,6 +4,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ContentService;
@@ -11,6 +12,7 @@ import ru.andrewb.charm.back.service.ContentService;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static ru.andrewb.charm.back.utils.RequestParams.rid;
 import static ru.andrewb.charm.back.utils.UrlUtils.CONTENT_URL;
 
 @WebServlet(CONTENT_URL + "/*")
@@ -32,7 +34,7 @@ public class ContentController extends HttpServlet {
                 String appPath = "/WEB-INF" + contentPath.substring("/app".length());
                 try (InputStream in = getServletContext().getResourceAsStream(appPath)) {
                     if (in == null) {
-                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "resource not found");
+                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "error.content.not-found");
                         return;
                     }
                     in.transferTo(resp.getOutputStream());
@@ -45,7 +47,7 @@ public class ContentController extends HttpServlet {
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (RuntimeException e) {
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "io error");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "error.internal");
         }
     }
 }

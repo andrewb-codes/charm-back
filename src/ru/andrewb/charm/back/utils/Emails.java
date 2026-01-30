@@ -27,10 +27,10 @@ public class Emails {
     public static String requireValidOrThrow(String rawEmail) {
         String email = Emails.normalize(rawEmail);
         if (!Emails.hasText(email)) {
-            throw new BadRequestException("email is required");
+            throw new BadRequestException("error.email.required");
         }
         if (!Emails.matchesFormat(email)) {
-            throw new BadRequestException("invalid email");
+            throw new BadRequestException("error.email.invalid");
         }
         return email;
     }

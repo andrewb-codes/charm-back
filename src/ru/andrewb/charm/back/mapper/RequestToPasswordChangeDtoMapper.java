@@ -23,6 +23,7 @@ public class RequestToPasswordChangeDtoMapper implements Mapper<HttpServletReque
 
     @Override
     public PasswordChangeDto map(HttpServletRequest req, PasswordChangeDto dto) {
+        dto.setVersion(Integer.parseInt(req.getParameter("version")));
         dto.setCurrentPassword(stripToNull(req.getParameter("currentPassword")));
         dto.setNewPassword(stripToNull(req.getParameter("newPassword")));
         dto.setConfirmPassword(stripToNull(req.getParameter("confirmPassword")));

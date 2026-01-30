@@ -83,9 +83,10 @@ public class ProfileUpdateQueryBuilder {
         return this;
     }
 
-    public Query build(Long id) {
-        sb.append(" where id = ?");
+    public Query build(Long id, Integer version) {
+        sb.append(", version = version + 1 where id = ? and version = ?");
         args.add(id);
+        args.add(version);
         return new Query(sb.toString(), args);
     }
 }

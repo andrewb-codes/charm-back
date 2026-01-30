@@ -15,4 +15,5 @@ public class EmailChangeDto {
     String newEmail;
 
     String currentPassword;
+    Integer version;
 }

@@ -9,7 +9,11 @@ import ru.andrewb.charm.back.dto.CharmDto;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CharmService {
@@ -18,6 +22,7 @@ public class CharmService {
 
     private final ProfileDao profileDao = ProfileDao.getInstance();
     private final ProfileLikeDao profileLikeDao = ProfileLikeDao.getInstance();
+    private final Map<Long, Queue<ProfileSimpleDto>> cache = new ConcurrentHashMap<>();
 
     public static CharmService getInstance() {
         return INSTANCE;
@@ -29,12 +34,17 @@ public class CharmService {
         Action action = dto.getAction();
         boolean isLike = action == Action.LIKE;
 
-        if (dto.getAction() != Action.SKIP && dto.getToProfileId() != null) {
+        if (action != Action.SKIP && toId != null) {
             profileLikeDao.likeOrDislike(fromId, toId, isLike);
         }
 
-        List<ProfileSimpleDto> suitableProfiles = profileDao.findSuitableForUser(fromId, 1);
+        AtomicReference<ProfileSimpleDto> out = new AtomicReference<>();
+        cache.compute(fromId, (k, q) -> {
+            if (q == null || q.isEmpty()) q = profileDao.findSuitableForUser(fromId, 5);
+            out.set(q.poll());
+            return q;
+        });
 
-        return suitableProfiles.stream().findFirst();
+        return Optional.ofNullable(out.get());
     }
 }

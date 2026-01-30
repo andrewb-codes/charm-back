@@ -21,6 +21,7 @@ public class ProfileUpdateDtoToProfileMapper implements Mapper<ProfileUpdateDto,
 
     @Override
     public Profile map(ProfileUpdateDto dto, Profile profile) {
+        if (dto.getVersion() != null) profile.setVersion(dto.getVersion());
         if (dto.getName() != null) profile.setName(dto.getName());
         if (dto.getSurname() != null) profile.setSurname(dto.getSurname());
         if (dto.getBirthdate() != null) profile.setBirthdate(dto.getBirthdate());

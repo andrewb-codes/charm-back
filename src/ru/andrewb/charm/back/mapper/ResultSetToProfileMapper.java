@@ -28,6 +28,7 @@ public class ResultSetToProfileMapper implements Mapper<ResultSet, Profile> {
     public Profile map(ResultSet rs, Profile profile) {
         try {
             profile.setId(rs.getLong("id"));
+            profile.setVersion(rs.getInt("version"));
             profile.setEmail(rs.getString("email"));
             profile.setPassword(rs.getString("password"));
             profile.setName(rs.getString("name"));

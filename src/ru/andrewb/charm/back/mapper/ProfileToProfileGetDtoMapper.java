@@ -25,6 +25,7 @@ public class ProfileToProfileGetDtoMapper implements Mapper<Profile, ProfileGetD
     @Override
     public ProfileGetDto map(Profile profile, ProfileGetDto dto) {
         dto.setId(profile.getId());
+        dto.setVersion(profile.getVersion());
         dto.setEmail(profile.getEmail());
         dto.setName(profile.getName());
         dto.setSurname(profile.getSurname());

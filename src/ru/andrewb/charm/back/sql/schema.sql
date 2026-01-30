@@ -1,26 +1,34 @@
-drop table if exists profile_like;
-drop table if exists profile cascade;
+DROP TABLE IF EXISTS profile_like;
+DROP TABLE IF EXISTS profile CASCADE;
 
-create table profile (
-    id              bigserial primary key,
-    email           varchar not null unique,
-    password        varchar not null,
-    "name"          varchar,
-    surname         varchar,
-    birthdate       date,
-    about           text,
-    gender          varchar,
-    photo           varchar,
-    status          varchar not null default 'INACTIVE',
-    role            varchar not null default 'USER',
-    created_date    timestamp not null default current_timestamp
+CREATE TABLE profile (
+    id              BIGSERIAL PRIMARY KEY,
+    email           VARCHAR NOT NULL UNIQUE,
+    password        VARCHAR NOT NULL,
+    "name"          VARCHAR,
+    surname         VARCHAR,
+    birthdate       DATE,
+    about           TEXT,
+    gender          VARCHAR,
+    photo           VARCHAR,
+    status          VARCHAR NOT NULL DEFAULT 'INACTIVE',
+    role            VARCHAR NOT NULL DEFAULT 'USER',
+    created_date    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version         INT NOT NULL DEFAULT 0
 );
 
-create table profile_like (
-    from_profile    bigint not null references profile (id),
-    to_profile      bigint not null references profile (id),
-    is_like         boolean not null,
-    is_match        boolean not null,
-    created_date    timestamp not null default current_timestamp,
-    primary key (from_profile, to_profile)
+CREATE TABLE profile_like (
+    a_profile       BIGINT NOT NULL REFERENCES profile (id),
+    b_profile       BIGINT NOT NULL REFERENCES profile (id),
+    liked_a         BOOLEAN,
+    liked_b         BOOLEAN,
+    created_at      TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT profile_like_pk PRIMARY KEY (a_profile, b_profile),
+    CONSTRAINT profile_like_chk CHECK (a_profile < b_profile),
+    FOREIGN KEY (a_profile) REFERENCES profile(id) ON DELETE CASCADE,
+    FOREIGN KEY (b_profile) REFERENCES profile(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_profile_like_a ON profile_like(a_profile);
+CREATE INDEX idx_profile_like_b ON profile_like(b_profile);

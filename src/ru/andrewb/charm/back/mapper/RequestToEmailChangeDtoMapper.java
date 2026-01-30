@@ -24,6 +24,7 @@ public class RequestToEmailChangeDtoMapper implements Mapper<HttpServletRequest,
 
     @Override
     public EmailChangeDto map(HttpServletRequest req, EmailChangeDto dto) {
+        dto.setVersion(Integer.parseInt(req.getParameter("version")));
         dto.setNewEmail(stripToNull(req.getParameter("email")));
         dto.setCurrentPassword(stripToNull(req.getParameter("currentPassword")));
         return dto;
