@@ -13,6 +13,7 @@
             <form method="post" action="${cpath}/profile" enctype="multipart/form-data">
                 <input type="hidden" name="_method" value="PUT">
                 <input type="hidden" name="id" value="${profile.id}">
+                <input type="hidden" name="version" value="${profile.version}">
 
                 <table class="table--form">
                     <tr>

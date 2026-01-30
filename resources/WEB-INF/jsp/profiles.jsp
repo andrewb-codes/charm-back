@@ -238,6 +238,7 @@
             </tr>
 
             <c:forEach var="profile" items="${profiles}">
+                <input type="hidden" name="versionWithIds" value="${profile.id}_${profile.version}">
                 <tr>
                     <td><h4><c:out value="${profile.id}"/></h4></td>
                     <td><h4><c:out value="${profile.email}"/></h4></td>

@@ -18,6 +18,7 @@
         <h3>${wordBundle.getWord("change-email")}</h3>
         <form method="post" action="${cpath}/email?id=${profile.id}">
             <input type="hidden" name="_method" value="put"/>
+            <input type="hidden" name="version" value="${profile.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("email")}</h4></td>
@@ -58,6 +59,7 @@
         <h3>${wordBundle.getWord("change-password")}</h3>
         <form method="post" action="${cpath}/password?id=${profile.id}">
             <input type="hidden" name="_method" value="put"/>
+            <input type="hidden" name="version" value="${profile.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("current-password")}</h4></td>
