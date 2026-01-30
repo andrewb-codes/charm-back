@@ -5,36 +5,15 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
-import ru.andrewb.charm.back.model.Gender;
-import ru.andrewb.charm.back.model.Role;
-import ru.andrewb.charm.back.model.Status;
 
 import java.io.IOException;
 import java.util.Locale;
 
-import static ru.andrewb.charm.back.normalizer.ProfileFilterDefaults.AVAILABLE_PAGE_SIZES;
 
 @WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
 public class HiddenHttpMethodFilter implements Filter {
 
     public static final String METHOD_PARAM = "_method";
-
-    @Override
-    public void init(FilterConfig config) {
-        ServletContext servletContext = config.getServletContext();
-        if (servletContext.getAttribute("genders") == null) {
-            servletContext.setAttribute("genders", Gender.values());
-        }
-        if (servletContext.getAttribute("statuses") == null) {
-            servletContext.setAttribute("statuses", Status.values());
-        }
-        if (servletContext.getAttribute("roles") == null) {
-            servletContext.setAttribute("roles", Role.values());
-        }
-        if (servletContext.getAttribute("availablePageSizes") == null) {
-            servletContext.setAttribute("availablePageSizes", AVAILABLE_PAGE_SIZES);
-        }
-    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {

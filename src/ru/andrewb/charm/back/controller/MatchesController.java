@@ -17,7 +17,6 @@ import static ru.andrewb.charm.back.utils.UrlUtils.MATCHES_URL;
 import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
 
 @WebServlet(MATCHES_URL)
-@Slf4j
 public class MatchesController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -40,7 +39,6 @@ public class MatchesController extends HttpServlet {
         if (hasNext) items = items.subList(0, f.getPageSize());
 
         boolean hasPrev = f.getPage() > 1;
-
 
         req.setAttribute("matches", items);
         req.setAttribute("filter", f);

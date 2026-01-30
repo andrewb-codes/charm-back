@@ -15,7 +15,6 @@ import java.io.InputStream;
 import static ru.andrewb.charm.back.utils.RequestParams.rid;
 import static ru.andrewb.charm.back.utils.UrlUtils.CONTENT_URL;
 
-@Slf4j
 @WebServlet(CONTENT_URL + "/*")
 public class ContentController extends HttpServlet {
 
