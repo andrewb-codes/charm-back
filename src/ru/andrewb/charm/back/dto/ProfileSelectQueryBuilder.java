@@ -13,7 +13,7 @@ import java.util.List;
 public class ProfileSelectQueryBuilder {
 
     public static final String SELECT_BASE = """
-            select id, email, password, "name", surname, birthdate, about, gender, photo, status, role
+            select id, email, password, "name", surname, birthdate, about, gender, photo, status, role, version
             from profile
             where '' = ''
             """;

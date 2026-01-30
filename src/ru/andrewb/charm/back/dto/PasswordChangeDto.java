@@ -12,4 +12,5 @@ public class PasswordChangeDto {
     String currentPassword;
     String newPassword;
     String confirmPassword;
+    Integer version;
 }

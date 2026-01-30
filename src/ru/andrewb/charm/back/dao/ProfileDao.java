@@ -7,6 +7,7 @@ import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.Status;
+import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 import ru.andrewb.charm.back.utils.ConnectionManager;
 
 import java.sql.*;
@@ -22,7 +23,7 @@ public class ProfileDao {
             "INSERT INTO profile(email, password) VALUES (?, ?) RETURNING id";
     //language=POSTGRES-PSQL
     public static final String SQL_UPDATE_STATUSES =
-            "UPDATE profile SET status = ? WHERE id = ANY ( ? )";
+            "UPDATE profile SET status = ?, version = version + 1 WHERE id = ? AND version = ?";
     //language=POSTGRES-PSQL
     private static final String SQL_DELETE_BY_ID =
             "DELETE FROM profile WHERE id = ?";
@@ -34,38 +35,44 @@ public class ProfileDao {
             "SELECT 1 FROM profile WHERE email = ? AND id <> ?";
     //language=POSTGRES-PSQL
     private static final String SQL_FIND_SUITABLE = """
-            WITH cup AS (
+            WITH me AS (
                 SELECT id, gender, birthdate
                 FROM profile
                 WHERE id = ?
             )
-            SELECT p.id, p.name, p.surname, p.birthdate, p.about, p.photo
+            SELECT p.id, p."name", p.surname, p.birthdate, p.about, p.photo
             FROM profile p
-            JOIN cup ON true
+            CROSS JOIN me
             LEFT JOIN profile_like l
-              ON l.from_profile = cup.id    -- голосовал ТЕКУЩИЙ пользователь
-             AND l.to_profile   = p.id      -- за эту анкету
-            WHERE l.from_profile IS NULL    -- текущий пользователь ещё не голосовал за p
-              AND p.id <> cup.id
+              ON l.a_profile = LEAST(me.id, p.id)
+             AND l.b_profile = GREATEST(me.id, p.id)
+            WHERE p.id <> me.id
               AND p.status = 'ACTIVE'
-              -- пол: фильтр включается только если он известен у текущего юзера
-              AND (cup.gender IS NULL OR (p.gender IS NOT NULL AND p.gender <> cup.gender))
-              -- возрастное окно ±5 лет: включается только если известна ДР у текущего юзера
-              AND (cup.birthdate IS NULL
-                   OR p.birthdate BETWEEN (cup.birthdate - INTERVAL '5 years')
-                                    AND   (cup.birthdate + INTERVAL '5 years'))
+              -- текущий (me) еще не голосовал за p
+              AND (
+                   l.a_profile IS NULL
+                OR (me.id = l.a_profile AND l.liked_a IS NULL)
+                OR (me.id = l.b_profile AND l.liked_b IS NULL)
+              )
+              -- пол (если известен пол у текущего)
+              AND (me.gender IS NULL OR (p.gender IS NOT NULL AND p.gender <> me.gender))
+              -- возрастное окно +- 5 лет (если известно ДР у текущего)
+              AND (me.birthdate IS NULL
+                    OR p.birthdate BETWEEN (me.birthdate - INTERVAL '5 years')
+                                       AND (me.birthdate + INTERVAL '5 years'))
             ORDER BY RANDOM()
             LIMIT ?
             """;
     // language=POSTGRES-PSQL
     public static final String SQL_FIND_MATCHES = """
             SELECT p.*
-            FROM profile p
-            JOIN profile_like l ON p.id = l.to_profile
-            WHERE l.from_profile = ? AND l.is_match = true
-            ORDER BY l.created_date DESC
-            LIMIT ?
-            OFFSET ?
+            FROM profile_like l
+            JOIN profile p
+              ON p.id = CASE WHEN l.a_profile = ? THEN l.b_profile ELSE l.a_profile END
+            WHERE (l.a_profile = ? OR l.b_profile = ?)
+              AND l.liked_a IS TRUE AND l.liked_b IS TRUE
+            ORDER BY l.updated_at DESC
+            LIMIT ? OFFSET ?
             """;
 
     private static final ProfileDao INSTANCE = new ProfileDao();
@@ -158,8 +165,10 @@ public class ProfileDao {
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_FIND_MATCHES)) {
             ps.setLong(1, id);
-            ps.setInt(2, limit);
-            ps.setInt(3, offset);
+            ps.setLong(2, id);
+            ps.setLong(3, id);
+            ps.setInt(4, limit);
+            ps.setInt(5, offset);
 
             try (ResultSet rs = ps.executeQuery()) {
                 List<Profile> profiles = new ArrayList<>();
@@ -184,10 +193,13 @@ public class ProfileDao {
                 .addGender(profile.getGender())
                 .addStatus(profile.getStatus())
                 .addPhoto(profile.getPhoto())
-                .build(profile.getId());
+                .build(profile.getId(), profile.getVersion());
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
-            ps.executeUpdate();
+            int updated =  ps.executeUpdate();
+            if (updated == 0) {
+                throw new OptimisticLockException("error.optimistic-lock");
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -200,42 +212,34 @@ public class ProfileDao {
             conn.setAutoCommit(false);
 
             try (PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_STATUSES)) {
-                Map<Status, Set<Long>> updateMap =
-                        dtoList.stream().collect(Collectors.groupingBy(
-                                        ProfileUpdateStatusDto::getStatus,
-                                        Collectors.mapping(ProfileUpdateStatusDto::getId, Collectors.toSet())
-                                )
-                        );
-                for (Map.Entry<Status, Set<Long>> entry : updateMap.entrySet()) {
-                    Long[] idArray = entry.getValue().toArray(new Long[0]);
-                    Array sqlArray = null;
-                    try {
-                        sqlArray = conn.createArrayOf("bigint", idArray);
-                        ps.setString(1, entry.getKey().toString());
-                        ps.setArray(2, sqlArray);
-                        ps.addBatch();
-                    } finally {
-                        if (sqlArray != null) sqlArray.free();
+                for (ProfileUpdateStatusDto dto : dtoList) {
+                    ps.setString(1, dto.getStatus().toString());
+                    ps.setLong(2, dto.getId());
+                    ps.setInt(3, dto.getVersion());
+                    ps.addBatch();
+                }
+                int[] res = ps.executeBatch();
+
+                List<Long> conflicted = new ArrayList<>();
+                for (int i = 0; i < res.length; i++) {
+                    if (res[i] == 0 || res[i] == Statement.EXECUTE_FAILED) {
+                        conflicted.add(dtoList.get(i).getId());
                     }
                 }
-                ps.executeBatch();
+                if (!conflicted.isEmpty()) {
+                    conn.rollback();
+                    throw new OptimisticLockException("error.optimistic-lock");
+                }
+                conn.commit();
             }
-            conn.commit();
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ignored) {
-                }
+                try { conn.rollback(); } catch (SQLException ignored) {}
             }
             throw new RuntimeException(e);
         } finally {
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ignored) {
-                }
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
             }
         }
     }
@@ -276,15 +280,15 @@ public class ProfileDao {
         }
     }
 
-    public List<ProfileSimpleDto> findSuitableForUser(Long userId, int limit) {
+    public Queue<ProfileSimpleDto> findSuitableForUser(Long userId, int limit) {
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_FIND_SUITABLE)) {
             ps.setObject(1, userId);
             ps.setInt(2, Math.max(1, limit));
             try (ResultSet rs = ps.executeQuery()) {
-                List<ProfileSimpleDto> profiles = new ArrayList<>();
+                Queue<ProfileSimpleDto> profiles = new LinkedList<>();
                 while (rs.next()) {
-                    profiles.add(rsToProfileSimpleDtoMapper.map(rs));
+                    profiles.offer(rsToProfileSimpleDtoMapper.map(rs));
                 }
                 return profiles;
             }

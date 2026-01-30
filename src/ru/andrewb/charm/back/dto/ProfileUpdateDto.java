@@ -26,4 +26,5 @@ public class ProfileUpdateDto {
     Gender gender;
     Status status;
     Part photo;
+    Integer version;
 }

@@ -16,4 +16,6 @@ public class ProfileUpdateStatusDto {
     Long id;
     @ToString.Include
     Status status;
+
+    Integer version;
 }

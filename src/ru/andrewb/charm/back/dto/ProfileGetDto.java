@@ -33,4 +33,5 @@ public class ProfileGetDto {
     Status status;
     String photo;
     Role role;
+    Integer version;
 }

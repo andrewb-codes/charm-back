@@ -30,6 +30,7 @@ public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletReques
 
     @Override
     public ProfileUpdateDto map(HttpServletRequest req, ProfileUpdateDto dto) {
+        dto.setVersion(Integer.parseInt(req.getParameter("version")));
         dto.setName(stripToNull(req.getParameter("name")));
         dto.setSurname(stripToNull(req.getParameter("surname")));
         dto.setAbout(stripToNull(req.getParameter("about")));
