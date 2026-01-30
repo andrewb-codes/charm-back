@@ -54,11 +54,17 @@ public class ErrorFilter implements Filter {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("status", "error");
             if (code != null) body.put("code", code);
-            if (msg != null && !msg.isBlank()) body.put("message", msg);
+
+            WordBundle wb = (WordBundle) req.getAttribute("wordBundle");
+            if (msg != null && !msg.isBlank()) {
+                String outMsg = (wb != null && msg.startsWith("error."))
+                        ? wb.getWord(msg)
+                        : msg;
+                body.put("message", outMsg);
+            }
 
             Object errorsAttr = req.getAttribute("errors");
             if (errorsAttr instanceof List<?> list && !list.isEmpty()) {
-                WordBundle wb = (WordBundle) req.getAttribute("wordBundle");
                 List<String> errors = list.stream()
                         .map(String::valueOf)
                         .map(codeStr -> wb != null ? wb.getWord(codeStr) : codeStr)

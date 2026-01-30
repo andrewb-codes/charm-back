@@ -9,14 +9,14 @@ public final class RequestParams {
     public static long requirePositiveLong(HttpServletRequest req, String name) {
         String raw = req.getParameter(name);
         if (raw == null || raw.isBlank()) {
-            throw new BadRequestException("Param '" + name + "' is required");
+            throw new BadRequestException("error.param.required");
         }
         try {
             long v = Long.parseLong(raw);
-            if (v <= 0) throw new NumberFormatException("non-positive");
+            if (v <= 0) throw new BadRequestException("error.param.invalid");
             return v;
         } catch (NumberFormatException e) {
-            throw new BadRequestException("Param '" + name + "' must be positive long");
+            throw new BadRequestException("error.param.invalid");
         }
     }
 
