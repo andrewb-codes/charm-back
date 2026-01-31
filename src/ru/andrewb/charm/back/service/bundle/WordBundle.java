@@ -1,34 +1,30 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.service.bundle;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class WordBundle {
+public abstract class WordBundle {
 
     private final ResourceBundle resourceBundle;
 
-    public WordBundle(String lang) {
-        String language = "en";
-        if ("ru".equals(lang)) {
-            language = "ru";
-        }
-
-        Locale locale = Locale.of(language);
-
+    protected WordBundle(Locale locale) {
         this.resourceBundle = ResourceBundle.getBundle("words", locale);
     }
 
     public String getWord(String key) {
-        String result;
         try {
             return resourceBundle.getString(key);
         } catch (MissingResourceException e1) {
             try {
                 return resourceBundle.getString(key.toLowerCase());
             } catch (MissingResourceException e2) {
-                return key;
+                // fallback: last path segment
+                String[] pathArray = key.split("\\.");
+                return pathArray[pathArray.length - 1];
             }
+        } catch (Exception e) {
+            return "* empty *";
         }
     }
 }

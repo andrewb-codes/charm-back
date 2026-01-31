@@ -16,7 +16,7 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParams;
+import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.validator.RegistrationValidator;
 
@@ -25,11 +25,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_REST_URL;
+import static ru.andrewb.charm.back.utils.Urls.PROFILE_REST_URL;
 
-@WebServlet(PROFILE_REST_URL)
 @Slf4j
 @MultipartConfig
+@WebServlet(PROFILE_REST_URL)
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -43,7 +43,7 @@ public class ProfileController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json;charset=UTF-8");
         try (PrintWriter w = resp.getWriter()) {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dtoOpt = service.findById(id);
             if (dtoOpt.isPresent()) {
                 jsonMapper.writeValue(w, dtoOpt.get());
@@ -90,7 +90,7 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
             var vr = profileUpdateValidator.validate(dto);
@@ -118,7 +118,7 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
 
             boolean deleted = service.delete(id);
             if (!deleted) {

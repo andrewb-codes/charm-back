@@ -3,8 +3,8 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
-import ru.andrewb.charm.back.utils.Emails;
-import ru.andrewb.charm.back.utils.Passwords;
+import ru.andrewb.charm.back.utils.EmailUtils;
+import ru.andrewb.charm.back.utils.PasswordUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EmailChangeValidator implements Validator<EmailChangeDto> {
@@ -23,16 +23,16 @@ public class EmailChangeValidator implements Validator<EmailChangeDto> {
             return vr;
         }
 
-        String newEmail = Emails.normalize(dto.getNewEmail());
-        boolean hasEmail = Emails.hasText(newEmail);
+        String newEmail = EmailUtils.normalize(dto.getNewEmail());
+        boolean hasEmail = EmailUtils.hasText(newEmail);
         if (!hasEmail) {
             vr.addError("error.email.required");
-        } else if (!Emails.matchesFormat(newEmail)) {
+        } else if (!EmailUtils.matchesFormat(newEmail)) {
             vr.addError("error.email.invalid");
         }
 
-        String currPwd = Passwords.normalize(dto.getCurrentPassword());
-        boolean hasCurrPwd = Passwords.hasText(currPwd);
+        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
+        boolean hasCurrPwd = PasswordUtils.hasText(currPwd);
         if (!hasCurrPwd) {
             vr.addError("error.password.current-required");
         }

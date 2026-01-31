@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.mapper.JsonMapper;
-import ru.andrewb.charm.back.utils.WordBundle;
+import ru.andrewb.charm.back.service.bundle.WordBundle;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -17,8 +17,8 @@ import static jakarta.servlet.RequestDispatcher.*;
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static ru.andrewb.charm.back.security.SecurityRules.isRest;
 
-@WebFilter(value = "/*", dispatcherTypes = DispatcherType.ERROR)
 @Slf4j
+@WebFilter(value = "/*", dispatcherTypes = DispatcherType.ERROR)
 public class ErrorFilter implements Filter {
 
     private final JsonMapper jsonMapper = JsonMapper.getInstance();

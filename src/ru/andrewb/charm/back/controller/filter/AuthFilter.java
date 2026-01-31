@@ -11,8 +11,8 @@ import ru.andrewb.charm.back.model.Role;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.security.SecurityRules.*;
-import static ru.andrewb.charm.back.utils.UrlUtils.LOGIN_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILE_URL;
+import static ru.andrewb.charm.back.utils.Urls.LOGIN_URL;
+import static ru.andrewb.charm.back.utils.Urls.PROFILE_URL;
 
 
 @WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)

@@ -6,7 +6,7 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import java.util.regex.Pattern;
 
 @UtilityClass
-public class Emails {
+public class EmailUtils {
     private static final Pattern EMAIL_RE = Pattern.compile(
             "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$",
             Pattern.CASE_INSENSITIVE
@@ -25,11 +25,11 @@ public class Emails {
     }
 
     public static String requireValidOrThrow(String rawEmail) {
-        String email = Emails.normalize(rawEmail);
-        if (!Emails.hasText(email)) {
+        String email = EmailUtils.normalize(rawEmail);
+        if (!EmailUtils.hasText(email)) {
             throw new BadRequestException("error.email.required");
         }
-        if (!Emails.matchesFormat(email)) {
+        if (!EmailUtils.matchesFormat(email)) {
             throw new BadRequestException("error.email.invalid");
         }
         return email;

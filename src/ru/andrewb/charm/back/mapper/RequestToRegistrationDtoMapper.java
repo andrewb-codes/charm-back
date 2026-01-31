@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 
-import static ru.andrewb.charm.back.utils.Strings.stripToNull;
+import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToRegistrationDtoMapper implements Mapper<HttpServletRequest, RegistrationDto> {

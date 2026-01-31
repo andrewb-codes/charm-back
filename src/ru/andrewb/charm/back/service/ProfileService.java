@@ -13,8 +13,8 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
-import ru.andrewb.charm.back.utils.Emails;
-import ru.andrewb.charm.back.utils.Passwords;
+import ru.andrewb.charm.back.utils.EmailUtils;
+import ru.andrewb.charm.back.utils.PasswordUtils;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -38,12 +38,12 @@ public class ProfileService {
     }
 
     public Long save(RegistrationDto dto) {
-        String email = Emails.requireValidOrThrow(dto.getEmail());
+        String email = EmailUtils.requireValidOrThrow(dto.getEmail());
         if (dao.existsEmail(email, null)) {
             throw new DuplicateEmailException("error.email.exists");
         }
 
-        String pwd = Passwords.requireValidOrThrow(dto.getPassword(), 6);
+        String pwd = PasswordUtils.requireValidOrThrow(dto.getPassword(), 6);
 
         Profile p = registrationDtoToProfileMapper.map(dto);
         p.setEmail(email);
@@ -112,12 +112,12 @@ public class ProfileService {
         var p = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
-        String currPwd = Passwords.normalize(dto.getCurrentPassword());
-        if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
+        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
+        if (!PasswordUtils.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
             throw new BadRequestException("error.password.invalid-current");
         }
 
-        String newEmail = Emails.requireValidOrThrow(dto.getNewEmail());
+        String newEmail = EmailUtils.requireValidOrThrow(dto.getNewEmail());
         if (newEmail.equalsIgnoreCase(p.getEmail())) {
             throw new BadRequestException("error.email.same-as-current");
         }
@@ -133,12 +133,12 @@ public class ProfileService {
         var p = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
-        String currPwd = Passwords.normalize(dto.getCurrentPassword());
-        if (!Passwords.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
+        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
+        if (!PasswordUtils.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
             throw new BadRequestException("error.password.invalid-current");
         }
 
-        String newPwd = Passwords.requireValidOrThrow(dto.getNewPassword(), 6);
+        String newPwd = PasswordUtils.requireValidOrThrow(dto.getNewPassword(), 6);
         if (newPwd.equals(currPwd)) {
             throw new BadRequestException("error.password.same-as-current");
         }
@@ -148,11 +148,11 @@ public class ProfileService {
     }
 
     public UserDetailsDto login(LoginDto dto) {
-        String email = Emails.requireValidOrThrow(dto.getEmail());
+        String email = EmailUtils.requireValidOrThrow(dto.getEmail());
         var existing = dao.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("error.login.bad-credentials"));
 
-        String pwd = Passwords.normalize(dto.getPassword());
+        String pwd = PasswordUtils.normalize(dto.getPassword());
         if (!existing.getPassword().equals(pwd)) {
             throw new BadRequestException("error.login.bad-credentials");
         }

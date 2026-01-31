@@ -9,7 +9,7 @@ import ru.andrewb.charm.back.dto.sort.SortOrder;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 
-import static ru.andrewb.charm.back.utils.Strings.stripToNull;
+import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToProfileFilterMapper implements Mapper<HttpServletRequest, ProfileFilter> {

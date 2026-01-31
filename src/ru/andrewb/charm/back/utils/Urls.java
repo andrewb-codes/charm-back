@@ -3,8 +3,7 @@ package ru.andrewb.charm.back.utils;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class UrlUtils {
-
+public class Urls {
     public static final String INDEX_URL = "/";
     public static final String PROFILE_URL = "/profile";
     public static final String PROFILES_URL = "/profiles";
@@ -18,12 +17,9 @@ public class UrlUtils {
     public static final String CONTENT_URL = "/content";
     public static final String CHARM_URL = "/charm";
     public static final String MATCHES_URL = "/matches";
-    public static final String REST_URL = "/api/v1";
-    public static final String LOGIN_REST_URL = REST_URL + LOGIN_URL;
-    public static final String PROFILE_REST_URL = REST_URL + PROFILE_URL;
-    public static final String PROFILES_REST_URL = REST_URL + PROFILES_URL;
 
-    public static String getJspPath(String url) {
-        return "/WEB-INF/jsp" + url + ".jsp";
-    }
+    public static final String REST_PREFIX = "/api/v1";
+    public static final String LOGIN_REST_URL = REST_PREFIX + LOGIN_URL;
+    public static final String PROFILE_REST_URL = REST_PREFIX + PROFILE_URL;
+    public static final String PROFILES_REST_URL = REST_PREFIX + PROFILES_URL;
 }

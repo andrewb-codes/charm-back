@@ -14,8 +14,8 @@ import ru.andrewb.charm.back.service.CharmService;
 import java.io.IOException;
 import java.util.Optional;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.CHARM_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.Urls.CHARM_URL;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(CHARM_URL)
 public class CharmController extends HttpServlet {

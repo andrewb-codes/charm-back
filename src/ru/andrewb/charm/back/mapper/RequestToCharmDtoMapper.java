@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.Action;
 import ru.andrewb.charm.back.dto.CharmDto;
 
-import static ru.andrewb.charm.back.utils.Strings.stripToNull;
+import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestToCharmDtoMapper implements Mapper<HttpServletRequest, CharmDto> {
