@@ -6,7 +6,9 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import ru.andrewb.charm.back.utils.WordBundle;
+import ru.andrewb.charm.back.service.bundle.WordBundle;
+import ru.andrewb.charm.back.service.bundle.WordBundleEn;
+import ru.andrewb.charm.back.service.bundle.WordBundleRu;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -27,7 +29,9 @@ public class LanguageFilter implements Filter {
                 .findFirst()
                 .orElse("en");
 
-        WordBundle wordBundle = new WordBundle(lang);
+        WordBundle wordBundle = "ru".equals(lang)
+                        ? WordBundleRu.getInstance()
+                        : WordBundleEn.getInstance();
 
         req.setAttribute("wordBundle", wordBundle);
 
