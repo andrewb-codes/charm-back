@@ -13,6 +13,7 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
+import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.utils.EmailUtils;
 import ru.andrewb.charm.back.utils.PasswordUtils;
 
@@ -63,6 +64,7 @@ public class ProfileService {
     }
 
     public List<ProfileGetDto> findAll(ProfileFilter filter) {
+        ProfileFilterDefaults.normalize(filter);
         return dao.findAll(filter).stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 
