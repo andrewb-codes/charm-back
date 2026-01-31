@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 
 @UtilityClass
-public final class RequestParams {
+public final class RequestParamUtils {
     public static long requirePositiveLong(HttpServletRequest req, String name) {
         String raw = req.getParameter(name);
         if (raw == null || raw.isBlank()) {

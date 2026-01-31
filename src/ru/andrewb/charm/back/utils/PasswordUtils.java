@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 
 @UtilityClass
-public class Passwords {
+public class PasswordUtils {
 
     public static String normalize(String raw) {
         return raw == null ? null : raw.trim();
@@ -19,11 +19,11 @@ public class Passwords {
     }
 
     public static String requireValidOrThrow(String rawPassword, int minLen) {
-        String pwd = Passwords.normalize(rawPassword);
-        if (!Passwords.hasText(pwd)) {
+        String pwd = PasswordUtils.normalize(rawPassword);
+        if (!PasswordUtils.hasText(pwd)) {
             throw new BadRequestException("error.password.required");
         }
-        if (!Passwords.lengthAtLeast(pwd, minLen)) {
+        if (!PasswordUtils.lengthAtLeast(pwd, minLen)) {
             throw new BadRequestException("error.password.too-short");
         }
         return pwd;
