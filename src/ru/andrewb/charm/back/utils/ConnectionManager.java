@@ -19,16 +19,17 @@ public class ConnectionManager {
     private static final String USER = Config.required("app.datasource.username");
     private static final String PASSWORD = Config.required("app.datasource.password");
     private static final String DRIVER = Config.getOrDefault("app.datasource.driver-class-name", "org.postgresql.Driver");
-    private static final String FETCH_SIZE_STR = Config.get("app.datasource.fetch-size");
-    public static final int FETCH_SIZE = Integer.parseInt(FETCH_SIZE_STR != null ? FETCH_SIZE_STR : "100");
-    private static final String MAX_ROWS_STR = Config.get("app.datasource.max-rows");
-    public static final int MAX_ROWS = Integer.parseInt(MAX_ROWS_STR != null ? MAX_ROWS_STR : "1000");
-    private static final String QUERY_TIMEOUT_STR = Config.get("app.datasource.query-timeout");
-    public static final int QUERY_TIMEOUT = Integer.parseInt(QUERY_TIMEOUT_STR != null ? QUERY_TIMEOUT_STR : "10");
-    private static final String POOL_SIZE_STR = Config.get("app.datasource.pool.size");
-    public static final int POOL_SIZE = Integer.parseInt(POOL_SIZE_STR != null ? POOL_SIZE_STR : "10");
-    private static final String ACQUIRE_TIMEOUT_STR = Config.get("app.datasource.pool.acquire-timeout-ms");
-    public static final long ACQUIRE_TIMEOUT_MS = Long.parseLong(ACQUIRE_TIMEOUT_STR != null ? ACQUIRE_TIMEOUT_STR : "3000");
+
+    public static final int FETCH_SIZE = Integer.parseInt(
+            Config.getOrDefault("app.datasource.fetch-size", "100"));
+    public static final int MAX_ROWS = Integer.parseInt(
+            Config.getOrDefault("app.datasource.max-rows", "1000"));
+    public static final int QUERY_TIMEOUT = Integer.parseInt(
+            Config.getOrDefault("app.datasource.query-timeout", "10"));
+    public static final int POOL_SIZE = Integer.parseInt(
+            Config.getOrDefault("app.datasource.pool.size", "10"));
+    public static final long ACQUIRE_TIMEOUT_MS = Long.parseLong(
+            Config.getOrDefault("app.datasource.pool.acquire-timeout-ms", "3000"));
 
     private static volatile DataSource dataSource;
 
