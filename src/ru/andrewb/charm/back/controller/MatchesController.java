@@ -13,8 +13,8 @@ import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.MATCHES_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.Urls.MATCHES_URL;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(MATCHES_URL)
 public class MatchesController extends HttpServlet {
@@ -45,6 +45,6 @@ public class MatchesController extends HttpServlet {
         req.setAttribute("hasPrev", hasPrev);
         req.setAttribute("hasNext", hasNext);
 
-        req.getRequestDispatcher(getJspPath("/matches")).forward(req, resp);
+        req.getRequestDispatcher(getJspPath(MATCHES_URL)).forward(req, resp);
     }
 }

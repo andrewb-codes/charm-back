@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_REST_URL;
+import static ru.andrewb.charm.back.utils.Urls.PROFILES_REST_URL;
 
-@WebServlet(PROFILES_REST_URL)
 @Slf4j
+@WebServlet(PROFILES_REST_URL)
 public class ProfilesController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();

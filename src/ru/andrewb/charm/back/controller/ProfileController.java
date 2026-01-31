@@ -17,15 +17,16 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.security.SecurityRules;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParams;
+import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static ru.andrewb.charm.back.utils.RequestParams.rid;
-import static ru.andrewb.charm.back.utils.UrlUtils.*;
+import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.utils.Urls.*;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(PROFILE_URL + "/*")
 @Slf4j
@@ -40,7 +41,7 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = service.findByIdOrThrow(id);
             req.setAttribute("profile", dto);
 
@@ -71,7 +72,7 @@ public class ProfileController extends HttpServlet {
                 }
             }
 
-            req.getRequestDispatcher(getJspPath("/profile")).forward(req, resp);
+            req.getRequestDispatcher(getJspPath(PROFILE_URL)).forward(req, resp);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -83,7 +84,7 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = requestToProfileUpdateDtoMapper.map(req);
 
             final String ctx = req.getContextPath();
@@ -119,7 +120,7 @@ public class ProfileController extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         long id;
         try {
-            id = RequestParams.requirePositiveLong(req, "id");
+            id = RequestParamUtils.requirePositiveLong(req, "id");
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             return;

@@ -8,7 +8,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.*;
+import static ru.andrewb.charm.back.utils.Urls.*;
 
 @UtilityClass
 public class SecurityRules {
@@ -22,7 +22,7 @@ public class SecurityRules {
     );
 
     public static boolean isRest(String path) {
-        return path != null && path.startsWith(REST_URL);
+        return path != null && path.startsWith(REST_PREFIX);
     }
 
     public static boolean isSafeInternalRedirect(String contextPath, String back, String... allowedPrefixes) {

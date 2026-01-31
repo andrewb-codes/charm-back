@@ -3,7 +3,7 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
-import ru.andrewb.charm.back.utils.Passwords;
+import ru.andrewb.charm.back.utils.PasswordUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
@@ -22,22 +22,22 @@ public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
             return vr;
         }
 
-        String currPwd = Passwords.normalize(dto.getCurrentPassword());
-        boolean hasCurrPwd = Passwords.hasText(currPwd);
+        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
+        boolean hasCurrPwd = PasswordUtils.hasText(currPwd);
         if (!hasCurrPwd) {
             vr.addError("error.password.current-required");
         }
 
-        String newPwd = Passwords.normalize(dto.getNewPassword());
-        boolean hasNewPwd = Passwords.hasText(newPwd);
+        String newPwd = PasswordUtils.normalize(dto.getNewPassword());
+        boolean hasNewPwd = PasswordUtils.hasText(newPwd);
         if (!hasNewPwd) {
             vr.addError("error.password.new-required");
         } else if (newPwd.length() < 6) {
             vr.addError("error.password.short");
         }
 
-        String confirmPwd = Passwords.normalize(dto.getConfirmPassword());
-        boolean hasConfirmPwd = Passwords.hasText(confirmPwd);
+        String confirmPwd = PasswordUtils.normalize(dto.getConfirmPassword());
+        boolean hasConfirmPwd = PasswordUtils.hasText(confirmPwd);
         if (!hasConfirmPwd) {
             vr.addError("error.password.confirm-required");
         } else if (!confirmPwd.equals(newPwd)) {

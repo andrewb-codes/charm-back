@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.LANG_URL;
+import static ru.andrewb.charm.back.utils.Urls.LANG_URL;
 
 @WebServlet(LANG_URL)
 public class LanguageController extends HttpServlet {

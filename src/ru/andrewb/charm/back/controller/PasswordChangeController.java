@@ -9,18 +9,18 @@ import ru.andrewb.charm.back.mapper.RequestToPasswordChangeDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParams;
+import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.validator.PasswordChangeValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.RequestParams.rid;
-import static ru.andrewb.charm.back.utils.UrlUtils.PASSWORD_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
+import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.utils.Urls.PASSWORD_URL;
+import static ru.andrewb.charm.back.utils.Urls.SETTINGS_URL;
 
-@WebServlet(PASSWORD_URL)
 @Slf4j
+@WebServlet(PASSWORD_URL)
 public class PasswordChangeController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -30,7 +30,7 @@ public class PasswordChangeController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = passwordChangeDtoMapper.map(req);
 
             var vr = passwordChangeValidator.validate(dto);

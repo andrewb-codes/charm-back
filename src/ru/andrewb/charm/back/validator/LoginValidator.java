@@ -3,8 +3,8 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.LoginDto;
-import ru.andrewb.charm.back.utils.Emails;
-import ru.andrewb.charm.back.utils.Passwords;
+import ru.andrewb.charm.back.utils.EmailUtils;
+import ru.andrewb.charm.back.utils.PasswordUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoginValidator implements Validator<LoginDto> {
@@ -24,16 +24,16 @@ public class LoginValidator implements Validator<LoginDto> {
             return vr;
         }
 
-        String email = Emails.normalize(dto.getEmail());
-        boolean hasEmail = Emails.hasText(email);
+        String email = EmailUtils.normalize(dto.getEmail());
+        boolean hasEmail = EmailUtils.hasText(email);
         if (!hasEmail) {
             vr.addError("error.email.required");
-        } else if (!Emails.matchesFormat(email)) {
+        } else if (!EmailUtils.matchesFormat(email)) {
             vr.addError("error.email.invalid");
         }
 
-        String pwd = Passwords.normalize(dto.getPassword());
-        boolean hasPwd = Passwords.hasText(pwd);
+        String pwd = PasswordUtils.normalize(dto.getPassword());
+        boolean hasPwd = PasswordUtils.hasText(pwd);
         if (!hasPwd) {
             vr.addError("error.password.required");
         }

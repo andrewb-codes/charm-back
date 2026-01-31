@@ -8,14 +8,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.INDEX_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.Urls.INDEX_URL;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(INDEX_URL)
 public class IndexController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher(getJspPath("/index")).forward(req, resp);
+        req.getRequestDispatcher(getJspPath(INDEX_URL)).forward(req, resp);
     }
 }

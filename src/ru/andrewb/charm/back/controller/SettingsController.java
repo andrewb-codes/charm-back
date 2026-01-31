@@ -8,13 +8,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParams;
+import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.Urls.SETTINGS_URL;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(SETTINGS_URL)
 public class SettingsController extends HttpServlet {
@@ -24,7 +24,7 @@ public class SettingsController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = service.findByIdOrThrow(id);
             req.setAttribute("profile", dto);
 
@@ -38,7 +38,7 @@ public class SettingsController extends HttpServlet {
                 }
             }
 
-            req.getRequestDispatcher(getJspPath("/settings")).forward(req, resp);
+            req.getRequestDispatcher(getJspPath(SETTINGS_URL)).forward(req, resp);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

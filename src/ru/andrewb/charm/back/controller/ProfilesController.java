@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static ru.andrewb.charm.back.utils.BeanUtils.copyProperties;
-import static ru.andrewb.charm.back.utils.UrlUtils.PROFILES_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.getJspPath;
+import static ru.andrewb.charm.back.utils.Urls.PROFILES_URL;
+import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @WebServlet(PROFILES_URL)
 @Slf4j
@@ -52,7 +52,7 @@ public class ProfilesController extends HttpServlet {
         req.setAttribute("hasPrev", hasPrev);
         req.setAttribute("hasNext", hasNext);
 
-        req.getRequestDispatcher(getJspPath("/profiles")).forward(req, resp);
+        req.getRequestDispatcher(getJspPath(PROFILES_URL)).forward(req, resp);
     }
 
     @Override

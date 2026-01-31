@@ -10,18 +10,18 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParams;
+import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.validator.EmailChangeValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.RequestParams.rid;
-import static ru.andrewb.charm.back.utils.UrlUtils.EMAIL_URL;
-import static ru.andrewb.charm.back.utils.UrlUtils.SETTINGS_URL;
+import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.utils.Urls.EMAIL_URL;
+import static ru.andrewb.charm.back.utils.Urls.SETTINGS_URL;
 
-@WebServlet(EMAIL_URL)
 @Slf4j
+@WebServlet(EMAIL_URL)
 public class EmailChangeController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -31,7 +31,7 @@ public class EmailChangeController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParams.requirePositiveLong(req, "id");
+            long id = RequestParamUtils.requirePositiveLong(req, "id");
             var dto = emailChangeDtoMapper.map(req);
 
             var vr = emailChangeValidator.validate(dto);
