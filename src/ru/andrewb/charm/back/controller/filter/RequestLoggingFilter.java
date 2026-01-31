@@ -18,7 +18,6 @@ public class RequestLoggingFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
 
-        long start = System.currentTimeMillis();
         String rid = UUID.randomUUID().toString().substring(0, 8);
 
         req.setAttribute("rid", rid);
@@ -29,11 +28,17 @@ public class RequestLoggingFilter implements Filter {
         String method = req.getMethod();
 
         log.info("[{}] -> {} {}{}", rid, method, uri, (qs == null ? "" : "?" + qs));
+
+        long start = System.currentTimeMillis();
+        int status = 200;
         try {
             filterChain.doFilter(req, resp);
+            status = resp.getStatus();
+        } catch (Throwable t) {
+            status = 500;
+            throw t;
         } finally {
             long took = System.currentTimeMillis() - start;
-            int status = resp.getStatus();
             log.info("[{}] <- {} {} ({} ms)", rid, status, uri, took);
             MDC.clear();
         }

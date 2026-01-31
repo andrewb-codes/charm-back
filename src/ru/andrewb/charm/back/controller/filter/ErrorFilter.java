@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.service.bundle.WordBundle;
+import ru.andrewb.charm.back.service.bundle.WordBundleEn;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -56,20 +57,31 @@ public class ErrorFilter implements Filter {
             if (code != null) body.put("code", code);
 
             WordBundle wb = (WordBundle) req.getAttribute("wordBundle");
-            if (msg != null && !msg.isBlank()) {
-                String outMsg = (wb != null && msg.startsWith("error."))
-                        ? wb.getWord(msg)
-                        : msg;
-                body.put("message", outMsg);
-            }
+            if (wb == null) wb = WordBundleEn.getInstance();
 
             Object errorsAttr = req.getAttribute("errors");
             if (errorsAttr instanceof List<?> list && !list.isEmpty()) {
                 List<String> errors = list.stream()
                         .map(String::valueOf)
-                        .map(codeStr -> wb != null ? wb.getWord(codeStr) : codeStr)
+                        .map(wb::getWord)
                         .toList();
                 body.put("errors", errors);
+            } else {
+                String outMsg = null;
+                if (msg != null && !msg.isBlank()) {
+                    if (msg.startsWith("error.")) {
+                        outMsg = wb.getWord(msg);
+                    } else {
+                        if (code != null && code < 500) outMsg = msg;
+                    }
+                }
+
+                if (outMsg == null) {
+                    String key = (code != null && code >= 500) ? "error.internal" : "error.param.invalid";
+                    outMsg = wb.getWord(key);
+                }
+
+                body.put("message", outMsg);
             }
 
             if (code != null) resp.setStatus(code);

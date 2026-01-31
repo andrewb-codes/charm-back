@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.ProfileFilter;
 import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
+import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
@@ -27,12 +28,15 @@ public class ProfilesController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        try (PrintWriter w = resp.getWriter()) {
-            ProfileFilter filter = requestToProfileFilterMapper.map(req);
-            jsonMapper.writeValue(w, service.findAll(filter));
+        try {
+            ProfileFilter f = requestToProfileFilterMapper.map(req);
+            ProfileFilterDefaults.normalize(f);
+
+            resp.setContentType("application/json;charset=UTF-8");
+            jsonMapper.writeValue(resp.getWriter(), service.findAll(f));
+
         } catch (DatabindException e) {
-            req.setAttribute("errors", List.of(e.getLocalizedMessage(), e.getOriginalMessage()));
+            req.setAttribute("errors", List.of("error.param.invalid"));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }

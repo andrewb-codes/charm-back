@@ -41,21 +41,25 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        try (PrintWriter w = resp.getWriter()) {
+        try {
             long id = RequestParamUtils.requirePositiveLong(req, "id");
+
             var dtoOpt = service.findById(id);
             if (dtoOpt.isPresent()) {
-                jsonMapper.writeValue(w, dtoOpt.get());
-            } else {
-                req.setAttribute("errors", List.of("error.profile.not-found"));
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                resp.setContentType("application/json;charset=UTF-8");
+                jsonMapper.writeValue(resp.getWriter(), dtoOpt.get());
+                return;
             }
+
+            req.setAttribute("errors", List.of("error.profile.not-found"));
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+
+        } catch (DatabindException e) {
+            req.setAttribute("errors", List.of("error.param.invalid"));
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (DatabindException e) {
-            req.setAttribute("errors", List.of(e.getLocalizedMessage(), e.getOriginalMessage()));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -78,10 +82,16 @@ public class ProfileController extends HttpServlet {
                     req.getContextPath() + PROFILE_REST_URL + "?id=" + id);
             resp.setContentType("application/json;charset=UTF-8");
             resp.getWriter().write("{\"id\":" + id + "}");
+
         } catch (DuplicateEmailException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_CONFLICT);
-        } catch (BadRequestException | DatabindException e) {
+
+        } catch (DatabindException e) {
+            req.setAttribute("errors", List.of("error.param.invalid"));
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
+        } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
@@ -106,12 +116,15 @@ public class ProfileController extends HttpServlet {
         } catch (NotFoundException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+
+        } catch (DatabindException e) {
+            req.setAttribute("errors", List.of("error.param.invalid"));
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (DatabindException e) {
-            req.setAttribute("errors", List.of(e.getLocalizedMessage(), e.getOriginalMessage()));
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
         }
     }
 
