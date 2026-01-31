@@ -41,12 +41,14 @@ public class LoginController extends HttpServlet {
             var userDetails = service.login(dto);
             req.getSession().setAttribute("userDetails", userDetails);
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+
         } catch (DatabindException e) {
-            req.setAttribute("errors", List.of(e.getLocalizedMessage(), e.getOriginalMessage()));
+            req.setAttribute("errors", List.of("error.param.invalid"));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
         }
     }
 }
