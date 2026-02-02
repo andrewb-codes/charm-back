@@ -16,6 +16,7 @@ public class Urls {
     public static final String LANG_URL = "/lang";
     public static final String CONTENT_URL = "/content";
     public static final String CHARM_URL = "/charm";
+    public static final String CHARM_EMPTY_URL = "/charm-empty";
     public static final String MATCHES_URL = "/matches";
 
     public static final String REST_PREFIX = "/api/v1";

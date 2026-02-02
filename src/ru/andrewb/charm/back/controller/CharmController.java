@@ -14,6 +14,7 @@ import ru.andrewb.charm.back.service.CharmService;
 import java.io.IOException;
 import java.util.Optional;
 
+import static ru.andrewb.charm.back.utils.Urls.CHARM_EMPTY_URL;
 import static ru.andrewb.charm.back.utils.Urls.CHARM_URL;
 import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
@@ -46,8 +47,7 @@ public class CharmController extends HttpServlet {
             req.setAttribute("next", nextOpt.get());
             req.getRequestDispatcher(getJspPath(CHARM_URL)).forward(req, resp);
         } else {
-            // TODO: сделать страницу "упс, новых профилей нет, возвращайтесь позже"
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            req.getRequestDispatcher(getJspPath(CHARM_EMPTY_URL)).forward(req, resp);
         }
     }
 }
