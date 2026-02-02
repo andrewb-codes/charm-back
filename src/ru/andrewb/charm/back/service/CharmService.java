@@ -18,7 +18,7 @@ public class CharmService {
 
     private final ProfileDao profileDao = ProfileDao.getInstance();
     private final ProfileLikeDao profileLikeDao = ProfileLikeDao.getInstance();
-    private final CacheService cacheService = CacheService.getInstance();
+    private final ProfileCacheService profileCacheService = ProfileCacheService.getInstance();
 
     public static CharmService getInstance() {
         return INSTANCE;
@@ -34,18 +34,33 @@ public class CharmService {
             profileLikeDao.likeOrDislike(fromId, toId, isLike);
         }
 
-        ProfileSimpleDto next = cacheService.pollNext(fromId);
+        // Try redis queue
+        ProfileSimpleDto next = profileCacheService.pollNext(fromId);
         if (next != null) {
             return Optional.of(next);
         }
 
+        // If "empty marker" active -> don't hit DB
+        if (profileCacheService.isEmptyCooldownActive(fromId)) {
+            return Optional.empty();
+        }
+
+        // Hit DB once per cooldown window
         Queue<ProfileSimpleDto> queue = profileDao.findSuitableForUser(fromId, 5);
         next = queue.poll();
 
-        if (!queue.isEmpty()) {
-            cacheService.replaceQueue(fromId, queue);
+        if (next == null) {  // no one
+            profileCacheService.markEmptyCooldown(fromId);
+            return Optional.empty();
         }
 
-        return Optional.ofNullable(next);
+        if (queue.isEmpty()) { // next exists, but queue empty again
+            profileCacheService.markEmptyCooldown(fromId);
+        } else {
+            profileCacheService.replaceQueue(fromId, queue);
+            profileCacheService.clearEmptyCooldown(fromId);
+        }
+
+        return Optional.of(next);
     }
 }
