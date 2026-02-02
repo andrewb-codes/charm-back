@@ -36,7 +36,15 @@ public class JsonMapper {
         return objectMapper.readValue(src, valueType);
     }
 
+    public <T> T readValue(String src, Class<T> valueType) throws IOException {
+        return objectMapper.readValue(src, valueType);
+    }
+
     public void writeValue(Writer w, Object value) throws IOException {
         objectMapper.writeValue(w, value);
+    }
+
+    public String writeValueAsString(Object value) throws IOException {
+        return objectMapper.writeValueAsString(value);
     }
 }
