@@ -145,10 +145,6 @@ public class ProfileDao {
 
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
-            ps.setFetchSize(FETCH_SIZE);
-            ps.setMaxRows(MAX_ROWS);
-            ps.setQueryTimeout(QUERY_TIMEOUT);
-
             try (ResultSet rs = ps.executeQuery()) {
                 List<Profile> profiles = new ArrayList<>();
                 while (rs.next()) {
