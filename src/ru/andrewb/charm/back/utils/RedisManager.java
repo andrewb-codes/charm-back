@@ -11,7 +11,10 @@ public class RedisManager {
     private static final String HOST = Config.required("app.redis.host");
     private static final int PORT = Integer.parseInt(Config.getOrDefault("app.redis.port", "6379"));
 
-    public static final int EXP_SEC = Integer.parseInt(Config.getOrDefault("app.redis.exp-sec", "300"));
+    public static final int CHARM_QUEUE_TTL_SEC =
+            Integer.parseInt(Config.getOrDefault("app.redis.charm-queue-ttl-sec", "300"));
+    public static final int CHARM_EMPTY_TTL_SEC =
+            Integer.parseInt(Config.getOrDefault("app.redis.charm-empty-ttl-sec", "60"));
 
     // pool tuning
     private static final int TIMEOUT_MS = Integer.parseInt(Config.getOrDefault("app.redis.timeout-ms", "2000"));
