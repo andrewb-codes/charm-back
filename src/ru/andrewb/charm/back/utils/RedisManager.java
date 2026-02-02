@@ -15,6 +15,8 @@ public class RedisManager {
             Integer.parseInt(Config.getOrDefault("app.redis.charm-queue-ttl-sec", "300"));
     public static final int CHARM_EMPTY_TTL_SEC =
             Integer.parseInt(Config.getOrDefault("app.redis.charm-empty-ttl-sec", "60"));
+    public static final int CHARM_LOCK_TTL_SEC =
+            Integer.parseInt(Config.getOrDefault("app.redis.charm-lock-ttl-sec", "3"));
 
     // pool tuning
     private static final int TIMEOUT_MS = Integer.parseInt(Config.getOrDefault("app.redis.timeout-ms", "2000"));

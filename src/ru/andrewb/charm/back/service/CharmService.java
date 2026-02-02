@@ -45,19 +45,33 @@ public class CharmService {
             return Optional.empty();
         }
 
-        // Hit DB once per cooldown window
-        Queue<ProfileSimpleDto> queue = profileDao.findSuitableForUser(fromId, 5);
-        next = queue.poll();
-
-        if (next == null) {  // no one
-            profileCacheService.markEmptyCooldown(fromId);
+        // Try to acquire per-user refill lock
+        String token = profileCacheService.tryAcquireLock(fromId);
+        if (token == null) {
+            // Someone already refills thr queue now -> don't spam redis/db
             return Optional.empty();
         }
 
-        // at least 1 candidate
-        profileCacheService.clearEmptyCooldown(fromId);
-        if (!queue.isEmpty()) profileCacheService.replaceQueue(fromId, queue);
+        // Lock is free
+        try {
+            // Hit DB once per cooldown window
+            Queue<ProfileSimpleDto> queue = profileDao.findSuitableForUser(fromId, 5);
+            next = queue.poll();
 
-        return Optional.of(next);
+            if (next == null) {  // no one candidate
+                profileCacheService.markEmptyCooldown(fromId);
+                return Optional.empty();
+            }
+
+            // at least 1 candidate
+            profileCacheService.clearEmptyCooldown(fromId);
+            if (!queue.isEmpty()) profileCacheService.replaceQueue(fromId, queue);
+
+            return Optional.of(next);
+
+        } finally {
+            // Release lock safely
+            profileCacheService.releaseLock(fromId, token);
+        }
     }
 }
