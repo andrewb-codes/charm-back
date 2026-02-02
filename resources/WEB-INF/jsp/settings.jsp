@@ -106,7 +106,7 @@
                        src="${cpath}/content/app/img/cross.png"
                        alt="${wordBundle.getWord('delete')}"
                        title="${wordBundle.getWord('delete')}"
-                       onclick="return confirm('Delete this profile?');"/>
+                       onclick="return confirm('${wordBundle.getWord('delete-confirmation')}?');"/>
             </div>
         </form>
     </c:if>

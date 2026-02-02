@@ -24,7 +24,7 @@ public class PasswordUtils {
             throw new BadRequestException("error.password.required");
         }
         if (!PasswordUtils.lengthAtLeast(pwd, minLen)) {
-            throw new BadRequestException("error.password.too-short");
+            throw new BadRequestException("error.password.short");
         }
         return pwd;
     }
