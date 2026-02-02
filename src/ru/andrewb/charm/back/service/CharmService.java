@@ -54,12 +54,9 @@ public class CharmService {
             return Optional.empty();
         }
 
-        if (queue.isEmpty()) { // next exists, but queue empty again
-            profileCacheService.markEmptyCooldown(fromId);
-        } else {
-            profileCacheService.replaceQueue(fromId, queue);
-            profileCacheService.clearEmptyCooldown(fromId);
-        }
+        // at least 1 candidate
+        profileCacheService.clearEmptyCooldown(fromId);
+        if (!queue.isEmpty()) profileCacheService.replaceQueue(fromId, queue);
 
         return Optional.of(next);
     }
