@@ -64,7 +64,6 @@ public class ProfileService {
     }
 
     public List<ProfileGetDto> findAll(ProfileFilter filter) {
-        ProfileFilterDefaults.normalize(filter);
         return dao.findAll(filter).stream().map(profileToProfileGetDtoMapper::map).toList();
     }
 

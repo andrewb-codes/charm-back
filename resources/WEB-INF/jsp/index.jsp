@@ -37,6 +37,12 @@
                 <a class="btn btn--ghost" href="${cpath}/settings?id=${sessionScope.userDetails.id}">
                     ${wordBundle.getWord('settings')}
                 </a>
+                <a class="btn btn" href="${cpath}/charm">
+                    ${wordBundle.getWord('charm')}
+                </a>
+                <a class="btn btn--ghost" href="${cpath}/matches">
+                    ${wordBundle.getWord('matches')}
+                </a>
             </div>
         </c:otherwise>
     </c:choose>

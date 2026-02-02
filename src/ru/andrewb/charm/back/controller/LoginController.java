@@ -16,8 +16,7 @@ import ru.andrewb.charm.back.web.flash.Flash;
 import java.io.IOException;
 
 import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
-import static ru.andrewb.charm.back.utils.Urls.LOGIN_URL;
-import static ru.andrewb.charm.back.utils.Urls.PROFILE_URL;
+import static ru.andrewb.charm.back.utils.Urls.*;
 import static ru.andrewb.charm.back.utils.Views.getJspPath;
 
 @Slf4j
@@ -65,7 +64,7 @@ public class LoginController extends HttpServlet {
             var userDetails = service.login(dto);
             log.info("[{}] Login ok: email={}", rid(req), dto.getEmail());
             req.getSession().setAttribute("userDetails", userDetails);
-            resp.sendRedirect(req.getContextPath() + PROFILE_URL + "?id=" + userDetails.getId());
+            resp.sendRedirect(req.getContextPath() + INDEX_URL);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
