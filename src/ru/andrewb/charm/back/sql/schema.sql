@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS profile CASCADE;
 CREATE TABLE profile (
     id              BIGSERIAL PRIMARY KEY,
     email           VARCHAR NOT NULL UNIQUE,
-    password        VARCHAR NOT NULL,
+    password        VARCHAR(255) NOT NULL,
     "name"          VARCHAR,
     surname         VARCHAR,
     birthdate       DATE,

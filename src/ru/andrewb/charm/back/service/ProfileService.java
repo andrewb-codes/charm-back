@@ -7,13 +7,11 @@ import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileToUserDetailsDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
-import ru.andrewb.charm.back.mapper.RegistrationDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
-import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.utils.EmailUtils;
 import ru.andrewb.charm.back.utils.PasswordUtils;
 
@@ -30,7 +28,6 @@ public class ProfileService {
     private final ContentService contentService = ContentService.getInstance();
 
     private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper = ProfileToProfileGetDtoMapper.getInstance();
-    private final RegistrationDtoToProfileMapper registrationDtoToProfileMapper = RegistrationDtoToProfileMapper.getInstance();
     private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper = ProfileUpdateDtoToProfileMapper.getInstance();
     private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper = ProfileToUserDetailsDtoMapper.getInstance();
 
@@ -45,10 +42,12 @@ public class ProfileService {
         }
 
         String pwd = PasswordUtils.requireValidOrThrow(dto.getPassword(), 6);
+        String hash = PasswordUtils.hashPwd(pwd);
 
-        Profile p = registrationDtoToProfileMapper.map(dto);
+        Profile p = new Profile();
         p.setEmail(email);
-        p.setPassword(pwd);
+        p.setPassword(hash);
+
         return dao.save(p).getId();
     }
 
@@ -57,7 +56,7 @@ public class ProfileService {
         return dao.findById(id).map(profileToProfileGetDtoMapper::map);
     }
 
-    public ProfileGetDto findByIdOrThrow(long id) {
+    public ProfileGetDto findByIdOrThrow(Long id) {
         return dao.findById(id)
                 .map(profileToProfileGetDtoMapper::map)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
@@ -73,7 +72,7 @@ public class ProfileService {
                 .toList();
     }
 
-    public void update(long id, ProfileUpdateDto dto) {
+    public void update(Long id, ProfileUpdateDto dto) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -109,43 +108,55 @@ public class ProfileService {
         return dao.delete(id);
     }
 
-    public void changeEmail(long id, EmailChangeDto dto) {
-        var p = dao.findById(id)
+    public void changeEmail(Long id, EmailChangeDto dto) {
+        var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
-        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
-        if (!PasswordUtils.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
+        String pwd = PasswordUtils.requireValidOrThrow(dto.getCurrentPassword(), 6);
+        String hash = existing.getPassword();
+
+        if (!PasswordUtils.checkPwd(pwd, hash)) {
             throw new BadRequestException("error.password.invalid-current");
         }
 
         String newEmail = EmailUtils.requireValidOrThrow(dto.getNewEmail());
-        if (newEmail.equalsIgnoreCase(p.getEmail())) {
+        if (newEmail.equalsIgnoreCase(existing.getEmail())) {
             throw new BadRequestException("error.email.same-as-current");
         }
         if (dao.existsEmail(newEmail, id)) {
             throw new DuplicateEmailException("error.email.exists");
         }
 
-        p.setEmail(newEmail);
-        dao.update(p);
+        existing.setEmail(newEmail);
+        dao.update(existing);
     }
 
-    public void changePassword(long id, PasswordChangeDto dto) {
-        var p = dao.findById(id)
+    public void changePassword(Long id, PasswordChangeDto dto) {
+        var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
-        String currPwd = PasswordUtils.normalize(dto.getCurrentPassword());
-        if (!PasswordUtils.hasText(currPwd) || !p.getPassword().equals(currPwd)) {
-            throw new BadRequestException("error.password.invalid-current");
+        String currPwd = PasswordUtils.requireValidOrThrow(dto.getCurrentPassword(), 6);
+        String newPwd = PasswordUtils.requireValidOrThrow(dto.getNewPassword(), 6);
+        String confirmPwd = PasswordUtils.normalize(dto.getConfirmPassword());
+
+        if (!PasswordUtils.hasText(confirmPwd)) {
+            throw new BadRequestException("error.password.required");
+        }
+        if (!confirmPwd.equals(newPwd)) {
+            throw new BadRequestException("error.password.mismatch");
         }
 
-        String newPwd = PasswordUtils.requireValidOrThrow(dto.getNewPassword(), 6);
-        if (newPwd.equals(currPwd)) {
+        String oldHash = existing.getPassword();
+        if (!PasswordUtils.checkPwd(currPwd, oldHash)) {
+            throw new BadRequestException("error.password.invalid-current");
+        }
+        if (PasswordUtils.checkPwd(newPwd, oldHash)) {
             throw new BadRequestException("error.password.same-as-current");
         }
 
-        p.setPassword(newPwd);
-        dao.update(p);
+        String newHash = PasswordUtils.hashPwd(newPwd);
+        existing.setPassword(newHash);
+        dao.update(existing);
     }
 
     public UserDetailsDto login(LoginDto dto) {
@@ -154,7 +165,7 @@ public class ProfileService {
                 .orElseThrow(() -> new BadRequestException("error.login.bad-credentials"));
 
         String pwd = PasswordUtils.normalize(dto.getPassword());
-        if (!existing.getPassword().equals(pwd)) {
+        if (!PasswordUtils.hasText(pwd) || !PasswordUtils.checkPwd(pwd, existing.getPassword())) {
             throw new BadRequestException("error.login.bad-credentials");
         }
 
