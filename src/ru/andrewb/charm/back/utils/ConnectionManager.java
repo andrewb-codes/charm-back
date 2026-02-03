@@ -49,7 +49,7 @@ public class ConnectionManager {
                 config.setUsername(USER);
                 config.setPassword(PASSWORD);
                 config.setMaximumPoolSize(POOL_SIZE);
-                config.setMinimumIdle(5);
+                config.setMinimumIdle(2);
                 config.setConnectionTimeout(10000);
                 config.setIdleTimeout(60000);
                 config.setMaxLifetime(1800000);
