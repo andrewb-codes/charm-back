@@ -15,13 +15,13 @@ import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
-import static ru.andrewb.charm.back.utils.Urls.LOGIN_URL;
-import static ru.andrewb.charm.back.utils.Urls.REGISTRATION_URL;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
+import static ru.andrewb.charm.back.web.Urls.REGISTRATION_URL;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
-@WebServlet(REGISTRATION_URL)
 @Slf4j
+@WebServlet(REGISTRATION_URL)
 public class RegistrationController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();

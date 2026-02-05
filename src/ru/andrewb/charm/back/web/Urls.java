@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.web;
 
 import lombok.experimental.UtilityClass;
 

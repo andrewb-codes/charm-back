@@ -31,11 +31,11 @@ public class CustomDataSource implements DataSource, Closeable {
     private final List<Connection> physicalConnections = new ArrayList<>();
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public CustomDataSource(String url, String user, String password, int poolSize, long acquireTimeoutMs) throws SQLException {
+    public CustomDataSource(String url, String user, String password, int poolSize) throws SQLException {
         this.url = url;
         this.user = user;
         this.password = password;
-        this.acquireTimeoutMs = acquireTimeoutMs;
+        this.acquireTimeoutMs = 3000;
 
         this.pool = new ArrayBlockingQueue<>(poolSize, true);
 

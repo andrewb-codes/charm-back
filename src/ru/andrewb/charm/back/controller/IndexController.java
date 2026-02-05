@@ -8,8 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.Urls.INDEX_URL;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.Urls.INDEX_URL;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
 @WebServlet(INDEX_URL)
 public class IndexController extends HttpServlet {

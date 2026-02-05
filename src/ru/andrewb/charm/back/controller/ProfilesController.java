@@ -18,11 +18,12 @@ import java.io.IOException;
 import java.util.List;
 
 import static ru.andrewb.charm.back.utils.BeanUtils.copyProperties;
-import static ru.andrewb.charm.back.utils.Urls.PROFILES_URL;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.Urls.PROFILES_URL;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
-@WebServlet(PROFILES_URL)
+
 @Slf4j
+@WebServlet(PROFILES_URL)
 public class ProfilesController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();

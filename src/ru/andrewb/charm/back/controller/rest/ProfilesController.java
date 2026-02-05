@@ -13,10 +13,9 @@ import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.Urls.PROFILES_REST_URL;
+import static ru.andrewb.charm.back.web.Urls.PROFILES_REST_URL;
 
 @Slf4j
 @WebServlet(PROFILES_REST_URL)

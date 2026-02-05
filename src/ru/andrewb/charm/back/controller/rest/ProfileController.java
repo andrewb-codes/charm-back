@@ -16,16 +16,15 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParamUtils;
+import ru.andrewb.charm.back.web.RequestParamUtils;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.validator.RegistrationValidator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.Urls.PROFILE_REST_URL;
+import static ru.andrewb.charm.back.web.Urls.PROFILE_REST_URL;
 
 @Slf4j
 @MultipartConfig

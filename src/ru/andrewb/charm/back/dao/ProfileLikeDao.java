@@ -2,7 +2,7 @@ package ru.andrewb.charm.back.dao;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.andrewb.charm.back.utils.ConnectionManager;
+import ru.andrewb.charm.back.infra.db.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

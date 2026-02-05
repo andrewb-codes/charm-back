@@ -12,8 +12,8 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
-import ru.andrewb.charm.back.utils.EmailUtils;
-import ru.andrewb.charm.back.utils.PasswordUtils;
+import ru.andrewb.charm.back.validator.EmailUtils;
+import ru.andrewb.charm.back.validator.PasswordUtils;
 
 import java.nio.file.Paths;
 import java.util.List;
