@@ -8,7 +8,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import static ru.andrewb.charm.back.utils.Urls.*;
+import static ru.andrewb.charm.back.web.Urls.*;
 
 @UtilityClass
 public class SecurityRules {

@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.validator;
 
 import lombok.experimental.UtilityClass;
 import org.mindrot.jbcrypt.BCrypt;
