@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.infra.db;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +25,6 @@ public class CustomDataSource implements DataSource, Closeable {
     private final String url;
     private final String user;
     private final String password;
-    private final long acquireTimeoutMs;
 
     private final BlockingQueue<Connection> pool;
     private final List<Connection> physicalConnections = new ArrayList<>();
@@ -35,7 +34,6 @@ public class CustomDataSource implements DataSource, Closeable {
         this.url = url;
         this.user = user;
         this.password = password;
-        this.acquireTimeoutMs = 3000;
 
         this.pool = new ArrayBlockingQueue<>(poolSize, true);
 
@@ -53,7 +51,8 @@ public class CustomDataSource implements DataSource, Closeable {
             throw new SQLException("DataSource is closed");
         }
         try {
-            Connection conn = pool.poll(acquireTimeoutMs , TimeUnit.MILLISECONDS);
+            long acquireTimeoutMs = 3000;
+            Connection conn = pool.poll(acquireTimeoutMs, TimeUnit.MILLISECONDS);
             if (conn == null) {
                 throw new SQLException("No free DB connections (timeout " + acquireTimeoutMs + " ms)");
             }

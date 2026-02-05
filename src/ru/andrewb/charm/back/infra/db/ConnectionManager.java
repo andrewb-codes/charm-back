@@ -1,11 +1,11 @@
-package ru.andrewb.charm.back.config;
+package ru.andrewb.charm.back.infra.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.config.Config;
 import ru.andrewb.charm.back.dto.Query;
-import ru.andrewb.charm.back.utils.CustomDataSource;
 
 import javax.sql.DataSource;
 import java.io.Closeable;

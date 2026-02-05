@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
-import ru.andrewb.charm.back.utils.ConnectionManager;
-import ru.andrewb.charm.back.utils.RedisManager;
+import ru.andrewb.charm.back.infra.db.ConnectionManager;
+import ru.andrewb.charm.back.infra.cache.RedisManager;
 
 import static ru.andrewb.charm.back.normalizer.ProfileFilterDefaults.AVAILABLE_PAGE_SIZES;
 
@@ -32,7 +32,7 @@ public class ApplicationListener implements ServletContextListener {
         try {
             ConnectionManager.closePool();
             RedisManager.close();
-            log.info("Application context destroyed, pool closed");
+            log.info("Application context destroyed, pools closed");
         } catch (Exception e) {
             log.warn("Failed to close pool on shutdown", e);
         }
