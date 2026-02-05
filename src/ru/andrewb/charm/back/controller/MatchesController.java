@@ -5,16 +5,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
 import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
+import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.Urls.MATCHES_URL;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
+import static ru.andrewb.charm.back.web.Urls.MATCHES_URL;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
 @WebServlet(MATCHES_URL)
 public class MatchesController extends HttpServlet {
@@ -24,7 +25,11 @@ public class MatchesController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var user = (UserDetailsDto) req.getSession().getAttribute("userDetails");
+        UserDetailsDto user = AuthUtils.getUserOrNull(req);
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + LOGIN_URL);
+            return;
+        }
 
         var f = requestToProfileFilterMapper.map(req);
         ProfileFilterDefaults.normalize(f);

@@ -16,7 +16,7 @@
     <!-- E-mail change -->
     <div class="mt-3">
         <h3>${wordBundle.getWord("change-email")}</h3>
-        <form method="post" action="${cpath}/email?id=${profile.id}">
+        <form method="post" action="${cpath}/email">
             <input type="hidden" name="_method" value="put"/>
             <input type="hidden" name="version" value="${profile.version}">
             <table class="table--form">
@@ -57,7 +57,7 @@
     <!-- Password change -->
     <div class="mt-3">
         <h3>${wordBundle.getWord("change-password")}</h3>
-        <form method="post" action="${cpath}/password?id=${profile.id}">
+        <form method="post" action="${cpath}/password">
             <input type="hidden" name="_method" value="put"/>
             <input type="hidden" name="version" value="${profile.version}">
             <table class="table--form">
