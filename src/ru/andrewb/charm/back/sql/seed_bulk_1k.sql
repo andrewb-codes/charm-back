@@ -1,7 +1,7 @@
-"""
-insert 1000 test users with passwords:
-user<id>@charm.ru - password
-"""
+/*
+ insert 1000 test users with passwords:
+ user<id>@charm.ru - password
+*/
 
 WITH params AS (
     SELECT 1000::int AS n

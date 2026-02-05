@@ -1,9 +1,9 @@
-"""
-insert 3 test users with passwords:
-admin@charm.ru   - qwerty
-ivanov@mail.ru   - 123456
-sidorova@mail.ru - 456789
-"""
+/*
+ insert 3 test users with passwords:
+ admin@charm.ru   - qwerty
+ ivanov@mail.ru   - 123456
+ sidorova@mail.ru - 456789
+*/
 
 TRUNCATE TABLE profile_like;
 TRUNCATE TABLE profile RESTART IDENTITY CASCADE;
