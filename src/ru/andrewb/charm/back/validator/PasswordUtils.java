@@ -29,18 +29,4 @@ public class PasswordUtils {
         }
         return pwdClean;
     }
-
-    public static String hashPwd(String pwd) {
-        return BCrypt.hashpw(pwd, BCrypt.gensalt());
-    }
-
-    public static boolean checkPwd(String pwd, String hash) {
-        if (!hasText(pwd) || ! hasText(hash)) return false;
-        try {
-            return BCrypt.checkpw(pwd, hash);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-    }
 }
