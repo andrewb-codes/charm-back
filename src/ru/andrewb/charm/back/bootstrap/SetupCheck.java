@@ -27,8 +27,7 @@ public class SetupCheck implements ServletContextListener {
                 "app.datasource.username",
                 "app.datasource.password",
                 "app.content.base-path",
-                "app.redis.host",
-                "app.redis.port"
+                "app.redis.host"
         );
 
         // 2) init pools/clients explicitly

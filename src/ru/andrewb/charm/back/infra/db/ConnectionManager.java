@@ -51,7 +51,7 @@ public class ConnectionManager {
                 config.setPassword(password);
                 config.setMaximumPoolSize(poolSize);
                 config.setMinimumIdle(2);
-                config.setConnectionTimeout(3_000);
+                config.setConnectionTimeout(10_000);
                 config.setIdleTimeout(60_000);
                 config.setMaxLifetime(1_800_000);
 
