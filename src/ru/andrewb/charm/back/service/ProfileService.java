@@ -12,8 +12,9 @@ import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
-import ru.andrewb.charm.back.utils.EmailUtils;
-import ru.andrewb.charm.back.utils.PasswordUtils;
+import ru.andrewb.charm.back.security.PasswordHasher;
+import ru.andrewb.charm.back.validator.EmailUtils;
+import ru.andrewb.charm.back.validator.PasswordUtils;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -42,7 +43,7 @@ public class ProfileService {
         }
 
         String pwd = PasswordUtils.requireValidOrThrow(dto.getPassword(), 6);
-        String hash = PasswordUtils.hashPwd(pwd);
+        String hash = PasswordHasher.hashPwd(pwd);
 
         Profile p = new Profile();
         p.setEmail(email);
@@ -115,7 +116,7 @@ public class ProfileService {
         String pwd = PasswordUtils.requireValidOrThrow(dto.getCurrentPassword(), 6);
         String hash = existing.getPassword();
 
-        if (!PasswordUtils.checkPwd(pwd, hash)) {
+        if (!PasswordHasher.checkPwd(pwd, hash)) {
             throw new BadRequestException("error.password.invalid-current");
         }
 
@@ -147,14 +148,14 @@ public class ProfileService {
         }
 
         String oldHash = existing.getPassword();
-        if (!PasswordUtils.checkPwd(currPwd, oldHash)) {
+        if (!PasswordHasher.checkPwd(currPwd, oldHash)) {
             throw new BadRequestException("error.password.invalid-current");
         }
-        if (PasswordUtils.checkPwd(newPwd, oldHash)) {
+        if (PasswordHasher.checkPwd(newPwd, oldHash)) {
             throw new BadRequestException("error.password.same-as-current");
         }
 
-        String newHash = PasswordUtils.hashPwd(newPwd);
+        String newHash = PasswordHasher.hashPwd(newPwd);
         existing.setPassword(newHash);
         dao.update(existing);
     }
@@ -165,7 +166,7 @@ public class ProfileService {
                 .orElseThrow(() -> new BadRequestException("error.login.bad-credentials"));
 
         String pwd = PasswordUtils.normalize(dto.getPassword());
-        if (!PasswordUtils.hasText(pwd) || !PasswordUtils.checkPwd(pwd, existing.getPassword())) {
+        if (!PasswordHasher.checkPwd(pwd, existing.getPassword())) {
             throw new BadRequestException("error.login.bad-credentials");
         }
 

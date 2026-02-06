@@ -9,15 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToLoginDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
+import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.validator.LoginValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 
-import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
-import static ru.andrewb.charm.back.utils.Urls.*;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.web.Urls.*;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
 @Slf4j
 @WebServlet(LOGIN_URL)
@@ -29,9 +30,9 @@ public class LoginController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var userDetails = (UserDetailsDto) req.getSession().getAttribute("userDetails");
-        if (userDetails != null) {
-            resp.sendRedirect(req.getContextPath() + PROFILE_URL + "?id=" + userDetails.getId());
+        UserDetailsDto user = AuthUtils.getUserOrNull(req);
+        if (user != null) {
+            resp.sendRedirect(req.getContextPath() + PROFILE_URL);
             return;
         }
 
@@ -44,7 +45,6 @@ public class LoginController extends HttpServlet {
                 req.setAttribute("fields", flash.getFields());
             }
         }
-
         req.getRequestDispatcher(getJspPath(LOGIN_URL)).forward(req, resp);
     }
 

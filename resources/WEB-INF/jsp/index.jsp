@@ -31,10 +31,10 @@
             </h2>
 
             <div class="row center" style="gap: var(--space-3); margin-top: var(--space-2);">
-                <a class="btn" href="${cpath}/profile?id=${sessionScope.userDetails.id}">
+                <a class="btn" href="${cpath}/profile">
                     ${wordBundle.getWord('go-to-profile')}
                 </a>
-                <a class="btn btn--ghost" href="${cpath}/settings?id=${sessionScope.userDetails.id}">
+                <a class="btn btn--ghost" href="${cpath}/settings">
                     ${wordBundle.getWord('settings')}
                 </a>
                 <a class="btn btn" href="${cpath}/charm">

@@ -79,7 +79,7 @@
                            alt="${wordBundle.getWord('save')}" title="${wordBundle.getWord('save')}"/>
 
                     <a class="btn-reset"
-                       href="${cpath}/settings?id=${profile.id}"
+                       href="${cpath}/settings"
                        title="${wordBundle.getWord('settings')}" aria-label="${wordBundle.getWord('settings')}">
                         <img class="icon-sm" src="${cpath}/content/app/img/settings.png" alt="@">
                     </a>

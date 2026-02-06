@@ -15,22 +15,21 @@ import ru.andrewb.charm.back.mapper.ProfileGetDtoToPdfMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
-import ru.andrewb.charm.back.security.SecurityRules;
+import ru.andrewb.charm.back.security.ProfileAccess;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.utils.RequestParamUtils;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.web.flash.Flash;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static ru.andrewb.charm.back.utils.RequestParamUtils.rid;
-import static ru.andrewb.charm.back.utils.Urls.*;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.RequestParamUtils.rid;
+import static ru.andrewb.charm.back.web.Urls.*;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
-@WebServlet(PROFILE_URL + "/*")
 @Slf4j
 @MultipartConfig
+@WebServlet(PROFILE_URL + "/*")
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
@@ -41,7 +40,10 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            long id = RequestParamUtils.requirePositiveLong(req, "id");
+            var authCtx = ProfileAccess.resolveOrSend(req, resp);
+            if (authCtx == null) return;
+
+            long id = authCtx.targetId();
             var dto = service.findByIdOrThrow(id);
             req.setAttribute("profile", dto);
 
@@ -84,30 +86,28 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParamUtils.requirePositiveLong(req, "id");
+            var authCtx = ProfileAccess.resolveOrSend(req, resp);
+            if (authCtx == null) return;
+
+            long id = authCtx.targetId();
+            String redirect = authCtx.isAdmin()
+                    ? req.getContextPath() + PROFILE_URL + "?id=" + id
+                    : req.getContextPath() + PROFILE_URL;
+
             var dto = requestToProfileUpdateDtoMapper.map(req);
-
-            final String ctx = req.getContextPath();
-            String redirectUrl = ctx + PROFILE_URL + "?id=" + id;
-
-            String back = req.getParameter("back");
-            if (SecurityRules.isSafeInternalRedirect(ctx, back, PROFILES_URL, PROFILE_URL)) {
-                redirectUrl = back;
-            }
-
             var vr = profileUpdateValidator.validate(dto);
             if (vr.isNotValid()) {
                 vr.getErrors().forEach(code -> Flash.addError(req, code));
                 Flash.putField(req, "name", dto.getName());
                 Flash.putField(req, "surname", dto.getSurname());
                 Flash.putField(req, "about", dto.getAbout());
-                resp.sendRedirect(redirectUrl);
+                resp.sendRedirect(redirect);
                 return;
             }
 
             service.update(id, dto);
             log.info("[{}] Profile updated: id={}", rid(req), id);
-            resp.sendRedirect(redirectUrl);
+            resp.sendRedirect(redirect);
 
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -118,29 +118,24 @@ public class ProfileController extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        long id;
-        try {
-            id = RequestParamUtils.requirePositiveLong(req, "id");
-        } catch (BadRequestException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            return;
-        }
+        var authCtx = ProfileAccess.resolveOrSend(req, resp);
+        if (authCtx == null) return;
+
+        long id = authCtx.targetId();
+        UserDetailsDto user = authCtx.user();
 
         boolean deleted = service.delete(id);
-        var sessionUser = (UserDetailsDto) req.getSession().getAttribute("userDetails");
-
         if (deleted) {
             log.info("[{}] Profile deleted: id={}", rid(req), id);
-
-            if (sessionUser != null && sessionUser.getId() != null && sessionUser.getId().equals(id)) {
-                req.getSession().invalidate();
+            if (user.getId().equals(id)) {
+                req.getSession(false).invalidate();
                 resp.sendRedirect(req.getContextPath() + LOGIN_URL);
-                return;
+            } else {
+                resp.sendRedirect(req.getContextPath() + PROFILES_URL);
             }
         } else {
             log.warn("[{}] Delete ignored (not found): id={}", rid(req), id);
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-
-        resp.sendRedirect(req.getContextPath() + PROFILE_URL);
     }
 }

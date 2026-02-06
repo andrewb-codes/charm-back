@@ -16,7 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
-import static ru.andrewb.charm.back.utils.Urls.LOGIN_REST_URL;
+import static ru.andrewb.charm.back.web.Urls.LOGIN_REST_URL;
 
 @Slf4j
 @WebServlet(LOGIN_REST_URL)

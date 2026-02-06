@@ -11,7 +11,7 @@ import ru.andrewb.charm.back.service.ContentService;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static ru.andrewb.charm.back.utils.Urls.CONTENT_URL;
+import static ru.andrewb.charm.back.web.Urls.CONTENT_URL;
 
 @WebServlet(CONTENT_URL + "/*")
 public class ContentController extends HttpServlet {

@@ -3,8 +3,6 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
-import ru.andrewb.charm.back.utils.EmailUtils;
-import ru.andrewb.charm.back.utils.PasswordUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EmailChangeValidator implements Validator<EmailChangeDto> {

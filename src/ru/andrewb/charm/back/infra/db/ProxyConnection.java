@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.infra.db;
 
 import lombok.extern.slf4j.Slf4j;
 

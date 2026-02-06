@@ -6,15 +6,11 @@ import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
-import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
-import ru.andrewb.charm.back.utils.ConnectionManager;
+import ru.andrewb.charm.back.infra.db.ConnectionManager;
 
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static ru.andrewb.charm.back.utils.ConnectionManager.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileDao {
@@ -265,14 +261,6 @@ public class ProfileDao {
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void ping() {
-        try (Connection conn = ConnectionManager.getConnection()) {
-            // ok: connection successful
-        } catch (SQLException e) {
-            throw new IllegalStateException("DB connection failed (ping)", e);
         }
     }
 

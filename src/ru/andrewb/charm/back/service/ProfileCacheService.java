@@ -6,12 +6,10 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.mapper.JsonMapper;
-import ru.andrewb.charm.back.utils.RedisManager;
+import ru.andrewb.charm.back.infra.cache.RedisManager;
 
 import java.util.Queue;
 import java.util.UUID;
-
-import static ru.andrewb.charm.back.utils.RedisManager.CHARM_LOCK_TTL_SEC;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileCacheService {
@@ -34,7 +32,7 @@ public class ProfileCacheService {
         String token = UUID.randomUUID().toString();
 
         try (Jedis jedis = RedisManager.getResource()) {
-            String res = jedis.set(lockKey, token, SetParams.setParams().nx().ex(CHARM_LOCK_TTL_SEC));
+            String res = jedis.set(lockKey, token, SetParams.setParams().nx().ex(RedisManager.getCharmLockTtlSec()));
             return "OK".equals(res) ? token : null;
         } catch (Exception e) {
             throw new RuntimeException("redis tryAcquireLock failed", e);
@@ -87,7 +85,7 @@ public class ProfileCacheService {
                 p.rpush(key, json);
             }
 
-            p.expire(key, RedisManager.CHARM_QUEUE_TTL_SEC);
+            p.expire(key, RedisManager.getCharmQueueTtlSec());
             p.sync();
         } catch (Exception e) {
             throw new RuntimeException("redis replaceQueue failed", e);
@@ -107,7 +105,7 @@ public class ProfileCacheService {
         String key = EMPTY_KEY_PREFIX + userId;
 
         try (Jedis jedis = RedisManager.getResource()) {
-            jedis.setex(key, RedisManager.CHARM_EMPTY_TTL_SEC, "1");
+            jedis.setex(key, RedisManager.getCharmEmptyTtlSec(), "1");
         }
     }
 

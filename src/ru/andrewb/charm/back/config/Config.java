@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.utils;
+package ru.andrewb.charm.back.config;
 
 import lombok.experimental.UtilityClass;
 
@@ -10,8 +10,10 @@ import java.util.Properties;
 public class Config {
 
     private static final Properties FILE_PROPS = new Properties();
+    private static volatile boolean initialized = false;
 
-    static {
+    public static synchronized void init() {
+        if (initialized) return;
         // 1) base
         loadIfPresent("application.properties");
         // 2) profile
@@ -22,9 +24,19 @@ public class Config {
         if (profile != null && !profile.isBlank()) {
             loadIfPresent("application-" + profile + ".properties");
         }
+
+        initialized = true;
+    }
+
+    private static void ensureInit() {
+        if (!initialized) {
+            throw new IllegalStateException("Config is not initialized. Call Config.init() at startup.");
+        }
     }
 
     public static String get(String key) {
+        ensureInit();
+
         // 1) sysprops
         String v = System.getProperty(key);
         if (v != null) return v;

@@ -9,14 +9,14 @@ import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToCharmDtoMapper;
 import ru.andrewb.charm.back.normalizer.CharmDtoDefaults;
+import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.CharmService;
 
 import java.io.IOException;
 import java.util.Optional;
 
-import static ru.andrewb.charm.back.utils.Urls.CHARM_EMPTY_URL;
-import static ru.andrewb.charm.back.utils.Urls.CHARM_URL;
-import static ru.andrewb.charm.back.utils.Views.getJspPath;
+import static ru.andrewb.charm.back.web.Urls.*;
+import static ru.andrewb.charm.back.web.Views.getJspPath;
 
 @WebServlet(CHARM_URL)
 public class CharmController extends HttpServlet {
@@ -36,7 +36,11 @@ public class CharmController extends HttpServlet {
     }
 
     private void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var user = (UserDetailsDto) req.getSession().getAttribute("userDetails");
+        UserDetailsDto user = AuthUtils.getUserOrNull(req);
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + LOGIN_URL);
+            return;
+        }
 
         var charmDto = requestToCharmDtoMapper.map(req);
         charmDto.setFromProfileId(user.getId());

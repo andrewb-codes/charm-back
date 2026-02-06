@@ -3,7 +3,6 @@ package ru.andrewb.charm.back.validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
-import ru.andrewb.charm.back.utils.PasswordUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PasswordChangeValidator implements Validator<PasswordChangeDto> {

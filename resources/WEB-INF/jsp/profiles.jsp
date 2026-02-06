@@ -112,7 +112,7 @@
                 <col style="width:14%">     <!-- surname -->
                 <col style="width:7ch">     <!-- age -->
                 <col style="width:10%">     <!-- role -->
-                <col>                 <!-- status -->
+                <col>                       <!-- status -->
             </colgroup>
 
             <c:url var="urlId" value="${cpath}/profiles">
