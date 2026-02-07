@@ -38,12 +38,13 @@ public class AuthFilter implements Filter {
                 filterChain.doFilter(req, resp);
                 return;
             }
-            // Other rest (only for admin)
+            // Everything else requires login
             if (user == null) {
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-            if (!isAdmin) {
+            // Profiles list only for admin
+            if (PROFILES_REST_URL.equals(path) && !isAdmin) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
