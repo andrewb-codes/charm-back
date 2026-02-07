@@ -45,10 +45,10 @@ public class LoginController extends HttpServlet {
         } catch (DatabindException e) {
             req.setAttribute("errors", List.of("error.param.invalid"));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
         } catch (BadRequestException e) {
             req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-
         }
     }
 }

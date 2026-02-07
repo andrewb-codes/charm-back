@@ -41,7 +41,7 @@ public class MatchesController extends HttpServlet {
 
         var items = service.findMatches(user.getId(), limit, offset);
         boolean hasNext = items.size() > f.getPageSize();
-        if (hasNext) items = items.subList(0, f.getPageSize());
+        if (hasNext) items = items.subList(0, pageSize);
 
         boolean hasPrev = f.getPage() > 1;
 

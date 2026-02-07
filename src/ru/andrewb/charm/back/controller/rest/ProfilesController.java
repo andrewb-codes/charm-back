@@ -27,16 +27,10 @@ public class ProfilesController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try {
-            ProfileFilter f = requestToProfileFilterMapper.map(req);
-            ProfileFilterDefaults.normalize(f);
+        ProfileFilter f = requestToProfileFilterMapper.map(req);
+        ProfileFilterDefaults.normalize(f);
 
-            resp.setContentType("application/json;charset=UTF-8");
-            jsonMapper.writeValue(resp.getWriter(), service.findAll(f));
-
-        } catch (DatabindException e) {
-            req.setAttribute("errors", List.of("error.param.invalid"));
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        }
+        resp.setContentType("application/json;charset=UTF-8");
+        jsonMapper.writeValue(resp.getWriter(), service.findAll(f));
     }
 }
