@@ -8,15 +8,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import ru.andrewb.charm.back.dto.RegistrationDto;
-import ru.andrewb.charm.back.dto.UserDetailsDto;
+import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.mapper.JsonMapper;
-import ru.andrewb.charm.back.mapper.RequestToProfileUpdateDtoMapper;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
-import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.security.ProfileAccess;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.web.RequestParamUtils;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 import ru.andrewb.charm.back.validator.RegistrationValidator;
 
@@ -32,25 +29,24 @@ import static ru.andrewb.charm.back.web.Urls.PROFILE_REST_URL;
 public class ProfileController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
-
     private final ProfileUpdateValidator profileUpdateValidator = ProfileUpdateValidator.getInstance();
     private final RegistrationValidator registrationValidator = RegistrationValidator.getInstance();
-    private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            long id = RequestParamUtils.requirePositiveLong(req, "id");
+            var authCtx = ProfileAccess.resolveOrSendRest(req, resp);
+            if (authCtx == null) return;
 
-            var dtoOpt = service.findById(id);
-            if (dtoOpt.isPresent()) {
-                resp.setContentType("application/json;charset=UTF-8");
-                jsonMapper.writeValue(resp.getWriter(), dtoOpt.get());
-                return;
-            }
+            long id = authCtx.targetId();
 
-            req.setAttribute("errors", List.of("error.profile.not-found"));
+            var dto = service.findByIdOrThrow(id);
+            resp.setContentType("application/json;charset=UTF-8");
+            jsonMapper.writeValue(resp.getWriter(), dto);
+
+        } catch (NotFoundException e) {
+            req.setAttribute("errors", List.of(e.getMessage()));
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 
         } catch (DatabindException e) {
@@ -64,43 +60,13 @@ public class ProfileController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try (BufferedReader r = req.getReader()) {
-            var dto = jsonMapper.readValue(r, RegistrationDto.class);
-
-            var vr = registrationValidator.validate(dto);
-            if (vr.isNotValid()) {
-                req.setAttribute("errors", vr.getErrors());
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
-
-            Long id = service.save(dto);
-            resp.setStatus(HttpServletResponse.SC_CREATED);
-            resp.setHeader("Location",
-                    req.getContextPath() + PROFILE_REST_URL + "?id=" + id);
-            resp.setContentType("application/json;charset=UTF-8");
-            resp.getWriter().write("{\"id\":" + id + "}");
-
-        } catch (DuplicateEmailException e) {
-            req.setAttribute("errors", List.of(e.getMessage()));
-            resp.sendError(HttpServletResponse.SC_CONFLICT);
-
-        } catch (DatabindException e) {
-            req.setAttribute("errors", List.of("error.param.invalid"));
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-
-        } catch (BadRequestException e) {
-            req.setAttribute("errors", List.of(e.getMessage()));
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        }
-    }
-
-    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try {
-            long id = RequestParamUtils.requirePositiveLong(req, "id");
-            var dto = requestToProfileUpdateDtoMapper.map(req);
+        try (BufferedReader reader = req.getReader()) {
+            var authCtx = ProfileAccess.resolveOrSendRest(req, resp);
+            if (authCtx == null) return;
+
+            long id = authCtx.targetId();
+            var dto = jsonMapper.readValue(reader, ProfileUpdateDto.class);
 
             var vr = profileUpdateValidator.validate(dto);
             if (vr.isNotValid()) {
@@ -130,7 +96,10 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            long id = RequestParamUtils.requirePositiveLong(req, "id");
+            var authCtx = ProfileAccess.resolveOrSendRest(req, resp);
+            if (authCtx == null) return;
+
+            long id = authCtx.targetId();
 
             boolean deleted = service.delete(id);
             if (!deleted) {
@@ -139,9 +108,8 @@ public class ProfileController extends HttpServlet {
                 return;
             }
 
-            var sessionUser = (UserDetailsDto) req.getSession().getAttribute("userDetails");
-            if (sessionUser != null && sessionUser.getId() != null && sessionUser.getId().equals(id)) {
-                req.getSession().invalidate();
+            if (authCtx.user().getId().equals(id)) {
+                req.getSession(false).invalidate();
             }
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 

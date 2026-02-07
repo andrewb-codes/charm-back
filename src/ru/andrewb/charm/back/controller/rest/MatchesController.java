@@ -1,33 +1,37 @@
-package ru.andrewb.charm.back.controller;
+package ru.andrewb.charm.back.controller.rest;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
+import ru.andrewb.charm.back.mapper.JsonMapper;
 import ru.andrewb.charm.back.mapper.RequestToProfileFilterMapper;
 import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.io.IOException;
+import java.util.List;
 
-import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
-import static ru.andrewb.charm.back.web.Urls.MATCHES_URL;
-import static ru.andrewb.charm.back.web.Views.getJspPath;
+import static ru.andrewb.charm.back.web.Urls.*;
 
-@WebServlet(MATCHES_URL)
+@WebServlet(MATCHES_REST_URL)
 public class MatchesController extends HttpServlet {
 
     private final ProfileService service = ProfileService.getInstance();
     private final RequestToProfileFilterMapper requestToProfileFilterMapper = RequestToProfileFilterMapper.getInstance();
+    private final JsonMapper jsonMapper = JsonMapper.getInstance();
+
+    public record MatchesResponse(List<ProfileGetDto> items, boolean hasNext) {}
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserDetailsDto user = AuthUtils.getUserOrNull(req);
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + LOGIN_URL);
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
@@ -43,13 +47,8 @@ public class MatchesController extends HttpServlet {
         boolean hasNext = items.size() > f.getPageSize();
         if (hasNext) items = items.subList(0, pageSize);
 
-        boolean hasPrev = f.getPage() > 1;
-
-        req.setAttribute("matches", items);
-        req.setAttribute("filter", f);
-        req.setAttribute("hasPrev", hasPrev);
-        req.setAttribute("hasNext", hasNext);
-
-        req.getRequestDispatcher(getJspPath(MATCHES_URL)).forward(req, resp);
+        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json;charset=UTF-8");
+        jsonMapper.writeValue(resp.getWriter(), new MatchesResponse(items, hasNext));
     }
 }

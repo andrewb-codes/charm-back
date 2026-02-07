@@ -18,7 +18,7 @@ public class SecurityRules {
     );
 
     public static final Set<String> PUBLIC_REST = Set.of(
-            LOGIN_REST_URL
+            LOGIN_REST_URL, LOGOUT_REST_URL, REGISTRATION_REST_URL
     );
 
     public static boolean isRest(String path) {
