@@ -175,7 +175,10 @@ docker exec -i charm-postgres psql -U charm -d charm < back/src/main/resources/s
 Запуск через embedded Tomcat 11 и Cargo:
 
 ```powershell
-.\mvnw.cmd -pl back -am -Dapp.profile.active=local cargo:run
+.\mvnw.cmd -pl back -am package
+```
+```powershell
+.\mvnw.cmd -pl back -Dapp.profile.active=local cargo:run
 ```
 
 По умолчанию приложение поднимается на:
@@ -189,12 +192,6 @@ $env:APP_PROFILE="local"
 $env:APP_DATASOURCE_PASSWORD="charm"
 $env:APP_CONTENT_BASE_PATH="C:\tmp\charm-content"
 .\mvnw.cmd -pl back -am cargo:run
-```
-
-Сборка `war`:
-
-```powershell
-.\mvnw.cmd -pl back -am package
 ```
 
 ## Maven-профили
