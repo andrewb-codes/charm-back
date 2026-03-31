@@ -154,7 +154,7 @@ docker run -d `
 ```powershell
 docker exec -i charm-postgres psql -U charm -d charm < back\src\main\resources\sql\schema.sql
 docker exec -i charm-postgres psql -U charm -d charm < back\src\main\resources\sql\seed_dev.sql
-docker exec -i charm-postgres psql -U charm -d charm < back/src/main/resources/sql/seed_bulk_1k.sql
+docker exec -i charm-postgres psql -U charm -d charm < back\src\main\resources\sql\seed_bulk_1k.sql
 
 ```
 
