@@ -1,46 +1,21 @@
-### IntelliJ IDEA ###
+# IDE
 .idea/
 *.iml
-out/
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
 .vscode/
+.smarttomcat/
 
-### Build systems ###
+# Build
 target/
+out/
 build/
 .gradle/
 
-### Logs / OS ###
+# OS / logs
 *.log
 .DS_Store
 Thumbs.db
-.smarttomcat/
-out/
 
-
-### IntelliJ ###
-*.iml
-.idea/
-
-### Local/profiles with secrets ###
-application-local.properties
-application-*.local.properties
-application-*.secret.properties
+# Local config / secrets
+back/src/main/resources/application-local.properties
+back/src/main/resources/application-*.local.properties
+back/src/main/resources/application-*.secret.properties
