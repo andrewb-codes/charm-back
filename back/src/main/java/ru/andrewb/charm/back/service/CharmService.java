@@ -48,7 +48,7 @@ public class CharmService {
         // Try to acquire per-user refill lock
         String token = profileCacheService.tryAcquireLock(fromId);
         if (token == null) {
-            // Someone already refills thr queue now -> don't spam redis/db
+            // Someone already refills the queue now -> don't spam redis/db
             return Optional.empty();
         }
 
