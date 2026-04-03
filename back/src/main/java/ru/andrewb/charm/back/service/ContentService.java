@@ -1,9 +1,6 @@
 package ru.andrewb.charm.back.service;
 
 import jakarta.servlet.ServletOutputStream;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import ru.andrewb.charm.back.config.Config;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 
@@ -17,17 +14,12 @@ import java.util.Comparator;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentService {
 
-    private static final ContentService INSTANCE = new ContentService();
+    private final Path basePath;
 
-    private static final Path BASE_PATH = Path.of(
-            Config.required("app.content.base-path")
-    ).toAbsolutePath().normalize();
-
-    public static ContentService getInstance() {
-        return INSTANCE;
+    public ContentService(Path basePath) {
+        this.basePath = basePath.toAbsolutePath().normalize();
     }
 
     public void upload(InputStream inputStream, String contentPath) {
@@ -128,8 +120,8 @@ public class ContentService {
             throw new IllegalArgumentException("contentPath is required");
         }
         String clean = contentPath.startsWith("/") ? contentPath.substring(1) : contentPath;
-        Path full = BASE_PATH.resolve(clean).normalize();
-        if (!full.startsWith(BASE_PATH)) {
+        Path full = basePath.resolve(clean).normalize();
+        if (!full.startsWith(basePath)) {
             throw new SecurityException("invalid content path");
         }
         return full;

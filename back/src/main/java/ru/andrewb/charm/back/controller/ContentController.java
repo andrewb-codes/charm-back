@@ -4,6 +4,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
@@ -19,7 +20,7 @@ import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
 @WebServlet(CONTENT_URL + "/*")
 public class ContentController extends HttpServlet {
 
-    public static final ContentService contentService = ContentService.getInstance();
+    public static final ContentService contentService = AppComponents.CONTENT_SERVICE;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

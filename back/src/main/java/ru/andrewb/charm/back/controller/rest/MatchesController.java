@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
@@ -21,7 +22,7 @@ import static ru.andrewb.charm.back.web.Urls.MATCHES_REST_URL;
 @WebServlet(MATCHES_REST_URL)
 public class MatchesController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final RequestToProfileFilterMapper requestToProfileFilterMapper = RequestToProfileFilterMapper.getInstance();
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 

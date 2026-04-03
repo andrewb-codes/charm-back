@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.dto.CharmDto;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
@@ -24,7 +25,7 @@ import static ru.andrewb.charm.back.web.Urls.CHARM_REST_URL;
 @WebServlet(CHARM_REST_URL)
 public class CharmController extends HttpServlet {
 
-    private final CharmService service = CharmService.getInstance();
+    private final CharmService service = AppComponents.CHARM_SERVICE;
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
     public record NextResponse(ProfileSimpleDto profile) {}

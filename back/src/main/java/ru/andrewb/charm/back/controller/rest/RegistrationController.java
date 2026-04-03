@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 import ru.andrewb.charm.back.mapper.JsonMapper;
@@ -23,7 +24,7 @@ import static ru.andrewb.charm.back.web.Urls.REGISTRATION_REST_URL;
 @WebServlet(REGISTRATION_REST_URL)
 public class RegistrationController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final RegistrationValidator registrationValidator = RegistrationValidator.getInstance();
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 

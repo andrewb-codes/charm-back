@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.mapper.RequestToLoginDtoMapper;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
@@ -24,7 +25,7 @@ import static ru.andrewb.charm.back.web.Views.getJspPath;
 @WebServlet(LOGIN_URL)
 public class LoginController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final LoginValidator loginValidator = LoginValidator.getInstance();
     private final RequestToLoginDtoMapper requestToLoginDtoMapper = RequestToLoginDtoMapper.getInstance();
 

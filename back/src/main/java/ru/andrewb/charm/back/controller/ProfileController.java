@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 import ru.andrewb.charm.back.model.exception.StorageException;
 import ru.andrewb.charm.back.security.AuthUtils;
@@ -33,10 +34,10 @@ import static ru.andrewb.charm.back.web.Views.getJspPath;
 @WebServlet(PROFILE_URL + "/*")
 public class ProfileController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final ProfileUpdateValidator profileUpdateValidator = ProfileUpdateValidator.getInstance();
     private final RequestToProfileUpdateDtoMapper requestToProfileUpdateDtoMapper = RequestToProfileUpdateDtoMapper.getInstance();
-    private final ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper = ProfileGetDtoToPdfMapper.getInstance();
+    private final ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper = AppComponents.PROFILE_GET_DTO_TO_PDF_MAPPER;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

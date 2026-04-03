@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
@@ -20,7 +21,7 @@ import static ru.andrewb.charm.back.web.Views.getJspPath;
 @WebServlet(SETTINGS_URL)
 public class SettingsController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
