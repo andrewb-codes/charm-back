@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToCharmDtoMapper;
@@ -21,7 +22,7 @@ import static ru.andrewb.charm.back.web.Views.getJspPath;
 @WebServlet(CHARM_URL)
 public class CharmController extends HttpServlet {
 
-    private final CharmService service = CharmService.getInstance();
+    private final CharmService service = AppComponents.CHARM_SERVICE;
 
     private final RequestToCharmDtoMapper requestToCharmDtoMapper = RequestToCharmDtoMapper.getInstance();
 

@@ -1,8 +1,5 @@
 package ru.andrewb.charm.back.service;
 
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
@@ -23,20 +20,26 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileService {
 
-    private static final ProfileService INSTANCE = new ProfileService();
+    private final ProfileDao dao;
+    private final ContentService contentService;
+    private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper;
+    private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
+    private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper;
 
-    private final ProfileDao dao = ProfileDao.getInstance();
-    private final ContentService contentService = ContentService.getInstance();
-
-    private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper = ProfileToProfileGetDtoMapper.getInstance();
-    private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper = ProfileUpdateDtoToProfileMapper.getInstance();
-    private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper = ProfileToUserDetailsDtoMapper.getInstance();
-
-    public static ProfileService getInstance() {
-        return INSTANCE;
+    public ProfileService(
+            ProfileDao dao,
+            ContentService contentService,
+            ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper,
+            ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper,
+            ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper
+    ) {
+        this.dao = dao;
+        this.contentService = contentService;
+        this.profileToProfileGetDtoMapper = profileToProfileGetDtoMapper;
+        this.profileUpdateDtoToProfileMapper = profileUpdateDtoToProfileMapper;
+        this.profileToUserDetailsDtoMapper = profileToUserDetailsDtoMapper;
     }
 
     public Long save(RegistrationDto dto) {

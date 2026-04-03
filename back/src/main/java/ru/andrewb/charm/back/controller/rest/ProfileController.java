@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
 import ru.andrewb.charm.back.model.exception.*;
@@ -30,7 +31,7 @@ import static ru.andrewb.charm.back.web.Urls.PROFILE_REST_URL;
 @WebServlet(PROFILE_REST_URL + "/*")
 public class ProfileController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
 
     private final ProfileUpdateValidator profileUpdateValidator = ProfileUpdateValidator.getInstance();
     private final EmailChangeValidator emailChangeValidator = EmailChangeValidator.getInstance();

@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.mapper.RequestToEmailChangeDtoMapper;
@@ -26,7 +27,7 @@ import static ru.andrewb.charm.back.web.Urls.*;
 @WebServlet(EMAIL_URL)
 public class EmailChangeController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final EmailChangeValidator emailChangeValidator = EmailChangeValidator.getInstance();
     private final RequestToEmailChangeDtoMapper emailChangeDtoMapper = RequestToEmailChangeDtoMapper.getInstance();
 

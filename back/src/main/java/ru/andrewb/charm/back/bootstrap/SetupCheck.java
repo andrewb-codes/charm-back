@@ -9,7 +9,6 @@ import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.infra.cache.RedisManager;
 import ru.andrewb.charm.back.infra.db.ConnectionManager;
-import ru.andrewb.charm.back.service.ContentService;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +36,6 @@ public class SetupCheck implements ServletContextListener {
         RedisManager.initOrThrow();
 
         // 3) init singletons
-        ContentService.getInstance();
         ProfileDao.getInstance();
         ProfileLikeDao.getInstance();
 

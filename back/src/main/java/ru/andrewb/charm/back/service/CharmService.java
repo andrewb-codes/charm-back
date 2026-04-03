@@ -1,7 +1,5 @@
 package ru.andrewb.charm.back.service;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.dto.Action;
@@ -11,17 +9,20 @@ import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import java.util.Optional;
 import java.util.Queue;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CharmService {
 
-    private static final CharmService INSTANCE = new CharmService();
+    private final ProfileDao profileDao;
+    private final ProfileLikeDao profileLikeDao;
+    private final ProfileCacheService profileCacheService;
 
-    private final ProfileDao profileDao = ProfileDao.getInstance();
-    private final ProfileLikeDao profileLikeDao = ProfileLikeDao.getInstance();
-    private final ProfileCacheService profileCacheService = ProfileCacheService.getInstance();
-
-    public static CharmService getInstance() {
-        return INSTANCE;
+    public CharmService(
+            ProfileDao profileDao,
+            ProfileLikeDao profileLikeDao,
+            ProfileCacheService profileCacheService
+    ) {
+        this.profileDao = profileDao;
+        this.profileLikeDao = profileLikeDao;
+        this.profileCacheService = profileCacheService;
     }
 
     public Optional<ProfileSimpleDto> getNext(CharmDto dto) {

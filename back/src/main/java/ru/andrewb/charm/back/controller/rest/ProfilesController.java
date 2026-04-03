@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import ru.andrewb.charm.back.bootstrap.AppComponents;
 import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.dto.ProfileFilter;
@@ -20,7 +21,7 @@ import static ru.andrewb.charm.back.web.Urls.PROFILES_REST_URL;
 @WebServlet(PROFILES_REST_URL)
 public class ProfilesController extends HttpServlet {
 
-    private final ProfileService service = ProfileService.getInstance();
+    private final ProfileService service = AppComponents.PROFILE_SERVICE;
     private final RequestToProfileFilterMapper requestToProfileFilterMapper = RequestToProfileFilterMapper.getInstance();
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 

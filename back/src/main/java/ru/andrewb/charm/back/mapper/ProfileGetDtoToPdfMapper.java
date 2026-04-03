@@ -6,8 +6,6 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.model.exception.PdfBuildException;
 import ru.andrewb.charm.back.service.ContentService;
@@ -16,13 +14,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProfileGetDtoToPdfMapper implements Mapper<ProfileGetDto, Document> {
 
-    private static final ProfileGetDtoToPdfMapper INSTANCE = new ProfileGetDtoToPdfMapper();
+    private final ContentService contentService;
 
-    public static ProfileGetDtoToPdfMapper getInstance() {
-        return INSTANCE;
+    public ProfileGetDtoToPdfMapper(ContentService contentService) {
+        this.contentService = contentService;
     }
 
     @Override
@@ -63,7 +60,7 @@ public class ProfileGetDtoToPdfMapper implements Mapper<ProfileGetDto, Document>
 
             table.addCell("Photo");
             if (dto.getPhoto() != null && !dto.getPhoto().isBlank()) {
-                Path imgPath = ContentService.getInstance()
+                Path imgPath = contentService
                         .resolve("profile", String.valueOf(dto.getId()), dto.getPhoto());
                 if (Files.exists(imgPath)) {
                     Image img = Image.getInstance(imgPath.toAbsolutePath().toString());
