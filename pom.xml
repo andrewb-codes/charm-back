@@ -57,6 +57,16 @@
                 <artifactId>pool</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>11.8.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>11.8.2</version>
+            </dependency>
 
             <!-- Cache -->
             <dependency>
@@ -205,6 +215,11 @@
                             </deployable>
                         </deployables>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-maven-plugin</artifactId>
+                    <version>11.8.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>

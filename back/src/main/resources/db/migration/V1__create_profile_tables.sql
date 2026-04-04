@@ -1,6 +1,3 @@
-DROP TABLE IF EXISTS profile_like;
-DROP TABLE IF EXISTS profile CASCADE;
-
 CREATE TABLE profile (
     id              BIGSERIAL PRIMARY KEY,
     email           VARCHAR NOT NULL UNIQUE,
