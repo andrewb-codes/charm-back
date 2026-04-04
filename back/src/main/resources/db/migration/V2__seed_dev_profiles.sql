@@ -1,13 +1,3 @@
-/*
- insert 3 test users with passwords:
- admin@charm.ru   - qwerty
- ivanov@mail.ru   - 123456
- sidorova@mail.ru - 456789
-*/
-
-TRUNCATE TABLE profile_like;
-TRUNCATE TABLE profile RESTART IDENTITY CASCADE;
-
 INSERT INTO profile (email, password, "name", surname, birthdate, about, gender, status, role)
 VALUES
     ('admin@charm.ru',   '$2a$10$lsHPyUkTiS1qKFwWqfGTrePIkDyA/r4TTD6O/bnG.oRNDDDm8aW92', 'Admin',  NULL,       NULL,               NULL,           NULL,     'INACTIVE','ADMIN'),
