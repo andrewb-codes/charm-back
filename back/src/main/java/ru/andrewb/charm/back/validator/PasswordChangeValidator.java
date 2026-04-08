@@ -1,17 +1,10 @@
 package ru.andrewb.charm.back.validator;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class PasswordChangeValidator implements Validator<PasswordChangeDto> {
-
-    private static final PasswordChangeValidator INSTANCE = new PasswordChangeValidator();
-
-    public static PasswordChangeValidator getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ValidationResult validate(PasswordChangeDto dto) {

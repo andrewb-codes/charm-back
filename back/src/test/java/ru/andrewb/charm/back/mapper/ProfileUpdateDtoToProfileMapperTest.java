@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ProfileUpdateDtoToProfileMapperTest {
 
-    private final ProfileUpdateDtoToProfileMapper mapper = ProfileUpdateDtoToProfileMapper.getInstance();
+    private final ProfileUpdateDtoToProfileMapper mapper = new ProfileUpdateDtoToProfileMapper();
 
     @Test
     void map_shouldCopyAllNonNullFieldsToNewProfile() {

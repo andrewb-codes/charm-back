@@ -50,7 +50,7 @@
                                 <option value="" disabled <c:if test="${empty g}">selected</c:if>>
                                     ${wordBundle.getWord("select-gender")}
                                 </option>
-                                <c:forEach var="gender" items="${applicationScope.genders}">
+                                <c:forEach var="gender" items="${genders}">
                                     <option value="${gender}" <c:if test="${gender == g}">selected</c:if>>
                                         ${wordBundle.getWord(gender)}
                                     </option>

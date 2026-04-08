@@ -1,15 +1,11 @@
 package ru.andrewb.charm.back.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.model.Profile;
 
+@Component
 public class ProfileToUserDetailsDtoMapper implements Mapper<Profile, UserDetailsDto> {
-
-    private static final ProfileToUserDetailsDtoMapper INSTANCE = new ProfileToUserDetailsDtoMapper();
-
-    public static ProfileToUserDetailsDtoMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public UserDetailsDto map(Profile profile) {

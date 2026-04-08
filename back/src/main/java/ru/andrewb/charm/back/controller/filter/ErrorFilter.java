@@ -19,7 +19,7 @@ import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static ru.andrewb.charm.back.security.SecurityRules.isRest;
 
 @Slf4j
-@WebFilter(value = "/*", dispatcherTypes = DispatcherType.ERROR)
+//@WebFilter(value = "/*", dispatcherTypes = DispatcherType.ERROR)
 public class ErrorFilter implements Filter {
 
     private final JsonMapper jsonMapper = JsonMapper.getInstance();

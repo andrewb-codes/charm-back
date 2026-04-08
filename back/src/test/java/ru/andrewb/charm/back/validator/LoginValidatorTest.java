@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LoginValidatorTest {
 
-    private final LoginValidator validator = LoginValidator.getInstance();
+    private final LoginValidator validator = new LoginValidator();
 
     @Test
     void validate_shouldReturnError_whenDtoIsNull() {

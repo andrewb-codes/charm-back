@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 
-@WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
+//@WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
 public class HiddenHttpMethodFilter implements Filter {
 
     public static final String METHOD_PARAM = "_method";

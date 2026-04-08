@@ -1,8 +1,7 @@
 package ru.andrewb.charm.back.mapper;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Status;
@@ -14,14 +13,8 @@ import java.util.Locale;
 
 import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class RequestToProfileUpdateDtoMapper implements Mapper<HttpServletRequest, ProfileUpdateDto> {
-
-    private static final RequestToProfileUpdateDtoMapper INSTANCE = new RequestToProfileUpdateDtoMapper();
-
-    public static RequestToProfileUpdateDtoMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ProfileUpdateDto map(HttpServletRequest req) {

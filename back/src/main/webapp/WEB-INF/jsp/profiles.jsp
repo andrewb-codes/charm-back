@@ -51,7 +51,7 @@
             <label for="f-role">${wordBundle.getWord("role")}</label>
             <select id="f-role" name="role">
                 <option value=""></option>
-                <c:forEach var="r" items="${applicationScope.roles}">
+                <c:forEach var="r" items="${roles}">
                     <option value="${r}" <c:if test="${r == filter.role}">selected</c:if>>
                         ${wordBundle.getWord(r)}
                     </option>
@@ -63,7 +63,7 @@
             <label for="f-status">${wordBundle.getWord("status")}</label>
             <select id="f-status" name="status">
                 <option value=""></option>
-                <c:forEach var="st" items="${applicationScope.statuses}">
+                <c:forEach var="st" items="${statuses}">
                     <option value="${st}" <c:if test="${st == filter.status}">selected</c:if>>
                         ${wordBundle.getWord(st)}
                     </option>
@@ -74,7 +74,7 @@
         <div class="field">
             <label for="f-pageSize">${wordBundle.getWord("pageSize")}</label>
             <select id="f-pageSize" name="pageSize" style="width:88px;">
-                <c:forEach var="size" items="${applicationScope.availablePageSizes}">
+                <c:forEach var="size" items="${availablePageSizes}">
                     <option value="${size}" <c:if test="${size == filter.pageSize}">selected</c:if>>${size}</option>
                 </c:forEach>
             </select>
@@ -249,7 +249,7 @@
                     <td class="row" style="gap:12px; align-items:center;">
                         <select name="statusesWithIds" aria-label="Set status">
                             <option value="skip" selected>—</option>
-                            <c:forEach var="status" items="${applicationScope.statuses}">
+                            <c:forEach var="status" items="${statuses}">
                                 <option value="${status}_${profile.id}">
                                     <c:out value="${wordBundle.getWord(status)}"/>
                                 </option>

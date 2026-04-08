@@ -17,7 +17,7 @@
         <div class="field">
             <label for="f-pageSize">${wordBundle.getWord('pageSize')}</label>
             <select id="f-pageSize" name="pageSize" style="width:88px;">
-                <c:forEach var="size" items="${applicationScope.availablePageSizes}">
+                <c:forEach var="size" items="${availablePageSizes}">
                     <option value="${size}" <c:if test="${size == filter.pageSize}">selected</c:if>>${size}</option>
                 </c:forEach>
             </select>

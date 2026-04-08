@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.service;
 
+import org.springframework.stereotype.Service;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.dto.Action;
@@ -9,6 +10,7 @@ import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import java.util.Optional;
 import java.util.Queue;
 
+@Service
 public class CharmService {
 
     private final ProfileDao profileDao;

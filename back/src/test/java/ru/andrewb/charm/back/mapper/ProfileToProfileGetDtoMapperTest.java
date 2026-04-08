@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProfileToProfileGetDtoMapperTest {
 
-    private final ProfileToProfileGetDtoMapper mapper = ProfileToProfileGetDtoMapper.getInstance();
+    private final ProfileToProfileGetDtoMapper mapper = new ProfileToProfileGetDtoMapper();
 
     @Test
     void map_shouldCopyAllFieldsAndCalculateAge() {

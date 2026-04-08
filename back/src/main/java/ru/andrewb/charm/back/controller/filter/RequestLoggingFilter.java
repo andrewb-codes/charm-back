@@ -1,22 +1,27 @@
 package ru.andrewb.charm.back.controller.filter;
 
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
 
-@WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
 @Slf4j
-public class RequestLoggingFilter implements Filter {
+@Component
+public class RequestLoggingFilter extends OncePerRequestFilter {
+
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) servletRequest;
-        HttpServletResponse resp = (HttpServletResponse) servletResponse;
+    protected void doFilterInternal(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            FilterChain filterChain
+    ) throws IOException, ServletException {
 
         String rid = UUID.randomUUID().toString().substring(0, 8);
 
@@ -39,7 +44,6 @@ public class RequestLoggingFilter implements Filter {
             throw t;
         } finally {
             long took = System.currentTimeMillis() - start;
-            log.info("[{}] <- {} {} ({} ms)", rid, status, uri, took);
             MDC.clear();
         }
     }

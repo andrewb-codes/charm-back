@@ -1,10 +1,12 @@
 package ru.andrewb.charm.back.controller.filter;
 
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 import ru.andrewb.charm.back.dto.UserDetailsDto;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.security.AuthUtils;
@@ -15,13 +17,15 @@ import static ru.andrewb.charm.back.security.SecurityRules.*;
 import static ru.andrewb.charm.back.web.Urls.*;
 
 @Slf4j
-@WebFilter(value = "/*", dispatcherTypes = DispatcherType.REQUEST)
-public class AuthFilter implements Filter {
+@Component
+public class AuthFilter extends OncePerRequestFilter {
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) servletRequest;
-        HttpServletResponse resp = (HttpServletResponse) servletResponse;
+    protected void doFilterInternal(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            FilterChain filterChain
+    ) throws IOException, ServletException {
 
         String ctx = req.getContextPath();
         String path = req.getRequestURI().substring(ctx.length());

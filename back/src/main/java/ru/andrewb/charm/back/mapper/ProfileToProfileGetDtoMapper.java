@@ -1,21 +1,14 @@
 package ru.andrewb.charm.back.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.model.Profile;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class ProfileToProfileGetDtoMapper implements Mapper<Profile, ProfileGetDto> {
-
-    private static final ProfileToProfileGetDtoMapper INSTANCE = new ProfileToProfileGetDtoMapper();
-
-    public static ProfileToProfileGetDtoMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ProfileGetDto map(Profile profile) {

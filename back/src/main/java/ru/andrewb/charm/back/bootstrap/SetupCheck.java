@@ -2,11 +2,8 @@ package ru.andrewb.charm.back.bootstrap;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
 import lombok.extern.slf4j.Slf4j;
 import ru.andrewb.charm.back.config.Config;
-import ru.andrewb.charm.back.dao.ProfileDao;
-import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.infra.cache.RedisManager;
 import ru.andrewb.charm.back.infra.db.ConnectionManager;
 
@@ -14,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Slf4j
-@WebListener
+//@WebListener
 public class SetupCheck implements ServletContextListener {
 
     @Override
@@ -36,8 +33,8 @@ public class SetupCheck implements ServletContextListener {
         RedisManager.initOrThrow();
 
         // 3) init singletons
-        ProfileDao.getInstance();
-        ProfileLikeDao.getInstance();
+//        ProfileDao.getInstance();
+//        ProfileLikeDao.getInstance();
 
         // 4) check if content base path exists (or create)
         String basePathStr = Config.required("app.content.base-path");

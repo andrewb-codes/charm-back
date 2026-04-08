@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ProfileToUserDetailsDtoMapperTest {
 
-    private final ProfileToUserDetailsDtoMapper mapper = ProfileToUserDetailsDtoMapper.getInstance();
+    private final ProfileToUserDetailsDtoMapper mapper = new ProfileToUserDetailsDtoMapper();
 
     @Test
     void map_shouldCopyIdEmailRole() {

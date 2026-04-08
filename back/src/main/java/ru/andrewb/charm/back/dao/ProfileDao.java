@@ -1,19 +1,31 @@
 package ru.andrewb.charm.back.dao;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Repository;
+import ru.andrewb.charm.back.config.AppDataSourceProperties;
 import ru.andrewb.charm.back.dto.*;
-import ru.andrewb.charm.back.infra.db.ConnectionManager;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Repository
 public class ProfileDao {
+
+    private final DataSource dataSource;
+    private final AppDataSourceProperties properties;
+
+    private final ResultSetToProfileMapper rsToProfileMapper = ResultSetToProfileMapper.getInstance();
+    private final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper = ResultSetToProfileSimpleDtoMapper.getInstance();
+
+    public ProfileDao(DataSource dataSource, AppDataSourceProperties properties) {
+        this.dataSource = dataSource;
+        this.properties = properties;
+    }
+
     //language=POSTGRES-PSQL
     private static final String SQL_INSERT =
             "INSERT INTO profile(email, password) VALUES (?, ?) RETURNING id";
@@ -71,17 +83,9 @@ public class ProfileDao {
             LIMIT ? OFFSET ?
             """;
 
-    private static final ProfileDao INSTANCE = new ProfileDao();
-
-    private static final ResultSetToProfileMapper rsToProfileMapper = ResultSetToProfileMapper.getInstance();
-    private static final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper = ResultSetToProfileSimpleDtoMapper.getInstance();
-
-    public static ProfileDao getInstance() {
-        return INSTANCE;
-    }
 
     public Profile save(Profile profile) {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_INSERT)) {
             ps.setString(1, profile.getEmail());
             ps.setString(2, profile.getPassword());
@@ -98,8 +102,8 @@ public class ProfileDao {
 
     public Optional<Profile> findById(Long id) {
         Query query = new ProfileSelectQueryBuilder().addIdFilter(id).build();
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = prepareStatement(conn, query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(rsToProfileMapper.map(rs));
@@ -113,8 +117,8 @@ public class ProfileDao {
 
     public Optional<Profile> findByEmail(String email) {
         Query query = new ProfileSelectQueryBuilder().addEmailFilter(email).build();
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = prepareStatement(conn, query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(rsToProfileMapper.map(rs));
@@ -139,8 +143,8 @@ public class ProfileDao {
                 .pageAndPageSize(filter.getPage(), filter.getPageSize())
                 .build();
 
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = prepareStatement(conn, query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 List<Profile> profiles = new ArrayList<>();
                 while (rs.next()) {
@@ -154,7 +158,7 @@ public class ProfileDao {
     }
 
     public List<Profile> findMatches(Long id, int limit, int offset) {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_FIND_MATCHES)) {
             ps.setLong(1, id);
             ps.setLong(2, id);
@@ -186,8 +190,8 @@ public class ProfileDao {
                 .addStatus(profile.getStatus())
                 .addPhoto(profile.getPhoto())
                 .build(profile.getId(), profile.getVersion());
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = ConnectionManager.getPreparedStmt(conn, query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = prepareStatement(conn, query)) {
             int updated =  ps.executeUpdate();
             if (updated == 0) {
                 throw new OptimisticLockException("error.optimistic-lock");
@@ -200,7 +204,7 @@ public class ProfileDao {
     public void updateStatuses(List<ProfileUpdateStatusDto> dtoList) {
         Connection conn = null;
         try {
-            conn = ConnectionManager.getConnection();
+            conn = dataSource.getConnection();
             conn.setAutoCommit(false);
 
             try (PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_STATUSES)) {
@@ -237,7 +241,7 @@ public class ProfileDao {
     }
 
     public boolean delete(Long id) {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_DELETE_BY_ID)) {
             ps.setLong(1, id);
             int deleted = ps.executeUpdate();
@@ -250,7 +254,7 @@ public class ProfileDao {
     public boolean existsEmail(String email, Long excludeId) {
         final String sql = (excludeId == null) ? SQL_EXISTS_EMAIL : SQL_EXISTS_EMAIL_EXCLUDING_ID;
 
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             if (excludeId != null) {
@@ -265,7 +269,7 @@ public class ProfileDao {
     }
 
     public Queue<ProfileSimpleDto> findSuitableForUser(Long userId, int limit) {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_FIND_SUITABLE)) {
             ps.setObject(1, userId);
             ps.setInt(2, Math.max(1, limit));
@@ -279,5 +283,26 @@ public class ProfileDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private PreparedStatement prepareStatement(Connection conn, Query query) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(query.sql());
+
+        if (properties.getFetchSize() != null) {
+            ps.setFetchSize(properties.getFetchSize());
+        }
+        if (properties.getMaxRows() != null) {
+            ps.setMaxRows(properties.getMaxRows());
+        }
+        if (properties.getQueryTimeout() != null) {
+            ps.setQueryTimeout(properties.getQueryTimeout());
+        }
+
+        var args = query.args();
+        for (int i = 0; i < args.size(); i++) {
+            ps.setObject(i + 1, args.get(i));
+        }
+
+        return ps;
     }
 }

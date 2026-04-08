@@ -1,6 +1,6 @@
 package ru.andrewb.charm.back.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
+@Service
 public class ProfileService {
 
     private final ProfileDao dao;

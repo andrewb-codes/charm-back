@@ -1,11 +1,10 @@
-package ru.andrewb.charm.back.controller;
+package ru.andrewb.charm.back.controller.ui;
 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import ru.andrewb.charm.back.bootstrap.AppComponents;
-import ru.andrewb.charm.back.dto.UserDetailsDto;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
@@ -17,14 +16,19 @@ import java.io.IOException;
 import static ru.andrewb.charm.back.web.Urls.CONTENT_URL;
 import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
 
-@WebServlet(CONTENT_URL + "/*")
-public class ContentController extends HttpServlet {
+@Controller
+@RequestMapping(CONTENT_URL)
+public class ContentController {
 
-    public static final ContentService contentService = AppComponents.CONTENT_SERVICE;
+    public final ContentService service;
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        UserDetailsDto user = AuthUtils.getUserOrNull(req);
+    public ContentController(ContentService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/**")
+    public void downloadContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var user = AuthUtils.getUserOrNull(req);
         if (user == null) {
             resp.sendRedirect(req.getContextPath() + LOGIN_URL);
             return;
@@ -32,7 +36,9 @@ public class ContentController extends HttpServlet {
 
         String prefix = req.getContextPath() + CONTENT_URL;
         String contentPath = req.getRequestURI().substring(prefix.length());
-        if (contentPath.isBlank()) contentPath = "/";
+        if (contentPath.isBlank()) {
+            contentPath = "/";
+        }
 
         String[] parts = contentPath.split("/");
         if (parts.length < 4 || !"profile".equals(parts[1])) {
@@ -56,11 +62,11 @@ public class ContentController extends HttpServlet {
         }
 
         String fileName = contentPath.substring(contentPath.lastIndexOf('/') + 1);
-        String mime = getServletContext().getMimeType(fileName);
+        String mime = req.getServletContext().getMimeType(fileName);
         resp.setContentType(mime != null ? mime : "application/octet-stream");
 
         try {
-            contentService.download(resp.getOutputStream(), contentPath);
+            service.download(resp.getOutputStream(), contentPath);
 
         } catch (BadRequestException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

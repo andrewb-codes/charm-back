@@ -2,10 +2,10 @@ package ru.andrewb.charm.back.infra.cache;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import ru.andrewb.charm.back.config.Config;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import ru.andrewb.charm.back.config.Config;
 
 @Slf4j
 @UtilityClass

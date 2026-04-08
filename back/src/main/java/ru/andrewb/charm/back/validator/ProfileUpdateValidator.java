@@ -1,20 +1,13 @@
 package ru.andrewb.charm.back.validator;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class ProfileUpdateValidator implements Validator<ProfileUpdateDto> {
-
-    private static final ProfileUpdateValidator INSTANCE = new ProfileUpdateValidator();
-
-    public static ProfileUpdateValidator getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ValidationResult validate(ProfileUpdateDto dto) {

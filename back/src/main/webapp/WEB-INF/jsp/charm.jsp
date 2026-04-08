@@ -12,7 +12,7 @@
 
 <div class="container" style="max-width:920px;margin-inline:auto;">
     <form method="post" action="${cpath}/charm" style="display:flex;flex-direction:column;gap:16px;">
-        <input type="hidden" name="toProfile" value="${next.id}"/>
+        <input type="hidden" name="toProfileId" value="${next.id}"/>
 
         <h3 style="margin:0;">
             ${wordBundle.getWord("how-about")}

@@ -1,17 +1,10 @@
 package ru.andrewb.charm.back.validator;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class EmailChangeValidator implements Validator<EmailChangeDto> {
-
-    private static final EmailChangeValidator INSTANCE = new EmailChangeValidator();
-
-    public static EmailChangeValidator getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ValidationResult validate(EmailChangeDto dto) {

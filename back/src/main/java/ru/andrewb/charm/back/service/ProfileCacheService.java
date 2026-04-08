@@ -1,29 +1,30 @@
 package ru.andrewb.charm.back.service;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.params.SetParams;
+import ru.andrewb.charm.back.config.AppRedisProperties;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
-import ru.andrewb.charm.back.infra.cache.RedisManager;
 import ru.andrewb.charm.back.mapper.JsonMapper;
 
 import java.util.Queue;
 import java.util.UUID;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Service
 public class ProfileCacheService {
-
-    private static final ProfileCacheService INSTANCE = new ProfileCacheService();
 
     private static final String QUEUE_KEY_PREFIX = "charm:queue:";
     private static final String EMPTY_KEY_PREFIX = "charm:empty:";
     private static final String LOCK_KEY_PREFIX = "charm:lock:";
 
+    private final JedisPool jedisPool;
+    private final AppRedisProperties properties;
     private final JsonMapper jsonMapper = JsonMapper.getInstance();
 
-    public static ProfileCacheService getInstance() {
-        return INSTANCE;
+    public ProfileCacheService(JedisPool jedisPool, AppRedisProperties properties) {
+        this.jedisPool = jedisPool;
+        this.properties = properties;
     }
 
     // --------------- lock ---------------
@@ -31,8 +32,8 @@ public class ProfileCacheService {
         String lockKey = LOCK_KEY_PREFIX + userId;
         String token = UUID.randomUUID().toString();
 
-        try (Jedis jedis = RedisManager.getResource()) {
-            String res = jedis.set(lockKey, token, SetParams.setParams().nx().ex(RedisManager.getCharmLockTtlSec()));
+        try (Jedis jedis = jedisPool.getResource()) {
+            String res = jedis.set(lockKey, token, SetParams.setParams().nx().ex(properties.getCharmLockTtlSec()));
             return "OK".equals(res) ? token : null;
         } catch (Exception e) {
             throw new RuntimeException("redis tryAcquireLock failed", e);
@@ -52,7 +53,7 @@ public class ProfileCacheService {
                 end
                 """;
 
-        try (Jedis jedis = RedisManager.getResource()) {
+        try (Jedis jedis = jedisPool.getResource()) {
             Object res = jedis.eval(lua, 1, lockKey, token);
             return res.equals(1L);
         } catch (Exception e) {
@@ -64,7 +65,7 @@ public class ProfileCacheService {
     public ProfileSimpleDto pollNext(Long userId) {
         String key = QUEUE_KEY_PREFIX + userId;
 
-        try (Jedis jedis = RedisManager.getResource()) {
+        try (Jedis jedis = jedisPool.getResource()) {
             String json = jedis.lpop(key);
             if (json == null) return null;
             return jsonMapper.readValue(json, ProfileSimpleDto.class);
@@ -76,7 +77,7 @@ public class ProfileCacheService {
     public void replaceQueue(Long userId, Queue<ProfileSimpleDto> queue) {
         String key = QUEUE_KEY_PREFIX + userId;
 
-        try (Jedis jedis = RedisManager.getResource()) {
+        try (Jedis jedis = jedisPool.getResource()) {
             var p = jedis.pipelined();
             p.del(key);
 
@@ -85,7 +86,7 @@ public class ProfileCacheService {
                 p.rpush(key, json);
             }
 
-            p.expire(key, RedisManager.getCharmQueueTtlSec());
+            p.expire(key, properties.getCharmQueueTtlSec());
             p.sync();
         } catch (Exception e) {
             throw new RuntimeException("redis replaceQueue failed", e);
@@ -96,7 +97,7 @@ public class ProfileCacheService {
     public boolean isEmptyCooldownActive(Long userId) {
         String key = EMPTY_KEY_PREFIX + userId;
 
-        try (Jedis jedis = RedisManager.getResource()) {
+        try (Jedis jedis = jedisPool.getResource()) {
             return jedis.exists(key);
         }
     }
@@ -104,15 +105,15 @@ public class ProfileCacheService {
     public void markEmptyCooldown(Long userId) {
         String key = EMPTY_KEY_PREFIX + userId;
 
-        try (Jedis jedis = RedisManager.getResource()) {
-            jedis.setex(key, RedisManager.getCharmEmptyTtlSec(), "1");
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.setex(key, properties.getCharmEmptyTtlSec(), "1");
         }
     }
 
     public void clearEmptyCooldown(Long userId) {
         String key = EMPTY_KEY_PREFIX + userId;
 
-        try (Jedis jedis = RedisManager.getResource()) {
+        try (Jedis jedis = jedisPool.getResource()) {
             jedis.del(key);
         }
     }
