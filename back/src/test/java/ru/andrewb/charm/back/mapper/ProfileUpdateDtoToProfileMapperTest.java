@@ -24,7 +24,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         dto.setBirthdate(LocalDate.of(2000, 1, 1));
         dto.setAbout("About");
         dto.setGender(Gender.MALE);
-        dto.setStatus(Status.ACTIVE);
 
         Profile profile = mapper.map(dto);
 
@@ -34,7 +33,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         assertEquals(LocalDate.of(2000, 1, 1), profile.getBirthdate());
         assertEquals("About", profile.getAbout());
         assertEquals(Gender.MALE, profile.getGender());
-        assertEquals(Status.ACTIVE, profile.getStatus());
     }
 
     @Test
@@ -42,7 +40,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         ProfileUpdateDto dto = new ProfileUpdateDto();
         dto.setName("New name");
         dto.setAbout("New about");
-        dto.setStatus(Status.INACTIVE);
 
         Profile profile = new Profile();
         profile.setVersion(1);
@@ -51,7 +48,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         profile.setBirthdate(LocalDate.of(1999, 2, 2));
         profile.setAbout("Old about");
         profile.setGender(Gender.FEMALE);
-        profile.setStatus(Status.ACTIVE);
 
         Profile result = mapper.map(dto, profile);
 
@@ -62,7 +58,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         assertEquals(LocalDate.of(1999, 2, 2), profile.getBirthdate());
         assertEquals("New about", profile.getAbout());
         assertEquals(Gender.FEMALE, profile.getGender());
-        assertEquals(Status.INACTIVE, profile.getStatus());
     }
 
     @Test
@@ -89,7 +84,6 @@ class ProfileUpdateDtoToProfileMapperTest {
         profile.setBirthdate(LocalDate.of(2001, 3, 4));
         profile.setAbout("About");
         profile.setGender(Gender.MALE);
-        profile.setStatus(Status.ACTIVE);
 
         mapper.map(dto, profile);
 
@@ -99,6 +93,5 @@ class ProfileUpdateDtoToProfileMapperTest {
         assertEquals(LocalDate.of(2001, 3, 4), profile.getBirthdate());
         assertEquals("About", profile.getAbout());
         assertEquals(Gender.MALE, profile.getGender());
-        assertEquals(Status.ACTIVE, profile.getStatus());
     }
 }
