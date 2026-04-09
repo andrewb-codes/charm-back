@@ -1,12 +1,12 @@
 package ru.andrewb.charm.back.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.params.SetParams;
 import ru.andrewb.charm.back.config.AppRedisProperties;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
-import ru.andrewb.charm.back.mapper.JsonMapper;
 
 import java.util.Queue;
 import java.util.UUID;
@@ -20,11 +20,16 @@ public class ProfileCacheService {
 
     private final JedisPool jedisPool;
     private final AppRedisProperties properties;
-    private final JsonMapper jsonMapper = JsonMapper.getInstance();
+    private final ObjectMapper objectMapper;
 
-    public ProfileCacheService(JedisPool jedisPool, AppRedisProperties properties) {
+    public ProfileCacheService(
+            JedisPool jedisPool,
+            AppRedisProperties properties,
+            ObjectMapper objectMapper
+    ) {
         this.jedisPool = jedisPool;
         this.properties = properties;
+        this.objectMapper = new ObjectMapper();
     }
 
     // --------------- lock ---------------
@@ -68,7 +73,7 @@ public class ProfileCacheService {
         try (Jedis jedis = jedisPool.getResource()) {
             String json = jedis.lpop(key);
             if (json == null) return null;
-            return jsonMapper.readValue(json, ProfileSimpleDto.class);
+            return objectMapper.readValue(json, ProfileSimpleDto.class);
         } catch (Exception e) {
             throw new RuntimeException("redis poll failed", e);
         }
@@ -82,7 +87,7 @@ public class ProfileCacheService {
             p.del(key);
 
             for (ProfileSimpleDto dto : queue) {
-                String json = jsonMapper.writeValueAsString(dto);
+                String json = objectMapper.writeValueAsString(dto);
                 p.rpush(key, json);
             }
 

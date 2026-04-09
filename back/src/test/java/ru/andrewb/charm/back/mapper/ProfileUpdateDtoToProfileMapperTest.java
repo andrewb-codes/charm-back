@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
-import ru.andrewb.charm.back.model.Status;
 
 import java.time.LocalDate;
 

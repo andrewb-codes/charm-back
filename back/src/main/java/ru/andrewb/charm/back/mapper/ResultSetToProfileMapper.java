@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.Role;
@@ -11,13 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Locale;
 
+@Component
 public class ResultSetToProfileMapper implements Mapper<ResultSet, Profile> {
-
-    private static final ResultSetToProfileMapper INSTANCE = new ResultSetToProfileMapper();
-
-    public static ResultSetToProfileMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public Profile map(ResultSet rs) {

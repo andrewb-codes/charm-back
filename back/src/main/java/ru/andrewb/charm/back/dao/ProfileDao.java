@@ -17,13 +17,19 @@ public class ProfileDao {
 
     private final DataSource dataSource;
     private final AppDataSourceProperties properties;
+    private final ResultSetToProfileMapper rsToProfileMapper;
+    private final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper;
 
-    private final ResultSetToProfileMapper rsToProfileMapper = ResultSetToProfileMapper.getInstance();
-    private final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper = ResultSetToProfileSimpleDtoMapper.getInstance();
-
-    public ProfileDao(DataSource dataSource, AppDataSourceProperties properties) {
+    public ProfileDao(
+            DataSource dataSource,
+            AppDataSourceProperties properties,
+            ResultSetToProfileMapper rsToProfileMapper,
+            ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper
+    ) {
         this.dataSource = dataSource;
         this.properties = properties;
+        this.rsToProfileMapper = rsToProfileMapper;
+        this.rsToProfileSimpleDtoMapper = rsToProfileSimpleDtoMapper;
     }
 
     //language=POSTGRES-PSQL

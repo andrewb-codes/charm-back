@@ -17,6 +17,14 @@ import java.util.Arrays;
 @Component
 public class LanguageFilter extends OncePerRequestFilter {
 
+    private final WordBundleRu wordBundleRu;
+    private final WordBundleEn wordBundleEn;
+
+    public LanguageFilter(WordBundleRu wordBundleRu, WordBundleEn wordBundleEn) {
+        this.wordBundleRu = wordBundleRu;
+        this.wordBundleEn = wordBundleEn;
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest req,
@@ -32,9 +40,7 @@ public class LanguageFilter extends OncePerRequestFilter {
                 .findFirst()
                 .orElse("en");
 
-        WordBundle wordBundle = "ru".equals(lang)
-                        ? WordBundleRu.getInstance()
-                        : WordBundleEn.getInstance();
+        WordBundle wordBundle = "ru".equals(lang) ? wordBundleRu : wordBundleEn;
 
         req.setAttribute("wordBundle", wordBundle);
 

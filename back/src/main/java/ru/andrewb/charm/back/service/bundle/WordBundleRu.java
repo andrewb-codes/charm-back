@@ -1,14 +1,11 @@
 package ru.andrewb.charm.back.service.bundle;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Locale;
 
+@Component
 public class WordBundleRu extends WordBundle {
-
-    private static final WordBundleRu INSTANCE = new WordBundleRu();
-
-    public static WordBundleRu getInstance() {
-        return INSTANCE;
-    }
 
     private WordBundleRu() {
         super(Locale.of("ru"));

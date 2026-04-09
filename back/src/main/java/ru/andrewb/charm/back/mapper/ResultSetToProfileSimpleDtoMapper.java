@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.model.exception.MappingException;
 
@@ -9,13 +10,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+@Component
 public class ResultSetToProfileSimpleDtoMapper implements Mapper<ResultSet, ProfileSimpleDto> {
-
-    private static final ResultSetToProfileSimpleDtoMapper INSTANCE = new ResultSetToProfileSimpleDtoMapper();
-
-    public static ResultSetToProfileSimpleDtoMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ProfileSimpleDto map(ResultSet rs) {
