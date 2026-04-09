@@ -27,7 +27,10 @@ public class ContentController {
     }
 
     @GetMapping("/**")
-    public void downloadContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void downloadContent(
+            HttpServletRequest req,
+            HttpServletResponse resp
+    ) throws IOException {
         var user = AuthUtils.getUserOrNull(req);
         if (user == null) {
             resp.sendRedirect(req.getContextPath() + LOGIN_URL);

@@ -91,12 +91,12 @@
         </c:if>
     </div>
 
-    <c:if test="${!empty profile.id}">
+    <c:if test="${!empty profileDto.id}">
         <form method="post"
               action="${cpath}/profile"
               style="margin-top: var(--space-2);">
             <input type="hidden" name="_method" value="delete">
-            <input type="hidden" name="id" value="${profile.id}">
+            <input type="hidden" name="id" value="${profileDto.id}">
             <div class="row center">
                 <input type="image"
                        class="icon-lg"

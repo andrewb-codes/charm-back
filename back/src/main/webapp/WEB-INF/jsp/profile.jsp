@@ -12,40 +12,36 @@
         <div class="container">
             <form method="post" action="${cpath}/profile" enctype="multipart/form-data">
                 <input type="hidden" name="_method" value="PUT">
-                <input type="hidden" name="id" value="${profile.id}">
-                <input type="hidden" name="version" value="${profile.version}">
+                <input type="hidden" name="id" value="${profileGetDto.id}">
+                <input type="hidden" name="version" value="${profileGetDto.version}">
 
                 <table class="table--form">
                     <tr>
                         <td><h3>${wordBundle.getWord("name")}</h3></td>
-                        <td><input type="text" name="name"
-                                   value="${(fields != null && fields['name'] != null) ? fields['name'] : profile.name}"></td>
+                        <td><input type="text" name="name" value="${profileUpdateForm.name}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("surname")}</h3></td>
-                        <td><input type="text" name="surname"
-                                   value="${(fields != null && fields['surname'] != null) ? fields['surname'] : profile.surname}"></td>
+                        <td><input type="text" name="surname" value="${profileUpdateForm.surname}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("birthdate")}</h3></td>
-                        <td><input type="date" name="birthdate"
-                                   value="${profile.birthdate}"></td>
+                        <td><input type="date" name="birthdate" value="${profileUpdateForm.birthdate}"></td>
                     </tr>
-                    <c:if test="${!empty profile.birthdate}">
+                    <c:if test="${!empty profileGetDto.birthdate}">
                         <tr>
                             <td><h3>${wordBundle.getWord("age")}</h3></td>
-                            <td><h3>${profile.age}</h3></td>
+                            <td><h3>${profileGetDto.age}</h3></td>
                         </tr>
                     </c:if>
                     <tr>
                         <td><h3>${wordBundle.getWord("about")}</h3></td>
-                        <td><input type="text" name="about"
-                                   value="${(fields != null && fields['about'] != null) ? fields['about'] : profile.about}"></td>
+                        <td><input type="text" name="about" value="${profileUpdateForm.about}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("gender")}</h3></td>
                         <td>
-                            <c:set var="g" value="${profile.gender}"/>
+                            <c:set var="g" value="${profileUpdateForm.gender}"/>
                             <select name="gender">
                                 <option value="" disabled <c:if test="${empty g}">selected</c:if>>
                                     ${wordBundle.getWord("select-gender")}
@@ -61,8 +57,8 @@
                     <tr>
                         <td><h3>${wordBundle.getWord("photo")}</h3></td>
                         <td>
-                            <c:if test="${not empty profile.photo}">
-                                <img class="photo" src="${cpath}/content/profile/${profile.id}/${profile.photo}" alt="photo">
+                            <c:if test="${not empty profileGetDto.photo}">
+                                <img class="photo" src="${cpath}/content/profile/${profileGetDto.id}/${profileGetDto.photo}" alt="photo">
                             </c:if>
                             <br>
                             <input type="button" value="${wordBundle.getWord('update')}"

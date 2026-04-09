@@ -13,10 +13,8 @@ public class ProfilesFilterForm {
     private String gteAge;
     private String role;
     private String status;
-
     private String sortBy;
     private String sortOrder;
-
     private String page;
     private String pageSize;
 }

@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
@@ -79,7 +80,7 @@ public class ProfileService {
                 .toList();
     }
 
-    public void update(Long id, ProfileUpdateDto dto) {
+    public void update(Long id, ProfileUpdateDto dto, MultipartFile photo) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -89,15 +90,15 @@ public class ProfileService {
 
         Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
 
-        var part = dto.getPhoto();
-        var old = existing.getPhoto();
-        if (part != null && part.getSize() > 0) {
+        if (photo != null && !photo.isEmpty()) {
             try {
+                String old = existing.getPhoto();
                 if (old != null && !old.isBlank()) {
                     contentService.delete("profile", String.valueOf(id), old);
                 }
-                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-                contentService.upload(part.getInputStream(), "profile", String.valueOf(id), fileName);
+
+                String fileName = Paths.get(photo.getOriginalFilename()).getFileName().toString();
+                contentService.upload(photo.getInputStream(), "profile", String.valueOf(id), fileName);
                 p.setPhoto(fileName);
             } catch (Exception e) {
                 throw new StorageException("error.profile.photo", e);
@@ -116,7 +117,9 @@ public class ProfileService {
     public boolean delete(Long id) {
         if (id == null) return false;
         contentService.deleteTree("profile", String.valueOf(id));
-        return dao.delete(id);
+        boolean deleted = dao.delete(id);
+        if (!deleted) throw new NotFoundException("error.profile.not-found");
+        return true;
     }
 
     public void changeEmail(Long id, EmailChangeDto dto) {

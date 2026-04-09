@@ -35,7 +35,10 @@ public class LoginController {
     }
 
     @GetMapping(LOGIN_URL)
-    public String getLoginPage(HttpServletRequest req, Model model) {
+    public String getLoginPage(
+            HttpServletRequest req,
+            Model model
+    ) {
         UserDetailsDto user = AuthUtils.getUserOrNull(req);
         if (user != null) {
             return "redirect:" + PROFILE_URL;

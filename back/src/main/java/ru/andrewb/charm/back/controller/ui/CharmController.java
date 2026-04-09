@@ -41,7 +41,12 @@ public class CharmController {
         return handle(action, toProfileId, req, model);
     }
 
-    private String handle(Action action, Long toProfileId, HttpServletRequest req, Model model) {
+    private String handle(
+            Action action,
+            Long toProfileId,
+            HttpServletRequest req,
+            Model model
+    ) {
         var user = AuthUtils.getUserOrNull(req);
         if (user == null) {
             return "redirect:" + LOGIN_URL;

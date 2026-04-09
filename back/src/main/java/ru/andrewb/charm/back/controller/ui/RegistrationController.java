@@ -34,8 +34,8 @@ public class RegistrationController {
 
     @GetMapping(REGISTRATION_URL)
     public String getRegistrationPage(Model model) {
-        if (!model.containsAttribute("dto")) {
-            model.addAttribute("dto", new RegistrationDto());
+        if (!model.containsAttribute("registrationDto")) {
+            model.addAttribute("registrationDto", new RegistrationDto());
         }
         return REGISTRATION;
     }

@@ -42,7 +42,7 @@ public class ProfilesController {
 
     @GetMapping(PROFILES_URL)
     public String getProfiles(
-            @ModelAttribute("form") ProfilesFilterForm form,
+            @ModelAttribute("profilesFilterForm") ProfilesFilterForm form,
             HttpServletRequest req
     ) {
         if (!AuthUtils.isAuthenticatedAdmin(req)) {
