@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
-import ru.andrewb.charm.back.mapper.ProfileToUserDetailsDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
-import ru.andrewb.charm.back.security.PasswordHasher;
 
 import java.util.Optional;
 
@@ -37,19 +37,18 @@ class ProfileServiceChangeEmailTest {
     @Mock
     private ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
 
-    @Mock
-    private ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper;
-
     private ProfileService service;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        passwordEncoder = new BCryptPasswordEncoder();
         service = new ProfileService(
                 dao,
                 contentService,
                 profileToProfileGetDtoMapper,
                 profileUpdateDtoToProfileMapper,
-                profileToUserDetailsDtoMapper
+                passwordEncoder
         );
     }
 
@@ -66,7 +65,7 @@ class ProfileServiceChangeEmailTest {
         profile.setId(profileId);
         profile.setVersion(1);
         profile.setEmail("old@mail.com");
-        profile.setPassword(PasswordHasher.hashPwd("123456"));
+        profile.setPassword(passwordEncoder.encode("123456"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
         when(dao.existsEmail("new@mail.com", profileId)).thenReturn(false);
@@ -113,7 +112,7 @@ class ProfileServiceChangeEmailTest {
         Profile profile = new Profile();
         profile.setId(profileId);
         profile.setEmail("old@mail.com");
-        profile.setPassword(PasswordHasher.hashPwd("123456"));
+        profile.setPassword(passwordEncoder.encode("123456"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 
@@ -139,7 +138,7 @@ class ProfileServiceChangeEmailTest {
         Profile existing = new Profile();
         existing.setId(profileId);
         existing.setEmail("old@mail.com");
-        existing.setPassword(PasswordHasher.hashPwd("123456"));
+        existing.setPassword(passwordEncoder.encode("123456"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(existing));
 
@@ -165,7 +164,7 @@ class ProfileServiceChangeEmailTest {
         Profile existing = new Profile();
         existing.setId(profileId);
         existing.setEmail("old@mail.com");
-        existing.setPassword(PasswordHasher.hashPwd("123456"));
+        existing.setPassword(passwordEncoder.encode("123456"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(existing));
 
@@ -191,7 +190,7 @@ class ProfileServiceChangeEmailTest {
         Profile existing = new Profile();
         existing.setId(profileId);
         existing.setEmail("old@mail.com");
-        existing.setPassword(PasswordHasher.hashPwd("123456"));
+        existing.setPassword(passwordEncoder.encode("123456"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(existing));
         when(dao.existsEmail("new@mail.com", profileId)).thenReturn(true);

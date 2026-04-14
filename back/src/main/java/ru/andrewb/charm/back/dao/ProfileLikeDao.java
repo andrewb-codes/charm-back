@@ -1,15 +1,21 @@
 package ru.andrewb.charm.back.dao;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import ru.andrewb.charm.back.infra.db.ConnectionManager;
+import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Repository
 public class ProfileLikeDao {
+
+    private final DataSource dataSource;
+
+    public ProfileLikeDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     //language=POSTGRES-PSQL
     private static final String LIKE = """
 			INSERT INTO profile_like (a_profile, b_profile, liked_a, liked_b)
@@ -19,13 +25,7 @@ public class ProfileLikeDao {
 			    liked_b = COALESCE(EXCLUDED.liked_b, profile_like.liked_b),
 			    updated_at = now()
 			""";
-    
 
-    private static final ProfileLikeDao INSTANCE = new ProfileLikeDao();
-
-    public static ProfileLikeDao getInstance() {
-        return INSTANCE;
-    }
 
     public void likeOrDislike(Long fromId, Long toId, boolean isLike) {
         if (fromId.equals(toId)) throw new IllegalArgumentException("self-like is not allowed");
@@ -36,7 +36,7 @@ public class ProfileLikeDao {
         Boolean likedA = (fromId == a) ? isLike : null;
         Boolean likedB = (fromId == b) ? isLike : null;
 
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(LIKE)) {
             ps.setLong(1, a);
             ps.setLong(2, b);

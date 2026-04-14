@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmailChangeValidatorTest {
 
-    private final EmailChangeValidator validator = EmailChangeValidator.getInstance();
+    private final EmailChangeValidator validator = new EmailChangeValidator();
 
     @Test
     void validate_shouldReturnError_whenDtoIsNull() {

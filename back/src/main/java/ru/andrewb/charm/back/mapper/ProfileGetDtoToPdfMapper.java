@@ -6,6 +6,7 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
 import ru.andrewb.charm.back.model.exception.PdfBuildException;
 import ru.andrewb.charm.back.service.ContentService;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Component
 public class ProfileGetDtoToPdfMapper implements Mapper<ProfileGetDto, Document> {
 
     private final ContentService contentService;

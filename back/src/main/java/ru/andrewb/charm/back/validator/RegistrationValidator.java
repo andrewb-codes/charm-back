@@ -1,17 +1,10 @@
 package ru.andrewb.charm.back.validator;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class RegistrationValidator implements Validator<RegistrationDto> {
-
-    private static final RegistrationValidator INSTANCE = new RegistrationValidator();
-
-    public static RegistrationValidator getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public ValidationResult validate(RegistrationDto dto) {

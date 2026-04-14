@@ -1,17 +1,17 @@
 package ru.andrewb.charm.back.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
-import ru.andrewb.charm.back.mapper.ProfileToUserDetailsDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.StorageException;
-import ru.andrewb.charm.back.security.PasswordHasher;
 import ru.andrewb.charm.back.validator.EmailUtils;
 import ru.andrewb.charm.back.validator.PasswordUtils;
 
@@ -19,27 +19,27 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
+@Service
 public class ProfileService {
 
     private final ProfileDao dao;
     private final ContentService contentService;
     private final ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper;
     private final ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
-    private final ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public ProfileService(
             ProfileDao dao,
             ContentService contentService,
             ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper,
             ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper,
-            ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper
+            PasswordEncoder passwordEncoder
     ) {
         this.dao = dao;
         this.contentService = contentService;
         this.profileToProfileGetDtoMapper = profileToProfileGetDtoMapper;
         this.profileUpdateDtoToProfileMapper = profileUpdateDtoToProfileMapper;
-        this.profileToUserDetailsDtoMapper = profileToUserDetailsDtoMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Long save(RegistrationDto dto) {
@@ -49,7 +49,7 @@ public class ProfileService {
         }
 
         String pwd = PasswordUtils.requireValidOrThrow(dto.getPassword(), 6);
-        String hash = PasswordHasher.hashPwd(pwd);
+        String hash = passwordEncoder.encode(pwd);
 
         Profile p = new Profile();
         p.setEmail(email);
@@ -79,7 +79,7 @@ public class ProfileService {
                 .toList();
     }
 
-    public void update(Long id, ProfileUpdateDto dto) {
+    public void update(Long id, ProfileUpdateDto dto, MultipartFile photo) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -89,15 +89,15 @@ public class ProfileService {
 
         Profile p = profileUpdateDtoToProfileMapper.map(dto, existing);
 
-        var part = dto.getPhoto();
-        var old = existing.getPhoto();
-        if (part != null && part.getSize() > 0) {
+        if (photo != null && !photo.isEmpty()) {
             try {
+                String old = existing.getPhoto();
                 if (old != null && !old.isBlank()) {
                     contentService.delete("profile", String.valueOf(id), old);
                 }
-                String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-                contentService.upload(part.getInputStream(), "profile", String.valueOf(id), fileName);
+
+                String fileName = Paths.get(photo.getOriginalFilename()).getFileName().toString();
+                contentService.upload(photo.getInputStream(), "profile", String.valueOf(id), fileName);
                 p.setPhoto(fileName);
             } catch (Exception e) {
                 throw new StorageException("error.profile.photo", e);
@@ -116,7 +116,9 @@ public class ProfileService {
     public boolean delete(Long id) {
         if (id == null) return false;
         contentService.deleteTree("profile", String.valueOf(id));
-        return dao.delete(id);
+        boolean deleted = dao.delete(id);
+        if (!deleted) throw new NotFoundException("error.profile.not-found");
+        return true;
     }
 
     public void changeEmail(Long id, EmailChangeDto dto) {
@@ -131,7 +133,7 @@ public class ProfileService {
         String pwd = PasswordUtils.requireValidOrThrow(dto.getCurrentPassword(), 6);
         String hash = existing.getPassword();
 
-        if (!PasswordHasher.checkPwd(pwd, hash)) {
+        if (!passwordEncoder.matches(pwd, hash)) {
             throw new BadRequestException("error.password.invalid-current");
         }
 
@@ -168,28 +170,15 @@ public class ProfileService {
         }
 
         String oldHash = existing.getPassword();
-        if (!PasswordHasher.checkPwd(currPwd, oldHash)) {
+        if (!passwordEncoder.matches(currPwd, oldHash)) {
             throw new BadRequestException("error.password.invalid-current");
         }
-        if (PasswordHasher.checkPwd(newPwd, oldHash)) {
+        if (passwordEncoder.matches(newPwd, oldHash)) {
             throw new BadRequestException("error.password.same-as-current");
         }
 
-        String newHash = PasswordHasher.hashPwd(newPwd);
+        String newHash = passwordEncoder.encode(newPwd);
         existing.setPassword(newHash);
         dao.update(existing);
-    }
-
-    public UserDetailsDto login(LoginDto dto) {
-        String email = EmailUtils.requireValidOrThrow(dto.getEmail());
-        var existing = dao.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("error.login.bad-credentials"));
-
-        String pwd = PasswordUtils.normalize(dto.getPassword());
-        if (!PasswordHasher.checkPwd(pwd, existing.getPassword())) {
-            throw new BadRequestException("error.login.bad-credentials");
-        }
-
-        return profileToUserDetailsDtoMapper.map(existing);
     }
 }

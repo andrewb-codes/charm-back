@@ -18,13 +18,15 @@ public class Urls {
     public static final String CHARM_URL = "/charm";
     public static final String CHARM_EMPTY_URL = "/charm-empty";
     public static final String MATCHES_URL = "/matches";
+    public static final String ADMIN_URL = "/admin";
+    public static final String ADMIN_PROFILES_URL = ADMIN_URL + PROFILES_URL;
 
     public static final String REST_PREFIX = "/api/v1";
-    public static final String LOGIN_REST_URL = REST_PREFIX + LOGIN_URL;
-    public static final String LOGOUT_REST_URL = REST_PREFIX + LOGOUT_URL;
     public static final String REGISTRATION_REST_URL = REST_PREFIX + REGISTRATION_URL;
     public static final String PROFILE_REST_URL = REST_PREFIX + PROFILE_URL;
     public static final String PROFILES_REST_URL = REST_PREFIX + PROFILES_URL;
     public static final String CHARM_REST_URL = REST_PREFIX + CHARM_URL;
     public static final String MATCHES_REST_URL = REST_PREFIX + MATCHES_URL;
+    public static final String ADMIN_REST_PREFIX = REST_PREFIX + ADMIN_URL;
+    public static final String ADMIN_PROFILES_REST_URL = ADMIN_REST_PREFIX + PROFILES_URL;
 }

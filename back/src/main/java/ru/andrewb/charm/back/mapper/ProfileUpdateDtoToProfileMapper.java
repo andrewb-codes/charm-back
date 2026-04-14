@@ -1,18 +1,11 @@
 package ru.andrewb.charm.back.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Profile;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
 public class ProfileUpdateDtoToProfileMapper implements Mapper<ProfileUpdateDto, Profile> {
-
-    private static final ProfileUpdateDtoToProfileMapper INSTANCE = new ProfileUpdateDtoToProfileMapper();
-
-    public static ProfileUpdateDtoToProfileMapper getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public Profile map(ProfileUpdateDto dto) {
@@ -27,7 +20,6 @@ public class ProfileUpdateDtoToProfileMapper implements Mapper<ProfileUpdateDto,
         if (dto.getBirthdate() != null) profile.setBirthdate(dto.getBirthdate());
         if (dto.getAbout() != null) profile.setAbout(dto.getAbout());
         if (dto.getGender() != null) profile.setGender(dto.getGender());
-        if (dto.getStatus() != null) profile.setStatus(dto.getStatus());
         return profile;
     }
 }

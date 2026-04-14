@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PasswordChangeValidatorTest {
 
-    private final PasswordChangeValidator validator = PasswordChangeValidator.getInstance();
+    private final PasswordChangeValidator validator = new PasswordChangeValidator();
 
     @Test
     void validate_shouldReturnError_whenDtoIsNull() {

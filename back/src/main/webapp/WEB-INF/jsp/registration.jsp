@@ -11,11 +11,11 @@
 
 <div class="container">
     <form method="post" action="${cpath}/registration">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
         <table class="table--form">
             <tr>
                 <td><h3>${wordBundle.getWord("email")}</h3></td>
-                <td><input type="email" name="email" required placeholder="user@charm.ru"
-                           value="${(fields != null && fields['email'] != null) ? fields['email'] : ''}"></td>
+                <td><input type="email" name="email" required placeholder="user@charm.ru" value="${registrationDto.email}"></td>
             </tr>
             <tr>
                 <td><h3>${wordBundle.getWord("password")}</h3></td>

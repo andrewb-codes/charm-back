@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegistrationValidatorTest {
 
-    private final RegistrationValidator validator = RegistrationValidator.getInstance();
+    private final RegistrationValidator validator = new RegistrationValidator();
 
     @Test
     void validate_shouldReturnError_whenDtoIsNull() {

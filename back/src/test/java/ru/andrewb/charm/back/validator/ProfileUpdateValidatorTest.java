@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProfileUpdateValidatorTest {
 
-    private final ProfileUpdateValidator validator = ProfileUpdateValidator.getInstance();
+    private final ProfileUpdateValidator validator = new ProfileUpdateValidator();
 
     @Test
     void validate_shouldReturnError_whenDtoIsNull() {

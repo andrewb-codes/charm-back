@@ -17,15 +17,13 @@
     <div class="mt-3">
         <h3>${wordBundle.getWord("change-email")}</h3>
         <form method="post" action="${cpath}/email">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <input type="hidden" name="_method" value="put"/>
-            <input type="hidden" name="version" value="${profile.version}">
+            <input type="hidden" name="version" value="${emailChangeDto.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("email")}</h4></td>
-                    <td>
-                        <input type="email" name="email"
-                               value="${(fields != null && fields['email'] != null) ? fields['email'] : profile.email}">
-                    </td>
+                    <td><input type="email" name="newEmail" value="${emailChangeDto.newEmail}"></td>
                 </tr>
                 <tr>
                     <td><h4>${wordBundle.getWord("current-password")}</h4></td>
@@ -58,8 +56,9 @@
     <div class="mt-3">
         <h3>${wordBundle.getWord("change-password")}</h3>
         <form method="post" action="${cpath}/password">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <input type="hidden" name="_method" value="put"/>
-            <input type="hidden" name="version" value="${profile.version}">
+            <input type="hidden" name="version" value="${passwordChangeDto.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("current-password")}</h4></td>
@@ -94,20 +93,17 @@
         </c:if>
     </div>
 
-    <c:if test="${!empty profile.id}">
-        <form method="post"
-              action="${cpath}/profile"
-              style="margin-top: var(--space-2);">
+    <!-- Delete profile -->
+    <c:if test="${!empty profileGetDto.id}">
+        <form method="post" action="${cpath}/profile" style="display:inline;">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <input type="hidden" name="_method" value="delete">
-            <input type="hidden" name="id" value="${profile.id}">
-            <div class="row center">
-                <input type="image"
-                       class="icon-lg"
-                       src="${cpath}/img/cross.png"
-                       alt="${wordBundle.getWord('delete')}"
-                       title="${wordBundle.getWord('delete')}"
-                       onclick="return confirm('${wordBundle.getWord('delete-confirmation')}?');"/>
-            </div>
+            <button class="btn-reset" type="submit"
+                    title="${wordBundle.getWord('delete')}"
+                    aria-label="${wordBundle.getWord('delete')}"
+                    onclick="return confirm('${wordBundle.getWord('delete-confirmation')}?');">
+                <img class="icon-sm" src="${cpath}/img/cross.png" alt="delete">
+            </button>
         </form>
     </c:if>
 

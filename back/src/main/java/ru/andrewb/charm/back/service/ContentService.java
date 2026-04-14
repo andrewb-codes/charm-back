@@ -1,6 +1,8 @@
 package ru.andrewb.charm.back.service;
 
 import jakarta.servlet.ServletOutputStream;
+import org.springframework.stereotype.Service;
+import ru.andrewb.charm.back.config.AppContentProperties;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 
@@ -14,12 +16,13 @@ import java.util.Comparator;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
+@Service
 public class ContentService {
 
     private final Path basePath;
 
-    public ContentService(Path basePath) {
-        this.basePath = basePath.toAbsolutePath().normalize();
+    public ContentService(AppContentProperties properties) {
+        this.basePath = Path.of(properties.getBasePath()).toAbsolutePath().normalize();
     }
 
     public void upload(InputStream inputStream, String contentPath) {

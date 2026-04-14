@@ -10,6 +10,7 @@
         </a>
 
         <form method="post" action="${cpath}/lang">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <button class="btn-reset" type="submit" name="lang" value="ru" aria-label="Русский">
                 <img src="${cpath}/img/ru.png" alt="">
             </button>
@@ -19,8 +20,9 @@
         </form>
 
         <c:choose>
-            <c:when test="${not empty sessionScope.userDetails}">
+            <c:when test="${pageContext.request.userPrincipal != null}">
                 <form method="post" action="${cpath}/logout">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                     <button class="btn-reset" type="submit"
                             aria-label="${wordBundle.getWord('logout')}"
                             onclick="return confirm('Logout?');">
