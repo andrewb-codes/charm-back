@@ -46,4 +46,9 @@ public class LanguageFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(req, resp);
     }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
+    }
 }

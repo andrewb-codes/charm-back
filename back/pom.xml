@@ -66,18 +66,8 @@
 
         <!--security-->
         <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-        </dependency>
-
-        <!--observability-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!--other-->
@@ -110,39 +100,15 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
-    <!-- Quality: runs linecount(routes, count) plugin on verify -->
-    <profiles>
-        <profile>
-            <id>quality</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>ru.andrewb.charm</groupId>
-                        <artifactId>linecount-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>linecount-on-verify</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>routes</goal>
-                                    <goal>count</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-maven3-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>ru.andrewb.charm</groupId>
                 <artifactId>linecount-maven-plugin</artifactId>

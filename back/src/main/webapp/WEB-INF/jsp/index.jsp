@@ -11,7 +11,7 @@
 
 <div class="container">
     <c:choose>
-        <c:when test="${empty sessionScope.userDetails}">
+        <c:when test="${pageContext.request.userPrincipal == null}">
             <h1 class="center-text" style="margin-top: var(--space-3);">Charm</h1>
             <p class="center-text">${wordBundle.getWord('welcome')}! ${wordBundle.getWord('choose-option')}:</p>
 
@@ -27,7 +27,7 @@
 
         <c:otherwise>
             <h2 class="center-text" style="margin-top: var(--space-3);">
-                ${wordBundle.getWord('hello')}, ${sessionScope.userDetails.email}!
+                ${wordBundle.getWord('hello')}, ${pageContext.request.userPrincipal.name}!
             </h2>
 
             <div class="row center" style="gap: var(--space-3); margin-top: var(--space-2);">

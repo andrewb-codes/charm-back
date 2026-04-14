@@ -3,13 +3,9 @@ package ru.andrewb.charm.back.controller.ui;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfWriter;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,7 +17,6 @@ import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.mapper.ProfileGetDtoToPdfMapper;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
-import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
 
@@ -29,19 +24,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
-import static ru.andrewb.charm.back.web.Urls.PROFILE_URL;
+import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_URL;
 import static ru.andrewb.charm.back.web.Views.PROFILE;
 
 @Controller
-@RequestMapping(PROFILE_URL)
-public class ProfileController {
+@RequestMapping(ADMIN_PROFILES_URL)
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminProfileController {
 
     private final ProfileService service;
     private final ProfileUpdateValidator validator;
     private final ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper;
 
-    public ProfileController(
+    public AdminProfileController(
             ProfileService service,
             ProfileUpdateValidator validator,
             ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper
@@ -51,35 +46,36 @@ public class ProfileController {
         this.profileGetDtoToPdfMapper = profileGetDtoToPdfMapper;
     }
 
-    @GetMapping
+    @GetMapping("/{id}")
     public String getProfile(
-            @AuthenticationPrincipal AuthUser user,
+            @PathVariable("id") Long id,
             Model model
     ) {
-        var profileGetDto = service.findByIdOrThrow(user.getId());
+        var profileGetDto = service.findByIdOrThrow(id);
         model.addAttribute("profileGetDto", profileGetDto);
 
         if (!model.containsAttribute("profileUpdateForm")) {
             model.addAttribute("profileUpdateForm", toForm(profileGetDto));
         }
 
-        model.addAttribute("profileAction", PROFILE_URL);
-        model.addAttribute("profilePdfUrl", PROFILE_URL + "/pdf");
-        model.addAttribute("showSettingsLink", true);
-        model.addAttribute("showDeleteButton", false);
+        model.addAttribute("profileAction", ADMIN_PROFILES_URL + "/" + id);
+        model.addAttribute("profilePdfUrl", ADMIN_PROFILES_URL + "/" + id + "/pdf");
+        model.addAttribute("showSettingsLink", false);
+        model.addAttribute("showDeleteButton", true);
+        model.addAttribute("deleteAction", ADMIN_PROFILES_URL + "/" + id);
 
         return PROFILE;
     }
 
-    @GetMapping("/pdf")
+    @GetMapping("/{id}/pdf")
     public void downloadPdf(
-            @AuthenticationPrincipal AuthUser user,
+            @PathVariable("id") Long id,
             HttpServletResponse resp
     ) throws IOException {
         try {
-            var dto = service.findByIdOrThrow(user.getId());
+            var dto = service.findByIdOrThrow(id);
 
-            resp.setHeader("Content-Disposition", "attachment; filename=\"profile-" + user.getId() + ".pdf\"");
+            resp.setHeader("Content-Disposition", "attachment; filename=\"profile-" + id + ".pdf\"");
             resp.setContentType("application/pdf");
 
             Document pdf = new Document();
@@ -103,9 +99,9 @@ public class ProfileController {
         }
     }
 
-    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String updateProfile(
-            @AuthenticationPrincipal AuthUser user,
+            @PathVariable("id") Long id,
             @ModelAttribute("profileUpdateForm") ProfileUpdateForm form,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes
@@ -115,7 +111,7 @@ public class ProfileController {
             form.setPhoto(null);
             redirectAttributes.addFlashAttribute("errors", List.of("error.param.invalid"));
             redirectAttributes.addFlashAttribute("profileUpdateForm", form);
-            return "redirect:" + PROFILE_URL;
+            return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
         }
 
         ProfileUpdateDto dto = toDto(form);
@@ -124,29 +120,23 @@ public class ProfileController {
             form.setPhoto(null);
             redirectAttributes.addFlashAttribute("errors", vr.getErrors());
             redirectAttributes.addFlashAttribute("profileUpdateForm", form);
-            return "redirect:" + PROFILE_URL;
+            return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
         }
 
         try {
-            service.update(user.getId(), dto, form.getPhoto());
-            return "redirect:" + PROFILE_URL;
+            service.update(id, dto, form.getPhoto());
+            return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
 
         } catch (OptimisticLockException e) {
             redirectAttributes.addFlashAttribute("errors", List.of("error.optimistic-lock"));
-            return "redirect:" + PROFILE_URL;
+            return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
         }
     }
 
-    @DeleteMapping
-    public String deleteProfile(
-            @AuthenticationPrincipal AuthUser user,
-            HttpServletRequest req,
-            HttpServletResponse resp
-    ) {
-        service.delete(user.getId());
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        new SecurityContextLogoutHandler().logout(req, resp, auth);
-        return "redirect:" + LOGIN_URL;
+    @DeleteMapping("/{id}")
+    public String deleteProfile(@PathVariable("id") Long id) {
+        service.delete(id);
+        return "redirect:" + ADMIN_PROFILES_URL;
     }
 
     private ProfileUpdateForm toForm(ProfileGetDto profile) {

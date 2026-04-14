@@ -5,9 +5,20 @@ spring:
     view:
       prefix: /WEB-INF/jsp/
       suffix: .jsp
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 server:
   port: 8080
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
 
 app:
   datasource:
@@ -26,3 +37,10 @@ app:
       max-idle: 16
       min-idle: 0
       test-on-borrow: true
+
+logging:
+  level:
+    root: INFO
+    ru.andrewb.charm.back: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO

@@ -12,7 +12,7 @@
 
 <div class="container">
     <!-- Filtration -->
-    <form method="get" action="${cpath}/profiles" class="filters">
+    <form method="get" action="${cpath}/admin/profiles" class="filters">
         <input type="hidden" name="sortBy" value="${filter.sortBy}">
         <input type="hidden" name="sortOrder"  value="${filter.sortOrder}">
         <input type="hidden" name="page" value="1">
@@ -84,7 +84,7 @@
             <button type="submit" class="btn-reset" title="${wordBundle.getWord('update')}" aria-label="Apply">
                 <img class="icon-lg" src="${cpath}/img/filter.png" alt="">
             </button>
-            <a class="btn-reset" href="${cpath}/profiles" title="Reset" aria-label="Reset">
+            <a class="btn-reset" href="${cpath}/admin/profiles" title="Reset" aria-label="Reset">
                 <img class="icon-lg" src="${cpath}/img/cross.png" alt="x">
             </a>
         </div>
@@ -93,12 +93,13 @@
     <c:set var="sortBy" value="${filter.sortBy}"/>
     <c:set var="sortOrder"  value="${filter.sortOrder}"/>
 
-    <form action="${cpath}/profiles" method="post" class="bulk-status-form">
+    <form action="${cpath}/admin/profiles" method="post" class="bulk-status-form">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
         <input type="hidden" name="_method" value="put"/>
 
         <c:set var="qs" value="${pageContext.request.queryString}" />
         <input type="hidden" name="back"
-               value="${cpath}/profiles${empty qs ? '' : '?'}${fn:escapeXml(qs)}" />
+               value="${cpath}/admin/profiles${empty qs ? '' : '?'}${fn:escapeXml(qs)}" />
 
         <!-- Save -->
         <div class="row" style="justify-content:flex-end;margin:8px 0;">
@@ -115,7 +116,7 @@
                 <col>                       <!-- status -->
             </colgroup>
 
-            <c:url var="urlId" value="/profiles">
+            <c:url var="urlId" value="/admin/profiles">
                 <c:param name="sortBy" value="ID"/>
                 <c:param name="sortOrder" value="${sortBy=='ID' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -129,7 +130,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlEmail" value="/profiles">
+            <c:url var="urlEmail" value="/admin/profiles">
                 <c:param name="sortBy" value="EMAIL"/>
                 <c:param name="sortOrder" value="${sortBy=='EMAIL' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -143,7 +144,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlName" value="/profiles">
+            <c:url var="urlName" value="/admin/profiles">
                 <c:param name="sortBy" value="NAME"/>
                 <c:param name="sortOrder" value="${sortBy=='NAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -157,7 +158,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlSurname" value="/profiles">
+            <c:url var="urlSurname" value="/admin/profiles">
                 <c:param name="sortBy" value="SURNAME"/>
                 <c:param name="sortOrder" value="${sortBy=='SURNAME' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -171,7 +172,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlBirthdate" value="/profiles">
+            <c:url var="urlBirthdate" value="/admin/profiles">
                 <c:param name="sortBy" value="BIRTHDATE"/>
                 <c:param name="sortOrder" value="${sortBy=='BIRTHDATE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -185,7 +186,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlRole" value="/profiles">
+            <c:url var="urlRole" value="/admin/profiles">
                 <c:param name="sortBy" value="ROLE"/>
                 <c:param name="sortOrder" value="${sortBy=='ROLE' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -199,7 +200,7 @@
                 <c:param name="pageSize" value="${filter.pageSize}"/>
             </c:url>
 
-            <c:url var="urlStatus" value="/profiles">
+            <c:url var="urlStatus" value="/admin/profiles">
                 <c:param name="sortBy" value="STATUS"/>
                 <c:param name="sortOrder" value="${sortBy=='STATUS' ? (sortOrder=='ASC' ? 'DESC' : 'ASC') : 'ASC'}"/>
                 <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -241,7 +242,13 @@
                 <input type="hidden" name="versionsWithIds" value="${profile.id}_${profile.version}">
                 <tr>
                     <td><h4><c:out value="${profile.id}"/></h4></td>
-                    <td><h4><c:out value="${profile.email}"/></h4></td>
+                    <td>
+                        <h4>
+                            <a href="${cpath}/admin/profiles/${profile.id}">
+                                <c:out value="${profile.email}"/>
+                            </a>
+                        </h4>
+                    </td>
                     <td><h4><c:out value="${profile.name}"/></h4></td>
                     <td><h4><c:out value="${profile.surname}"/></h4></td>
                     <td><h4><c:out value="${profile.age}"/></h4></td>
@@ -268,7 +275,7 @@
     </form>
 
     <!-- Go to page (manual) -->
-    <form method="get" action="${cpath}/profiles" class="row" style="gap:12px; align-items:center; margin:12px 0;">
+    <form method="get" action="${cpath}/admin/profiles" class="row" style="gap:12px; align-items:center; margin:12px 0;">
         <input type="hidden" name="sortBy" value="${filter.sortBy}">
         <input type="hidden" name="sortOrder" value="${filter.sortOrder}">
         <input type="hidden" name="emailStartsWith" value="${filter.emailStartsWith}">
@@ -286,7 +293,7 @@
     </form>
 
     <!-- Pager -->
-    <c:url var="prevUrl" value="/profiles">
+    <c:url var="prevUrl" value="/admin/profiles">
         <c:param name="sortBy" value="${filter.sortBy}"/>
         <c:param name="sortOrder" value="${filter.sortOrder}"/>
         <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>
@@ -300,7 +307,7 @@
         <c:param name="pageSize" value="${filter.pageSize}"/>
     </c:url>
 
-    <c:url var="nextUrl" value="/profiles">
+    <c:url var="nextUrl" value="/admin/profiles">
         <c:param name="sortBy" value="${filter.sortBy}"/>
         <c:param name="sortOrder" value="${filter.sortOrder}"/>
         <c:param name="emailStartsWith" value="${filter.emailStartsWith}"/>

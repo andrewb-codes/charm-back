@@ -13,6 +13,7 @@
       --icon-sm: 20px;
       --icon-md: 28px;
       --icon-lg: 36px;
+      --photo-preview-size: 240px;
       --icon-header: 44px;    /* ← размер иконок в шапке (сердце + флаги) */
 
       /* layout */
@@ -72,6 +73,26 @@
     .icon-md { width: var(--icon-md); height: var(--icon-md); display:block; }
     .icon-lg { width: var(--icon-lg); height: var(--icon-lg); display:block; }
     .icon { width: 75px; display:block; } /* legacy */
+
+    .photo-frame {
+      width: var(--photo-preview-size);
+      height: var(--photo-preview-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f6f6f6;
+      margin-bottom: var(--space-1);
+    }
+
+    .photo {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
 
     /* utilities */
     .divider { border: 0; border-top: 1px solid var(--border); margin: var(--space-3) 0; }

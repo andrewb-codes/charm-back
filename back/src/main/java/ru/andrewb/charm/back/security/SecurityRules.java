@@ -6,50 +6,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
-
-import static ru.andrewb.charm.back.web.Urls.*;
 
 @UtilityClass
 public class SecurityRules {
-
-    public static final Set<String> PUBLIC_UI_EXACT = Set.of(
-            INDEX_URL,
-            LOGIN_URL,
-            LOGOUT_URL,
-            REGISTRATION_URL,
-            LANG_URL
-    );
-
-    public static final Set<String> PUBLIC_REST = Set.of(
-            LOGIN_REST_URL,
-            LOGOUT_REST_URL,
-            REGISTRATION_REST_URL
-    );
-
-    public static final String[] PUBLIC_UI_PREFIX = {
-            "/img/",
-            "/css/",
-            "/js/",
-            "/assets/",
-            "/fonts/",
-            "/favicon.ico"
-    };
-
-    public static boolean isPublicUi(String path) {
-        if (path == null || path.isBlank()) path = INDEX_URL;
-
-        if (PUBLIC_UI_EXACT.contains(path)) return true;
-
-        for (String p : PUBLIC_UI_PREFIX) {
-            if (path.startsWith(p)) return true;
-        }
-        return false;
-    }
-
-    public static boolean isRest(String path) {
-        return path != null && path.startsWith(REST_PREFIX);
-    }
 
     public static boolean isSafeInternalRedirect(String contextPath, String back, String... allowedPrefixes) {
         if (back == null || back.isBlank()) return false;

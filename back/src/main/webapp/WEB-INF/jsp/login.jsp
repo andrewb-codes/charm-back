@@ -11,6 +11,7 @@
 
 <div class="container">
     <form method="post" action="${cpath}/login">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
         <table class="table--form">
             <tr>
                 <td><h3>${wordBundle.getWord("email")}</h3></td>
@@ -33,6 +34,13 @@
         <div class="center-text mt-2" style="color: red;">
             <c:forEach var="error" items="${errors}">
                 <p>${wordBundle.getWord(error)}</p>
+            </c:forEach>
+        </div>
+    </c:if>
+    <c:if test="${not empty message}">
+        <div class="center-text mt-2" style="color: green;">
+            <c:forEach var="msg" items="${message}">
+                <p>${wordBundle.getWord(msg)}</p>
             </c:forEach>
         </div>
     </c:if>

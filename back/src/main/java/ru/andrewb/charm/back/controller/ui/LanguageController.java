@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
@@ -12,9 +13,10 @@ import java.io.IOException;
 import static ru.andrewb.charm.back.web.Urls.LANG_URL;
 
 @Controller
+@RequestMapping(LANG_URL)
 public class LanguageController {
 
-    @PostMapping(LANG_URL)
+    @PostMapping
     public void changeLanguage(
             @RequestParam(name = "lang", required = false) String lang,
             HttpServletRequest req,

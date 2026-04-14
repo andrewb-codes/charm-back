@@ -5,15 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
-import ru.andrewb.charm.back.mapper.ProfileToUserDetailsDtoMapper;
 import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
-import ru.andrewb.charm.back.security.PasswordHasher;
 
 import java.util.Optional;
 
@@ -35,19 +35,18 @@ class ProfileServiceChangePasswordTest {
     @Mock
     private ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
 
-    @Mock
-    private ProfileToUserDetailsDtoMapper profileToUserDetailsDtoMapper;
-
     private ProfileService service;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        passwordEncoder = new BCryptPasswordEncoder();
         service = new ProfileService(
                 dao,
                 contentService,
                 profileToProfileGetDtoMapper,
                 profileUpdateDtoToProfileMapper,
-                profileToUserDetailsDtoMapper
+                passwordEncoder
         );
     }
 
@@ -65,7 +64,7 @@ class ProfileServiceChangePasswordTest {
         profile.setId(profileId);
         profile.setVersion(1);
         profile.setEmail("user@mail.com");
-        profile.setPassword(PasswordHasher.hashPwd("oldpass"));
+        profile.setPassword(passwordEncoder.encode("oldpass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 
@@ -75,7 +74,7 @@ class ProfileServiceChangePasswordTest {
 
         assertEquals(4, profile.getVersion());
         assertNotEquals(oldHash, profile.getPassword());
-        assertTrue(PasswordHasher.checkPwd("newpass", profile.getPassword()));
+        assertTrue(passwordEncoder.matches("newpass", profile.getPassword()));
         verify(dao).findById(profileId);
         verify(dao).update(profile);
     }
@@ -114,7 +113,7 @@ class ProfileServiceChangePasswordTest {
 
         Profile profile = new Profile();
         profile.setId(profileId);
-        profile.setPassword(PasswordHasher.hashPwd("oldpass"));
+        profile.setPassword(passwordEncoder.encode("oldpass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 
@@ -140,7 +139,7 @@ class ProfileServiceChangePasswordTest {
 
         Profile profile = new Profile();
         profile.setId(profileId);
-        profile.setPassword(PasswordHasher.hashPwd("oldpass"));
+        profile.setPassword(passwordEncoder.encode("oldpass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 
@@ -166,7 +165,7 @@ class ProfileServiceChangePasswordTest {
 
         Profile existing = new Profile();
         existing.setId(profileId);
-        existing.setPassword(PasswordHasher.hashPwd("oldpass"));
+        existing.setPassword(passwordEncoder.encode("oldpass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(existing));
 
@@ -192,7 +191,7 @@ class ProfileServiceChangePasswordTest {
 
         Profile profile = new Profile();
         profile.setId(profileId);
-        profile.setPassword(PasswordHasher.hashPwd("oldpass"));
+        profile.setPassword(passwordEncoder.encode("oldpass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 
@@ -218,7 +217,7 @@ class ProfileServiceChangePasswordTest {
 
         Profile profile = new Profile();
         profile.setId(profileId);
-        profile.setPassword(PasswordHasher.hashPwd("samepass"));
+        profile.setPassword(passwordEncoder.encode("samepass"));
 
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
 

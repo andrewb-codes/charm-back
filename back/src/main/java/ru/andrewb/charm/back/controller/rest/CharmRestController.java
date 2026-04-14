@@ -1,13 +1,12 @@
 package ru.andrewb.charm.back.controller.rest;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.andrewb.charm.back.dto.CharmDto;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
 import ru.andrewb.charm.back.normalizer.CharmDtoDefaults;
-import ru.andrewb.charm.back.security.AuthUtils;
+import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.CharmService;
 
 import static ru.andrewb.charm.back.web.Urls.CHARM_REST_URL;
@@ -25,12 +24,7 @@ public class CharmRestController {
     public record NextResponse(ProfileSimpleDto profile) {}
 
     @GetMapping
-    public ResponseEntity<?> getNext(HttpServletRequest req) {
-        var user = AuthUtils.getUserOrNull(req);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public ResponseEntity<?> getNext(@AuthenticationPrincipal AuthUser user) {
         var dto = new CharmDto();
         dto.setFromProfileId(user.getId());
         CharmDtoDefaults.normalize(dto);
@@ -41,14 +35,9 @@ public class CharmRestController {
 
     @PostMapping
     public ResponseEntity<?> postAction(
-            @RequestBody CharmDto dto,
-            HttpServletRequest req
+            @AuthenticationPrincipal AuthUser user,
+            @RequestBody CharmDto dto
     ) {
-        var user = AuthUtils.getUserOrNull(req);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         dto.setFromProfileId(user.getId());
         CharmDtoDefaults.normalize(dto);
 

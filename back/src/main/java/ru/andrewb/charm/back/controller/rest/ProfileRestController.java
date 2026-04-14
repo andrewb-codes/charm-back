@@ -1,14 +1,15 @@
 package ru.andrewb.charm.back.controller.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 import ru.andrewb.charm.back.dto.EmailChangeDto;
 import ru.andrewb.charm.back.dto.PasswordChangeDto;
 import ru.andrewb.charm.back.dto.ProfileUpdateDto;
-import ru.andrewb.charm.back.model.exception.NotFoundException;
-import ru.andrewb.charm.back.security.AuthUtils;
+import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.ProfileService;
 import ru.andrewb.charm.back.validator.EmailChangeValidator;
 import ru.andrewb.charm.back.validator.PasswordChangeValidator;
@@ -40,105 +41,60 @@ public class ProfileRestController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getProfile(HttpServletRequest req) {
-        var authCtx = AuthUtils.getAuthCtx(req);
-        if (authCtx == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!authCtx.isAdmin() && authCtx.targetId() != authCtx.user().getId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        long id = authCtx.targetId();
-        return ResponseEntity.ok(service.findByIdOrThrow(id));
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal AuthUser user) {
+        return ResponseEntity.ok(service.findByIdOrThrow(user.getId()));
     }
 
     @PutMapping
     public ResponseEntity<?> updateProfile(
-            @RequestBody ProfileUpdateDto dto,
-            HttpServletRequest req
+            @AuthenticationPrincipal AuthUser user,
+            @RequestBody ProfileUpdateDto dto
     ) {
-        var authCtx = AuthUtils.getAuthCtx(req);
-        if (authCtx == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!authCtx.isAdmin() && authCtx.targetId() != authCtx.user().getId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         var vr = profileUpdateValidator.validate(dto);
         if (vr.isNotValid()) {
             return ResponseEntity.badRequest().body(Map.of("errors", vr.getErrors()));
         }
 
-        service.update(authCtx.targetId(), dto, null);
+        service.update(user.getId(), dto, null);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/email")
     public ResponseEntity<?> changeEmail(
-            @RequestBody EmailChangeDto dto,
-            HttpServletRequest req
+            @AuthenticationPrincipal AuthUser user,
+            @RequestBody EmailChangeDto dto
     ) {
-        var authCtx = AuthUtils.getAuthCtx(req);
-        if (authCtx == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!authCtx.isAdmin() && authCtx.targetId() != authCtx.user().getId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         var vr = emailChangeValidator.validate(dto);
         if (vr.isNotValid()) {
             return ResponseEntity.badRequest().body(Map.of("errors", vr.getErrors()));
         }
 
-        service.changeEmail(authCtx.targetId(), dto);
+        service.changeEmail(user.getId(), dto);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(
-            @RequestBody PasswordChangeDto dto,
-            HttpServletRequest req
+            @AuthenticationPrincipal AuthUser user,
+            @RequestBody PasswordChangeDto dto
     ) {
-        var authCtx = AuthUtils.getAuthCtx(req);
-        if (authCtx == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!authCtx.isAdmin() && authCtx.targetId() != authCtx.user().getId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         var vr = passwordChangeValidator.validate(dto);
         if (vr.isNotValid()) {
             return ResponseEntity.badRequest().body(Map.of("errors", vr.getErrors()));
         }
 
-        service.changePassword(authCtx.targetId(), dto);
+        service.changePassword(user.getId(), dto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteProfile(HttpServletRequest req) {
-        var authCtx = AuthUtils.getAuthCtx(req);
-        if (authCtx == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!authCtx.isAdmin() && authCtx.targetId() != authCtx.user().getId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        long id = authCtx.targetId();
-        boolean deleted = service.delete(id);
-        if (!deleted) {
-            throw new NotFoundException("error.profile.not-found");
-        }
-
-        if (authCtx.user().getId().equals(id) && req.getSession(false) != null) {
-            req.getSession(false).invalidate();
-        }
-
+    public ResponseEntity<?> deleteProfile(
+            @AuthenticationPrincipal AuthUser user,
+            HttpServletRequest req,
+            HttpServletResponse resp
+    ) {
+        service.delete(user.getId());
+        new SecurityContextLogoutHandler().logout(req, resp, null);
         return ResponseEntity.noContent().build();
     }
 }

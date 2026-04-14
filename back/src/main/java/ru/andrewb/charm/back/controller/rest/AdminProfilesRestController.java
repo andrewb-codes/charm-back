@@ -1,10 +1,10 @@
 package ru.andrewb.charm.back.controller.rest;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.andrewb.charm.back.controller.form.ProfilesFilterForm;
 import ru.andrewb.charm.back.dto.ProfileFilter;
@@ -13,30 +13,24 @@ import ru.andrewb.charm.back.dto.sort.SortOrder;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
-import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
-import static ru.andrewb.charm.back.web.Urls.PROFILES_REST_URL;
+import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_REST_URL;
 
 @RestController
-public class ProfilesRestController {
+@RequestMapping(ADMIN_PROFILES_REST_URL)
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminProfilesRestController {
 
     private final ProfileService service;
 
-    public ProfilesRestController(ProfileService service) {
+    public AdminProfilesRestController(ProfileService service) {
         this.service = service;
     }
 
-    @GetMapping(PROFILES_REST_URL)
-    public ResponseEntity<?> getProfiles(
-            @ModelAttribute ProfilesFilterForm form,
-            HttpServletRequest req
-    ) {
-        if (!AuthUtils.isAuthenticatedAdmin(req)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
+    @GetMapping
+    public ResponseEntity<?> getProfiles(@ModelAttribute ProfilesFilterForm form) {
         ProfileFilter filter = toProfileFilter(form);
         return ResponseEntity.ok(service.findAll(filter));
     }

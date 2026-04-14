@@ -1,13 +1,13 @@
 package ru.andrewb.charm.back.controller.rest;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
-import ru.andrewb.charm.back.security.AuthUtils;
+import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.ProfileService;
 
 import java.util.List;
@@ -15,6 +15,7 @@ import java.util.List;
 import static ru.andrewb.charm.back.web.Urls.MATCHES_REST_URL;
 
 @RestController
+@RequestMapping(MATCHES_REST_URL)
 public class MatchesRestController {
 
     private final ProfileService service;
@@ -25,17 +26,12 @@ public class MatchesRestController {
 
     public record MatchesResponse(List<ProfileGetDto> items, boolean hasNext) {}
 
-    @GetMapping(MATCHES_REST_URL)
+    @GetMapping
     public ResponseEntity<?> getMatches(
+            @AuthenticationPrincipal AuthUser user,
             @RequestParam(name = "page", required = false) Integer page,
-            @RequestParam(name = "pageSize", required = false) Integer pageSize,
-            HttpServletRequest req
+            @RequestParam(name = "pageSize", required = false) Integer pageSize
     ) {
-        var user = AuthUtils.getUserOrNull(req);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         int normalizedPage = (page == null || page < 1) ? 1 : page;
         int normalizedPageSize = (pageSize == null || pageSize < 1) ? 10 : pageSize;
 

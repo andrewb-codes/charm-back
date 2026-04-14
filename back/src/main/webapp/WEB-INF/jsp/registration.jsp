@@ -11,6 +11,7 @@
 
 <div class="container">
     <form method="post" action="${cpath}/registration">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
         <table class="table--form">
             <tr>
                 <td><h3>${wordBundle.getWord("email")}</h3></td>

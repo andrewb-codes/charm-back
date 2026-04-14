@@ -1,12 +1,10 @@
 package ru.andrewb.charm.back.controller.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import ru.andrewb.charm.back.controller.form.ProfilesFilterForm;
 import ru.andrewb.charm.back.dto.ProfileFilter;
 import ru.andrewb.charm.back.dto.ProfileUpdateStatusDto;
@@ -15,40 +13,34 @@ import ru.andrewb.charm.back.dto.sort.SortOrder;
 import ru.andrewb.charm.back.model.Role;
 import ru.andrewb.charm.back.model.Status;
 import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
-import ru.andrewb.charm.back.security.AuthUtils;
 import ru.andrewb.charm.back.security.SecurityRules;
 import ru.andrewb.charm.back.service.ProfileService;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.andrewb.charm.back.utils.BeanUtils.copyProperties;
 import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
-import static ru.andrewb.charm.back.web.Urls.PROFILES_URL;
-import static ru.andrewb.charm.back.web.Views.ERROR_403;
+import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_URL;
 import static ru.andrewb.charm.back.web.Views.PROFILES;
 
 @Controller
-public class ProfilesController {
+@RequestMapping(ADMIN_PROFILES_URL)
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminProfilesController {
 
     private final ProfileService service;
 
-    public ProfilesController(ProfileService service) {
+    public AdminProfilesController(ProfileService service) {
         this.service = service;
     }
 
-    @GetMapping(PROFILES_URL)
+    @GetMapping
     public String getProfiles(
             @ModelAttribute("profilesFilterForm") ProfilesFilterForm form,
-            HttpServletRequest req
+            Model model
     ) {
-        if (!AuthUtils.isAuthenticatedAdmin(req)) {
-            return ERROR_403;
-        }
-
         ProfileFilter filter = toProfileFilter(form);
 
         var probe = new ProfileFilter();
@@ -61,38 +53,29 @@ public class ProfilesController {
 
         boolean hasPrev = filter.getPage() > 1;
 
-
-        req.setAttribute("profiles", items);
-        req.setAttribute("filter", filter);
-        req.setAttribute("hasPrev", hasPrev);
-        req.setAttribute("hasNext", hasNext);
+        model.addAttribute("profiles", items);
+        model.addAttribute("filter", filter);
+        model.addAttribute("hasPrev", hasPrev);
+        model.addAttribute("hasNext", hasNext);
 
         return PROFILES;
     }
 
-    @PutMapping(PROFILES_URL)
-    public void updateStatuses(
+    @PutMapping
+    public String updateStatuses(
             @RequestParam(name = "statusesWithIds", required = false) List<String> statusesWithIds,
             @RequestParam(name = "versionsWithIds", required = false) List<String> versionsWithIds,
             @RequestParam(name = "back", required = false) String back,
-            HttpServletRequest req,
-            HttpServletResponse resp
-    ) throws IOException {
-        if (!AuthUtils.isAuthenticatedAdmin(req)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
+            HttpServletRequest req
+    ) {
         List<ProfileUpdateStatusDto> dtoList = mapStatuses(statusesWithIds, versionsWithIds);;
         service.updateStatuses(dtoList);
 
         String ctx = req.getContextPath();
-        if (SecurityRules.isSafeInternalRedirect(ctx, back, PROFILES_URL)) {
-            resp.sendRedirect(back);
-        } else {
-            resp.sendRedirect(ctx + PROFILES_URL);
+        if (SecurityRules.isSafeInternalRedirect(ctx, back, ADMIN_PROFILES_URL)) {
+            return "redirect:" + back;
         }
-
+        return "redirect:" + ADMIN_PROFILES_URL;
     }
 
     private ProfileFilter toProfileFilter(ProfilesFilterForm form) {
@@ -211,5 +194,19 @@ public class ProfilesController {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private void copyProperties(ProfileFilter f, ProfileFilter copy) {
+        copy.setEmailStartsWith(f.getEmailStartsWith());
+        copy.setNameStartsWith(f.getNameStartsWith());
+        copy.setSurnameStartsWith(f.getSurnameStartsWith());
+        copy.setLowerAgeBound(f.getLowerAgeBound());
+        copy.setGreaterAndEqualAgeBound(f.getGreaterAndEqualAgeBound());
+        copy.setRole(f.getRole());
+        copy.setStatus(f.getStatus());
+        copy.setSortBy(f.getSortBy());
+        copy.setSortOrder(f.getSortOrder());
+        copy.setPage(f.getPage());
+        copy.setPageSize(f.getPageSize());
     }
 }

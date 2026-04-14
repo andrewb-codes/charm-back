@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.andrewb.charm.back.dto.RegistrationDto;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
@@ -19,6 +20,7 @@ import static ru.andrewb.charm.back.web.Urls.REGISTRATION_URL;
 import static ru.andrewb.charm.back.web.Views.REGISTRATION;
 
 @Controller
+@RequestMapping(REGISTRATION_URL)
 public class RegistrationController {
 
     private final ProfileService service;
@@ -32,7 +34,7 @@ public class RegistrationController {
         this.validator = validator;
     }
 
-    @GetMapping(REGISTRATION_URL)
+    @GetMapping
     public String getRegistrationPage(Model model) {
         if (!model.containsAttribute("registrationDto")) {
             model.addAttribute("registrationDto", new RegistrationDto());
@@ -40,7 +42,7 @@ public class RegistrationController {
         return REGISTRATION;
     }
 
-    @PostMapping(REGISTRATION_URL)
+    @PostMapping
     public String register(
             @ModelAttribute("registrationDto") RegistrationDto dto,
             RedirectAttributes redirectAttributes

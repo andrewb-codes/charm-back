@@ -29,7 +29,7 @@ public class ProfileCacheService {
     ) {
         this.jedisPool = jedisPool;
         this.properties = properties;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     // --------------- lock ---------------
