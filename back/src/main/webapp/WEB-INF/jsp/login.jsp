@@ -15,7 +15,7 @@
         <table class="table--form">
             <tr>
                 <td><h3>${wordBundle.getWord("email")}</h3></td>
-                <td><input type="email" name="email" required placeholder="user@charm.ru" value="${loginDto.email}"></td>
+                <td><input type="email" name="email" required placeholder="user@charm.ru"></td>
             </tr>
             <tr>
                 <td><h3>${wordBundle.getWord("password")}</h3></td>

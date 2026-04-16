@@ -1,19 +1,19 @@
-package ru.andrewb.charm.back.dto;
+package ru.andrewb.charm.back.service.command;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import ru.andrewb.charm.back.dto.Action;
 
 @Getter
 @Setter
-@ToString(onlyExplicitlyIncluded = true)
+@ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EmailChangeDto {
-    @ToString.Include
-    String newEmail;
+public class CharmCommand {
 
-    String currentPassword;
-    Integer version;
+    Long fromProfileId;
+    Long toProfileId;
+    Action action;
 }

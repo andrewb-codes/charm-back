@@ -4,6 +4,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -11,14 +12,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.andrewb.charm.back.controller.form.ProfileUpdateForm;
-import ru.andrewb.charm.back.dto.ProfileGetDto;
-import ru.andrewb.charm.back.dto.ProfileUpdateDto;
+import ru.andrewb.charm.back.controller.request.ProfileUpdateRequest;
+import ru.andrewb.charm.back.controller.ui.support.BindingErrors;
 import ru.andrewb.charm.back.mapper.ProfileGetDtoToPdfMapper;
+import ru.andrewb.charm.back.mapper.ProfileGetDtoToProfileUpdateRequestMapper;
+import ru.andrewb.charm.back.mapper.ProfileUpdateRequestToCommandMapper;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
+import ru.andrewb.charm.back.service.command.ProfileUpdateCommand;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,17 +35,20 @@ import static ru.andrewb.charm.back.web.Views.PROFILE;
 public class AdminProfileController {
 
     private final ProfileService service;
-    private final ProfileUpdateValidator validator;
     private final ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper;
+    private final ProfileGetDtoToProfileUpdateRequestMapper profileGetDtoToRequestMapper;
+    private final ProfileUpdateRequestToCommandMapper profileUpdateRequestToCommandMapper;
 
     public AdminProfileController(
             ProfileService service,
-            ProfileUpdateValidator validator,
-            ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper
+            ProfileGetDtoToPdfMapper profileGetDtoToPdfMapper,
+            ProfileGetDtoToProfileUpdateRequestMapper profileGetDtoToRequestMapper,
+            ProfileUpdateRequestToCommandMapper profileUpdateRequestToCommandMapper
     ) {
         this.service = service;
-        this.validator = validator;
         this.profileGetDtoToPdfMapper = profileGetDtoToPdfMapper;
+        this.profileGetDtoToRequestMapper = profileGetDtoToRequestMapper;
+        this.profileUpdateRequestToCommandMapper = profileUpdateRequestToCommandMapper;
     }
 
     @GetMapping("/{id}")
@@ -51,11 +56,12 @@ public class AdminProfileController {
             @PathVariable("id") Long id,
             Model model
     ) {
-        var profileGetDto = service.findByIdOrThrow(id);
-        model.addAttribute("profileGetDto", profileGetDto);
+        var dto = service.findByIdOrThrow(id);
+        model.addAttribute("profileGetDto", dto);
 
-        if (!model.containsAttribute("profileUpdateForm")) {
-            model.addAttribute("profileUpdateForm", toForm(profileGetDto));
+        if (!model.containsAttribute("profileUpdateRequest")) {
+            ProfileUpdateRequest request = profileGetDtoToRequestMapper.map(dto);
+            model.addAttribute("profileUpdateRequest", request);
         }
 
         model.addAttribute("profileAction", ADMIN_PROFILES_URL + "/" + id);
@@ -102,33 +108,25 @@ public class AdminProfileController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String updateProfile(
             @PathVariable("id") Long id,
-            @ModelAttribute("profileUpdateForm") ProfileUpdateForm form,
-            BindingResult bindingResult,
-            RedirectAttributes redirectAttributes
+            @Valid @ModelAttribute("profileUpdateRequest") ProfileUpdateRequest request,
+            BindingResult br,
+            RedirectAttributes ra
     ) {
-
-        if (bindingResult.hasErrors()) {
-            form.setPhoto(null);
-            redirectAttributes.addFlashAttribute("errors", List.of("error.param.invalid"));
-            redirectAttributes.addFlashAttribute("profileUpdateForm", form);
+        if (br.hasErrors()) {
+            request.setPhoto(null);
+            ra.addFlashAttribute("errors", BindingErrors.extract(br));
+            ra.addFlashAttribute("profileUpdateRequest", request);
             return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
         }
 
-        ProfileUpdateDto dto = toDto(form);
-        var vr = validator.validate(dto);
-        if (vr.isNotValid()) {
-            form.setPhoto(null);
-            redirectAttributes.addFlashAttribute("errors", vr.getErrors());
-            redirectAttributes.addFlashAttribute("profileUpdateForm", form);
-            return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
-        }
+        ProfileUpdateCommand command = profileUpdateRequestToCommandMapper.map(request);
 
         try {
-            service.update(id, dto, form.getPhoto());
+            service.update(id, command, request.getPhoto());
             return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
 
         } catch (OptimisticLockException e) {
-            redirectAttributes.addFlashAttribute("errors", List.of("error.optimistic-lock"));
+            ra.addFlashAttribute("errors", List.of("error.optimistic-lock"));
             return "redirect:" + ADMIN_PROFILES_URL + "/" + id;
         }
     }
@@ -137,27 +135,5 @@ public class AdminProfileController {
     public String deleteProfile(@PathVariable("id") Long id) {
         service.delete(id);
         return "redirect:" + ADMIN_PROFILES_URL;
-    }
-
-    private ProfileUpdateForm toForm(ProfileGetDto profile) {
-        ProfileUpdateForm form = new ProfileUpdateForm();
-        form.setName(profile.getName());
-        form.setSurname(profile.getSurname());
-        form.setAbout(profile.getAbout());
-        form.setBirthdate(profile.getBirthdate());
-        form.setGender(profile.getGender());
-        form.setVersion(profile.getVersion());
-        return form;
-    }
-
-    private ProfileUpdateDto toDto(ProfileUpdateForm form) {
-        ProfileUpdateDto dto = new ProfileUpdateDto();
-        dto.setName(form.getName());
-        dto.setSurname(form.getSurname());
-        dto.setAbout(form.getAbout());
-        dto.setBirthdate(form.getBirthdate());
-        dto.setGender(form.getGender());
-        dto.setVersion(form.getVersion());
-        return dto;
     }
 }

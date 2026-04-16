@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.dto;
+package ru.andrewb.charm.back.service.command;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,10 +8,12 @@ import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CharmDto {
-    Long fromProfileId;
-    Long toProfileId;
-    Action action;
+public class RegistrationCommand {
+
+    @ToString.Include
+    String email;
+
+    String password;
 }

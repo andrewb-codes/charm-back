@@ -1,27 +1,25 @@
 package ru.andrewb.charm.back.controller.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.andrewb.charm.back.controller.form.ProfilesFilterForm;
-import ru.andrewb.charm.back.dto.ProfileFilter;
-import ru.andrewb.charm.back.dto.ProfileUpdateStatusDto;
-import ru.andrewb.charm.back.dto.sort.SortBy;
-import ru.andrewb.charm.back.dto.sort.SortOrder;
-import ru.andrewb.charm.back.model.Role;
+import ru.andrewb.charm.back.controller.request.ProfilesFilterRequest;
+import ru.andrewb.charm.back.dto.ProfilesFilter;
+import ru.andrewb.charm.back.mapper.ProfilesFilterRequestToProfileFilterMapper;
 import ru.andrewb.charm.back.model.Status;
-import ru.andrewb.charm.back.normalizer.ProfileFilterDefaults;
 import ru.andrewb.charm.back.security.SecurityRules;
 import ru.andrewb.charm.back.service.ProfileService;
+import ru.andrewb.charm.back.service.command.ProfileUpdateStatusCommand;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.andrewb.charm.back.utils.StringUtils.stripToNull;
 import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_URL;
 import static ru.andrewb.charm.back.web.Views.PROFILES;
 
@@ -31,19 +29,29 @@ import static ru.andrewb.charm.back.web.Views.PROFILES;
 public class AdminProfilesController {
 
     private final ProfileService service;
+    private final ProfilesFilterRequestToProfileFilterMapper mapper;
 
-    public AdminProfilesController(ProfileService service) {
+    public AdminProfilesController(
+            ProfileService service,
+            ProfilesFilterRequestToProfileFilterMapper mapper
+    ) {
         this.service = service;
+        this.mapper = mapper;
     }
 
     @GetMapping
     public String getProfiles(
-            @ModelAttribute("profilesFilterForm") ProfilesFilterForm form,
+            @Valid @ModelAttribute("profilesFilterRequest") ProfilesFilterRequest request,
+            BindingResult br,
             Model model
     ) {
-        ProfileFilter filter = toProfileFilter(form);
+        if (br.hasErrors()) {
+            request = new ProfilesFilterRequest();
+        }
 
-        var probe = new ProfileFilter();
+        ProfilesFilter filter = mapper.map(request);
+
+        var probe = new ProfilesFilter();
         copyProperties(filter, probe);
         probe.setPageSize(filter.getPageSize() + 1);
 
@@ -68,8 +76,8 @@ public class AdminProfilesController {
             @RequestParam(name = "back", required = false) String back,
             HttpServletRequest req
     ) {
-        List<ProfileUpdateStatusDto> dtoList = mapStatuses(statusesWithIds, versionsWithIds);;
-        service.updateStatuses(dtoList);
+        List<ProfileUpdateStatusCommand> commandsList = mapStatuses(statusesWithIds, versionsWithIds);;
+        service.updateStatuses(commandsList);
 
         String ctx = req.getContextPath();
         if (SecurityRules.isSafeInternalRedirect(ctx, back, ADMIN_PROFILES_URL)) {
@@ -78,27 +86,9 @@ public class AdminProfilesController {
         return "redirect:" + ADMIN_PROFILES_URL;
     }
 
-    private ProfileFilter toProfileFilter(ProfilesFilterForm form) {
-        ProfileFilter filter = new ProfileFilter();
-
-        filter.setEmailStartsWith(stripToNull(form.getEmailStartsWith()));
-        filter.setNameStartsWith(stripToNull(form.getNameStartsWith()));
-        filter.setSurnameStartsWith(stripToNull(form.getSurnameStartsWith()));
-        filter.setLowerAgeBound(parseInt(form.getLtAge()));
-        filter.setGreaterAndEqualAgeBound(parseInt(form.getGteAge()));
-        filter.setRole(parseEnum(form.getRole(), Role.class));
-        filter.setStatus(parseEnum(form.getStatus(), Status.class));
-        filter.setSortBy(parseEnum(form.getSortBy(), SortBy.class));
-        filter.setSortOrder(parseEnum(form.getSortOrder(), SortOrder.class));
-        filter.setPage(parseInt(form.getPage()));
-        filter.setPageSize(parseInt(form.getPageSize()));
-
-        return ProfileFilterDefaults.normalize(filter);
-    }
-
-    private List<ProfileUpdateStatusDto> mapStatuses(List<String> statusesWithIds, List<String> versionsWithIds) {
+    private List<ProfileUpdateStatusCommand> mapStatuses(List<String> statusesWithIds, List<String> versionsWithIds) {
         Map<Long, Integer> versionById = parseVersions(versionsWithIds);
-        List<ProfileUpdateStatusDto> result = new ArrayList<>();
+        List<ProfileUpdateStatusCommand> result = new ArrayList<>();
 
         if (statusesWithIds == null) {
             return result;
@@ -128,11 +118,11 @@ public class AdminProfilesController {
                     continue;
                 }
 
-                ProfileUpdateStatusDto dto = new ProfileUpdateStatusDto();
-                dto.setId(id);
-                dto.setStatus(status);
-                dto.setVersion(version);
-                result.add(dto);
+                var command = new ProfileUpdateStatusCommand();
+                command.setId(id);
+                command.setStatus(status);
+                command.setVersion(version);
+                result.add(command);
 
             } catch (Exception ignored) {
             }
@@ -173,30 +163,7 @@ public class AdminProfilesController {
         return result;
     }
 
-    private Integer parseInt(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
-    private <E extends Enum<E>> E parseEnum(String value, Class<E> enumClass) {
-        String normalized = stripToNull(value);
-        if (normalized == null) {
-            return null;
-        }
-        try {
-            return Enum.valueOf(enumClass, normalized.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
-    private void copyProperties(ProfileFilter f, ProfileFilter copy) {
+    private void copyProperties(ProfilesFilter f, ProfilesFilter copy) {
         copy.setEmailStartsWith(f.getEmailStartsWith());
         copy.setNameStartsWith(f.getNameStartsWith());
         copy.setSurnameStartsWith(f.getSurnameStartsWith());

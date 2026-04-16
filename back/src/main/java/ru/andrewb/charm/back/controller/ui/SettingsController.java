@@ -5,8 +5,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.andrewb.charm.back.dto.EmailChangeDto;
-import ru.andrewb.charm.back.dto.PasswordChangeDto;
+import ru.andrewb.charm.back.controller.request.EmailChangeRequest;
+import ru.andrewb.charm.back.controller.request.PasswordChangeRequest;
 import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.ProfileService;
 
@@ -28,19 +28,19 @@ public class SettingsController {
             @AuthenticationPrincipal AuthUser user,
             Model model
     ) {
-        var profileGetDto = service.findByIdOrThrow(user.getId());
-        model.addAttribute("profileGetDto", profileGetDto);
+        var dto = service.findByIdOrThrow(user.getId());
+        model.addAttribute("profileGetDto", dto);
 
-        if (!model.containsAttribute("emailChangeDto")) {
-            EmailChangeDto emailChangeDto = new EmailChangeDto();
-            emailChangeDto.setVersion(profileGetDto.getVersion());
-            emailChangeDto.setNewEmail(profileGetDto.getEmail());
-            model.addAttribute("emailChangeDto", emailChangeDto);
+        if (!model.containsAttribute("emailChangeRequest")) {
+            EmailChangeRequest emailChangeRequest = new EmailChangeRequest();
+            emailChangeRequest.setVersion(dto.getVersion());
+            emailChangeRequest.setNewEmail(dto.getEmail());
+            model.addAttribute("emailChangeRequest", emailChangeRequest);
         }
-        if (!model.containsAttribute("passwordChangeDto")) {
-            PasswordChangeDto passwordChangeDto = new PasswordChangeDto();
-            passwordChangeDto.setVersion(profileGetDto.getVersion());
-            model.addAttribute("passwordChangeDto", passwordChangeDto);
+        if (!model.containsAttribute("passwordChangeRequest")) {
+            PasswordChangeRequest passwordChangeRequest = new PasswordChangeRequest();
+            passwordChangeRequest.setVersion(dto.getVersion());
+            model.addAttribute("passwordChangeRequest", passwordChangeRequest);
         }
 
         return SETTINGS;

@@ -8,13 +8,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.andrewb.charm.back.dao.ProfileDao;
-import ru.andrewb.charm.back.dto.EmailChangeDto;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
-import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
+import ru.andrewb.charm.back.mapper.ProfileUpdateCommandToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.DuplicateEmailException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.service.command.EmailChangeCommand;
 
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ class ProfileServiceChangeEmailTest {
     private ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper;
 
     @Mock
-    private ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
+    private ProfileUpdateCommandToProfileMapper profileUpdateCommandToProfileMapper;
 
     private ProfileService service;
     private PasswordEncoder passwordEncoder;
@@ -47,7 +47,7 @@ class ProfileServiceChangeEmailTest {
                 dao,
                 contentService,
                 profileToProfileGetDtoMapper,
-                profileUpdateDtoToProfileMapper,
+                profileUpdateCommandToProfileMapper,
                 passwordEncoder
         );
     }
@@ -56,10 +56,10 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldUpdateEmail_whenInputIsValid() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(5);
-        dto.setNewEmail("new@mail.com");
-        dto.setCurrentPassword("123456");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(5);
+        command.setNewEmail("new@mail.com");
+        command.setCurrentPassword("123456");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -70,7 +70,7 @@ class ProfileServiceChangeEmailTest {
         when(dao.findById(profileId)).thenReturn(Optional.of(profile));
         when(dao.existsEmail("new@mail.com", profileId)).thenReturn(false);
 
-        service.changeEmail(profileId, dto);
+        service.changeEmail(profileId, command);
 
         assertEquals(5, profile.getVersion());
         assertEquals("new@mail.com", profile.getEmail());
@@ -83,16 +83,16 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldThrowNotFoundException_whenProfileDoesNotExist() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(1);
-        dto.setNewEmail("new@mail.com");
-        dto.setCurrentPassword("123456");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(1);
+        command.setNewEmail("new@mail.com");
+        command.setCurrentPassword("123456");
 
         when(dao.findById(profileId)).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> service.changeEmail(profileId, dto)
+                () -> service.changeEmail(profileId, command)
         );
 
         assertEquals("error.profile.not-found", ex.getMessage());
@@ -104,10 +104,10 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldThrowBadRequestException_whenVersionIsMissing() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(null);
-        dto.setNewEmail("new@mail.com");
-        dto.setCurrentPassword("123456");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(null);
+        command.setNewEmail("new@mail.com");
+        command.setCurrentPassword("123456");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -118,7 +118,7 @@ class ProfileServiceChangeEmailTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changeEmail(profileId, dto)
+                () -> service.changeEmail(profileId, command)
         );
 
         assertEquals("error.param.required", ex.getMessage());
@@ -130,10 +130,10 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldThrowBadRequestException_whenCurrentPasswordIsIncorrect() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(1);
-        dto.setNewEmail("new@mail.com");
-        dto.setCurrentPassword("wrong-password");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(1);
+        command.setNewEmail("new@mail.com");
+        command.setCurrentPassword("wrong-password");
 
         Profile existing = new Profile();
         existing.setId(profileId);
@@ -144,7 +144,7 @@ class ProfileServiceChangeEmailTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changeEmail(profileId, dto)
+                () -> service.changeEmail(profileId, command)
         );
 
         assertEquals("error.password.invalid-current", ex.getMessage());
@@ -156,10 +156,10 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldThrowBadRequestException_whenNewEmailMatchesCurrentEmailIgnoringCase() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(1);
-        dto.setNewEmail("OLD@mail.com");
-        dto.setCurrentPassword("123456");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(1);
+        command.setNewEmail("OLD@mail.com");
+        command.setCurrentPassword("123456");
 
         Profile existing = new Profile();
         existing.setId(profileId);
@@ -170,7 +170,7 @@ class ProfileServiceChangeEmailTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changeEmail(profileId, dto)
+                () -> service.changeEmail(profileId, command)
         );
 
         assertEquals("error.email.same-as-current", ex.getMessage());
@@ -182,10 +182,10 @@ class ProfileServiceChangeEmailTest {
     void changeEmail_shouldThrowDuplicateEmailException_whenNewEmailIsAlreadyTaken() {
         long profileId = 1L;
 
-        EmailChangeDto dto = new EmailChangeDto();
-        dto.setVersion(1);
-        dto.setNewEmail("new@mail.com");
-        dto.setCurrentPassword("123456");
+        EmailChangeCommand command = new EmailChangeCommand();
+        command.setVersion(1);
+        command.setNewEmail("new@mail.com");
+        command.setCurrentPassword("123456");
 
         Profile existing = new Profile();
         existing.setId(profileId);
@@ -197,7 +197,7 @@ class ProfileServiceChangeEmailTest {
 
         DuplicateEmailException ex = assertThrows(
                 DuplicateEmailException.class,
-                () -> service.changeEmail(profileId, dto)
+                () -> service.changeEmail(profileId, command)
         );
 
         assertEquals("error.email.exists", ex.getMessage());

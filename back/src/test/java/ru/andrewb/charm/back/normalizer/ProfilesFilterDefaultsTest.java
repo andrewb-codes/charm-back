@@ -1,20 +1,20 @@
 package ru.andrewb.charm.back.normalizer;
 
 import org.junit.jupiter.api.Test;
-import ru.andrewb.charm.back.dto.ProfileFilter;
+import ru.andrewb.charm.back.dto.ProfilesFilter;
 import ru.andrewb.charm.back.dto.sort.SortBy;
 import ru.andrewb.charm.back.dto.sort.SortOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class ProfileFilterDefaultsTest {
+class ProfilesFilterDefaultsTest {
 
     @Test
     void normalize_shouldApplyAllDefaults_whenFieldsAreNull() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
 
-        ProfileFilter result = ProfileFilterDefaults.normalize(filter);
+        ProfilesFilter result = ProfilesFilterDefaults.normalize(filter);
 
         assertSame(filter, result);
         assertEquals(SortBy.ID, filter.getSortBy());
@@ -25,13 +25,13 @@ class ProfileFilterDefaultsTest {
 
     @Test
     void normalize_shouldKeepExplicitSortSettings() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setSortBy(SortBy.EMAIL);
         filter.setSortOrder(SortOrder.DESC);
         filter.setPage(2);
         filter.setPageSize(20);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(SortBy.EMAIL, filter.getSortBy());
         assertEquals(SortOrder.DESC, filter.getSortOrder());
@@ -41,50 +41,50 @@ class ProfileFilterDefaultsTest {
 
     @Test
     void normalize_shouldSetDefaultPage_whenPageIsNull() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPage(null);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(1, filter.getPage());
     }
 
     @Test
     void normalize_shouldSetDefaultPageSize_whenPageSizeIsNull() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPageSize(null);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(10, filter.getPageSize());
     }
 
     @Test
     void normalize_shouldKeepPageSize_whenItIsAllowed() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPageSize(50);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(50, filter.getPageSize());
     }
 
     @Test
     void normalize_shouldSetDefaultPage_whenPageIsLessThanOne() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPage(0);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(1, filter.getPage());
     }
 
     @Test
     void normalize_shouldSetDefaultPageSize_whenPageSizeIsNotAllowed() {
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPageSize(15);
 
-        ProfileFilterDefaults.normalize(filter);
+        ProfilesFilterDefaults.normalize(filter);
 
         assertEquals(10, filter.getPageSize());
     }

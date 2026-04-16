@@ -13,20 +13,20 @@
             <form id="profile-form" method="post" action="${cpath}${profileAction}" enctype="multipart/form-data">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                 <input type="hidden" name="_method" value="PUT">
-                <input type="hidden" name="version" value="${profileGetDto.version}">
+                <input type="hidden" name="version" value="${profileUpdateRequest.version}">
 
                 <table class="table--form">
                     <tr>
                         <td><h3>${wordBundle.getWord("name")}</h3></td>
-                        <td><input type="text" name="name" value="${profileUpdateForm.name}"></td>
+                        <td><input type="text" name="name" value="${profileUpdateRequest.name}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("surname")}</h3></td>
-                        <td><input type="text" name="surname" value="${profileUpdateForm.surname}"></td>
+                        <td><input type="text" name="surname" value="${profileUpdateRequest.surname}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("birthdate")}</h3></td>
-                        <td><input type="date" name="birthdate" value="${profileUpdateForm.birthdate}"></td>
+                        <td><input type="date" name="birthdate" value="${profileUpdateRequest.birthdate}"></td>
                     </tr>
                     <c:if test="${!empty profileGetDto.birthdate}">
                         <tr>
@@ -36,12 +36,12 @@
                     </c:if>
                     <tr>
                         <td><h3>${wordBundle.getWord("about")}</h3></td>
-                        <td><input type="text" name="about" value="${profileUpdateForm.about}"></td>
+                        <td><input type="text" name="about" value="${profileUpdateRequest.about}"></td>
                     </tr>
                     <tr>
                         <td><h3>${wordBundle.getWord("gender")}</h3></td>
                         <td>
-                            <c:set var="g" value="${profileUpdateForm.gender}"/>
+                            <c:set var="g" value="${profileUpdateRequest.gender}"/>
                             <select name="gender">
                                 <option value="" disabled <c:if test="${empty g}">selected</c:if>>
                                     ${wordBundle.getWord("select-gender")}

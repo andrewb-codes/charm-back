@@ -8,12 +8,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.andrewb.charm.back.dao.ProfileDao;
-import ru.andrewb.charm.back.dto.PasswordChangeDto;
 import ru.andrewb.charm.back.mapper.ProfileToProfileGetDtoMapper;
-import ru.andrewb.charm.back.mapper.ProfileUpdateDtoToProfileMapper;
+import ru.andrewb.charm.back.mapper.ProfileUpdateCommandToProfileMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
+import ru.andrewb.charm.back.service.command.PasswordChangeCommand;
 
 import java.util.Optional;
 
@@ -33,7 +33,7 @@ class ProfileServiceChangePasswordTest {
     private ProfileToProfileGetDtoMapper profileToProfileGetDtoMapper;
 
     @Mock
-    private ProfileUpdateDtoToProfileMapper profileUpdateDtoToProfileMapper;
+    private ProfileUpdateCommandToProfileMapper profileUpdateCommandToProfileMapper;
 
     private ProfileService service;
     private PasswordEncoder passwordEncoder;
@@ -45,7 +45,7 @@ class ProfileServiceChangePasswordTest {
                 dao,
                 contentService,
                 profileToProfileGetDtoMapper,
-                profileUpdateDtoToProfileMapper,
+                profileUpdateCommandToProfileMapper,
                 passwordEncoder
         );
     }
@@ -54,11 +54,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldUpdatePassword_whenInputIsValid() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(4);
-        dto.setCurrentPassword("oldpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("newpass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(4);
+        command.setCurrentPassword("oldpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("newpass");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -70,7 +70,7 @@ class ProfileServiceChangePasswordTest {
 
         String oldHash = profile.getPassword();
 
-        service.changePassword(profileId, dto);
+        service.changePassword(profileId, command);
 
         assertEquals(4, profile.getVersion());
         assertNotEquals(oldHash, profile.getPassword());
@@ -83,17 +83,17 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowNotFoundException_whenProfileDoesNotExist() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(1);
-        dto.setCurrentPassword("oldpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("newpass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(1);
+        command.setCurrentPassword("oldpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("newpass");
 
         when(dao.findById(profileId)).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.profile.not-found", ex.getMessage());
@@ -105,11 +105,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowBadRequestException_whenVersionIsMissing() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(null);
-        dto.setCurrentPassword("oldpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("newpass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(null);
+        command.setCurrentPassword("oldpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("newpass");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -119,7 +119,7 @@ class ProfileServiceChangePasswordTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.param.required", ex.getMessage());
@@ -131,11 +131,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowBadRequestException_whenConfirmPasswordIsBlank() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(1);
-        dto.setCurrentPassword("oldpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("   ");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(1);
+        command.setCurrentPassword("oldpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("   ");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -145,7 +145,7 @@ class ProfileServiceChangePasswordTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.password.required", ex.getMessage());
@@ -157,11 +157,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowBadRequestException_whenConfirmPasswordDoesNotMatch() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(1);
-        dto.setCurrentPassword("oldpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("otherpass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(1);
+        command.setCurrentPassword("oldpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("otherpass");
 
         Profile existing = new Profile();
         existing.setId(profileId);
@@ -171,7 +171,7 @@ class ProfileServiceChangePasswordTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.password.mismatch", ex.getMessage());
@@ -183,11 +183,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowBadRequestException_whenCurrentPasswordIsIncorrect() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(1);
-        dto.setCurrentPassword("wrongpass");
-        dto.setNewPassword("newpass");
-        dto.setConfirmPassword("newpass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(1);
+        command.setCurrentPassword("wrongpass");
+        command.setNewPassword("newpass");
+        command.setConfirmPassword("newpass");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -197,7 +197,7 @@ class ProfileServiceChangePasswordTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.password.invalid-current", ex.getMessage());
@@ -209,11 +209,11 @@ class ProfileServiceChangePasswordTest {
     void changePassword_shouldThrowBadRequestException_whenNewPasswordMatchesCurrentPassword() {
         long profileId = 1L;
 
-        PasswordChangeDto dto = new PasswordChangeDto();
-        dto.setVersion(1);
-        dto.setCurrentPassword("samepass");
-        dto.setNewPassword("samepass");
-        dto.setConfirmPassword("samepass");
+        PasswordChangeCommand command = new PasswordChangeCommand();
+        command.setVersion(1);
+        command.setCurrentPassword("samepass");
+        command.setNewPassword("samepass");
+        command.setConfirmPassword("samepass");
 
         Profile profile = new Profile();
         profile.setId(profileId);
@@ -223,7 +223,7 @@ class ProfileServiceChangePasswordTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> service.changePassword(profileId, dto)
+                () -> service.changePassword(profileId, command)
         );
 
         assertEquals("error.password.same-as-current", ex.getMessage());

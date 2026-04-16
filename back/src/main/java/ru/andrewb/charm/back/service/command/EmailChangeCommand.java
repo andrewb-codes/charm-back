@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.dto;
+package ru.andrewb.charm.back.service.command;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,9 +10,11 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoginDto {
-    @ToString.Include
-    String email;
+public class EmailChangeCommand {
 
-    String password;
+    @ToString.Include
+    String newEmail;
+
+    String currentPassword;
+    Integer version;
 }
