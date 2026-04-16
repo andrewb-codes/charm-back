@@ -19,11 +19,11 @@
         <form method="post" action="${cpath}/email">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <input type="hidden" name="_method" value="put"/>
-            <input type="hidden" name="version" value="${emailChangeDto.version}">
+            <input type="hidden" name="version" value="${emailChangeRequest.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("email")}</h4></td>
-                    <td><input type="email" name="newEmail" value="${emailChangeDto.newEmail}"></td>
+                    <td><input type="email" name="newEmail" value="${emailChangeRequest.newEmail}"></td>
                 </tr>
                 <tr>
                     <td><h4>${wordBundle.getWord("current-password")}</h4></td>
@@ -58,7 +58,7 @@
         <form method="post" action="${cpath}/password">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <input type="hidden" name="_method" value="put"/>
-            <input type="hidden" name="version" value="${passwordChangeDto.version}">
+            <input type="hidden" name="version" value="${passwordChangeRequest.version}">
             <table class="table--form">
                 <tr>
                     <td><h4>${wordBundle.getWord("current-password")}</h4></td>

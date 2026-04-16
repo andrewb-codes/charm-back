@@ -1,13 +1,12 @@
 package ru.andrewb.charm.back.controller.rest;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.andrewb.charm.back.dto.ProfileUpdateDto;
+import ru.andrewb.charm.back.controller.request.ProfileUpdateRequest;
+import ru.andrewb.charm.back.mapper.ProfileUpdateRequestToCommandMapper;
 import ru.andrewb.charm.back.service.ProfileService;
-import ru.andrewb.charm.back.validator.ProfileUpdateValidator;
-
-import java.util.Map;
 
 import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_REST_URL;
 
@@ -17,14 +16,14 @@ import static ru.andrewb.charm.back.web.Urls.ADMIN_PROFILES_REST_URL;
 public class AdminProfileRestController {
 
     private final ProfileService service;
-    private final ProfileUpdateValidator validator;
+    private final ProfileUpdateRequestToCommandMapper mapper;
 
     public AdminProfileRestController(
             ProfileService service,
-            ProfileUpdateValidator validator
+            ProfileUpdateRequestToCommandMapper mapper
     ) {
         this.service = service;
-        this.validator = validator;
+        this.mapper = mapper;
     }
 
     @GetMapping("/{id}")
@@ -35,14 +34,9 @@ public class AdminProfileRestController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(
             @PathVariable("id") Long id,
-            @RequestBody ProfileUpdateDto dto
+            @Valid @RequestBody ProfileUpdateRequest request
     ) {
-        var vr = validator.validate(dto);
-        if (vr.isNotValid()) {
-            return ResponseEntity.badRequest().body(Map.of("errors", vr.getErrors()));
-        }
-
-        service.update(id, dto, null);
+        service.update(id, mapper.map(request), null);
         return ResponseEntity.noContent().build();
     }
 

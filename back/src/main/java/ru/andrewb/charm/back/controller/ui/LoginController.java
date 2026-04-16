@@ -5,7 +5,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.andrewb.charm.back.dto.LoginDto;
 
 import java.util.List;
 
@@ -22,9 +21,6 @@ public class LoginController {
             @RequestParam(name = "logout", required = false) String logout,
             Model model
     ) {
-        if (!model.containsAttribute("loginDto")) {
-            model.addAttribute("loginDto", new LoginDto());
-        }
         if (error != null) {
             model.addAttribute("errors", List.of("error.login.bad-credentials"));
         }

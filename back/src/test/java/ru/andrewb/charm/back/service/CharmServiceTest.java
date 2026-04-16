@@ -8,8 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.dto.Action;
-import ru.andrewb.charm.back.dto.CharmDto;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
+import ru.andrewb.charm.back.service.command.CharmCommand;
 
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -44,12 +44,12 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldReturnCandidateFromCache_whenCacheHasValue() {
-        CharmDto dto = buildDto(1L, 2L, Action.SKIP);
+        CharmCommand command = buildCommand(1L, 2L, Action.SKIP);
         ProfileSimpleDto cached = candidate(100L, "Cached");
 
         when(profileCacheService.pollNext(1L)).thenReturn(cached);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isPresent());
         assertSame(cached, result.get());
@@ -63,12 +63,12 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldCallLikeOrDislike_beforeFetchingNext_whenActionIsLike() {
-        CharmDto dto = buildDto(2L, 3L, Action.LIKE);
+        CharmCommand command = buildCommand(2L, 3L, Action.LIKE);
         ProfileSimpleDto cached = candidate(200L, "Cached");
 
         when(profileCacheService.pollNext(2L)).thenReturn(cached);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isPresent());
         assertSame(cached, result.get());
@@ -79,12 +79,12 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldCallLikeOrDislikeWithFalse_whenActionIsDislike() {
-        CharmDto dto = buildDto(3L, 4L, Action.DISLIKE);
+        CharmCommand command = buildCommand(3L, 4L, Action.DISLIKE);
         ProfileSimpleDto cached = candidate(300L, "Cached");
 
         when(profileCacheService.pollNext(3L)).thenReturn(cached);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isPresent());
         assertSame(cached, result.get());
@@ -95,12 +95,12 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldNotCallLikeOrDislike_whenActionIsSkip() {
-        CharmDto dto = buildDto(1L, 2L, Action.SKIP);
+        CharmCommand command = buildCommand(1L, 2L, Action.SKIP);
 
         when(profileCacheService.pollNext(1L)).thenReturn(null);
         when(profileCacheService.isEmptyCooldownActive(1L)).thenReturn(true);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isEmpty());
 
@@ -109,12 +109,12 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldReturnEmpty_whenEmptyCooldownIsActive() {
-        CharmDto dto = buildDto(1L, null, Action.SKIP);
+        CharmCommand command = buildCommand(1L, null, Action.SKIP);
 
         when(profileCacheService.pollNext(1L)).thenReturn(null);
         when(profileCacheService.isEmptyCooldownActive(1L)).thenReturn(true);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isEmpty());
 
@@ -126,13 +126,13 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldReturnEmpty_whenLockIsNotAcquired() {
-        CharmDto dto = buildDto(1L, null, Action.SKIP);
+        CharmCommand command = buildCommand(1L, null, Action.SKIP);
 
         when(profileCacheService.pollNext(1L)).thenReturn(null);
         when(profileCacheService.isEmptyCooldownActive(1L)).thenReturn(false);
         when(profileCacheService.tryAcquireLock(1L)).thenReturn(null);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isEmpty());
 
@@ -145,7 +145,7 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldRefillFromDaoAndCacheRest_whenLockIsAcquired() {
-        CharmDto dto = buildDto(1L, null, Action.SKIP);
+        CharmCommand command = buildCommand(1L, null, Action.SKIP);
 
         ProfileSimpleDto first = candidate(10L, "First");
         ProfileSimpleDto second = candidate(11L, "Second");
@@ -158,7 +158,7 @@ class CharmServiceTest {
         when(profileCacheService.tryAcquireLock(1L)).thenReturn("token-1");
         when(profileDao.findSuitableForUser(1L, 5)).thenReturn(queue);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isPresent());
         assertSame(first, result.get());
@@ -172,7 +172,7 @@ class CharmServiceTest {
 
     @Test
     void getNext_shouldReturnEmptyAndMarkCooldown_whenDaoReturnsNoCandidates() {
-        CharmDto dto = buildDto(1L, null, Action.SKIP);
+        CharmCommand command = buildCommand(1L, null, Action.SKIP);
 
         Queue<ProfileSimpleDto> queue = new ArrayDeque<>();
 
@@ -181,7 +181,7 @@ class CharmServiceTest {
         when(profileCacheService.tryAcquireLock(1L)).thenReturn("token-1");
         when(profileDao.findSuitableForUser(1L, 5)).thenReturn(queue);
 
-        Optional<ProfileSimpleDto> result = service.getNext(dto);
+        Optional<ProfileSimpleDto> result = service.getNext(command);
 
         assertTrue(result.isEmpty());
 
@@ -192,12 +192,12 @@ class CharmServiceTest {
         verify(profileCacheService).releaseLock(1L, "token-1");
     }
 
-    private CharmDto buildDto(Long fromId, Long toId, Action action) {
-        CharmDto dto = new CharmDto();
-        dto.setFromProfileId(fromId);
-        dto.setToProfileId(toId);
-        dto.setAction(action);
-        return dto;
+    private CharmCommand buildCommand(Long fromId, Long toId, Action action) {
+        CharmCommand command = new CharmCommand();
+        command.setFromProfileId(fromId);
+        command.setToProfileId(toId);
+        command.setAction(action);
+        return command;
     }
 
     private ProfileSimpleDto candidate(Long id, String name) {

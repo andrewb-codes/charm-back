@@ -7,6 +7,7 @@ import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
+import ru.andrewb.charm.back.service.command.ProfileUpdateStatusCommand;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -136,7 +137,7 @@ public class ProfileDao {
         }
     }
 
-    public List<Profile> findAll(ProfileFilter filter) {
+    public List<Profile> findAll(ProfilesFilter filter) {
         Query query = new ProfileSelectQueryBuilder()
                 .addEmailStartsWithFilter(filter.getEmailStartsWith())
                 .addNameStartsWithFilter(filter.getNameStartsWith())
@@ -207,14 +208,14 @@ public class ProfileDao {
         }
     }
 
-    public void updateStatuses(List<ProfileUpdateStatusDto> dtoList) {
+    public void updateStatuses(List<ProfileUpdateStatusCommand> dtoList) {
         Connection conn = null;
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
 
             try (PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_STATUSES)) {
-                for (ProfileUpdateStatusDto dto : dtoList) {
+                for (ProfileUpdateStatusCommand dto : dtoList) {
                     ps.setString(1, dto.getStatus().toString());
                     ps.setLong(2, dto.getId());
                     ps.setInt(3, dto.getVersion());

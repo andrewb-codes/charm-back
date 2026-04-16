@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dao.ProfileLikeDao;
 import ru.andrewb.charm.back.dto.Action;
-import ru.andrewb.charm.back.dto.CharmDto;
 import ru.andrewb.charm.back.dto.ProfileSimpleDto;
+import ru.andrewb.charm.back.service.command.CharmCommand;
 
 import java.util.Optional;
 import java.util.Queue;
@@ -27,10 +27,10 @@ public class CharmService {
         this.profileCacheService = profileCacheService;
     }
 
-    public Optional<ProfileSimpleDto> getNext(CharmDto dto) {
-        Long fromId = dto.getFromProfileId();
-        Long toId = dto.getToProfileId();
-        Action action = dto.getAction();
+    public Optional<ProfileSimpleDto> getNext(CharmCommand command) {
+        Long fromId = command.getFromProfileId();
+        Long toId = command.getToProfileId();
+        Action action = command.getAction();
 
         if (action != Action.SKIP && toId != null) {
             boolean isLike = action == Action.LIKE;

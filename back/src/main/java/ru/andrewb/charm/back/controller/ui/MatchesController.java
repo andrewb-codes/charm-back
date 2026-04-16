@@ -6,7 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.andrewb.charm.back.dto.ProfileFilter;
+import ru.andrewb.charm.back.dto.ProfilesFilter;
 import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.ProfileService;
 
@@ -44,7 +44,7 @@ public class MatchesController {
 
         boolean hasPrev = normalizedPage > 1;
 
-        ProfileFilter filter = new ProfileFilter();
+        ProfilesFilter filter = new ProfilesFilter();
         filter.setPage(normalizedPage);
         filter.setPageSize(normalizedPageSize);
 

@@ -1,22 +1,22 @@
 package ru.andrewb.charm.back.mapper;
 
 import org.junit.jupiter.api.Test;
-import ru.andrewb.charm.back.dto.ProfileUpdateDto;
 import ru.andrewb.charm.back.model.Gender;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.service.command.ProfileUpdateCommand;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class ProfileUpdateDtoToProfileMapperTest {
+class ProfileUpdateCommandToProfileMapperTest {
 
-    private final ProfileUpdateDtoToProfileMapper mapper = new ProfileUpdateDtoToProfileMapper();
+    private final ProfileUpdateCommandToProfileMapper mapper = new ProfileUpdateCommandToProfileMapper();
 
     @Test
     void map_shouldCopyAllNonNullFieldsToNewProfile() {
-        ProfileUpdateDto dto = new ProfileUpdateDto();
+        ProfileUpdateCommand dto = new ProfileUpdateCommand();
         dto.setVersion(1);
         dto.setName("Ivan");
         dto.setSurname("Ivanov");
@@ -36,7 +36,7 @@ class ProfileUpdateDtoToProfileMapperTest {
 
     @Test
     void map_shouldUpdateOnlyNonNullFieldsInExistingProfile() {
-        ProfileUpdateDto dto = new ProfileUpdateDto();
+        ProfileUpdateCommand dto = new ProfileUpdateCommand();
         dto.setName("New name");
         dto.setAbout("New about");
 
@@ -61,7 +61,7 @@ class ProfileUpdateDtoToProfileMapperTest {
 
     @Test
     void map_shouldUpdateVersionWhenProvided() {
-        ProfileUpdateDto dto = new ProfileUpdateDto();
+        ProfileUpdateCommand dto = new ProfileUpdateCommand();
         dto.setVersion(99);
 
         Profile profile = new Profile();
@@ -74,7 +74,7 @@ class ProfileUpdateDtoToProfileMapperTest {
 
     @Test
     void map_shouldNotOverwriteFieldsWithNulls() {
-        ProfileUpdateDto dto = new ProfileUpdateDto();
+        ProfileUpdateCommand dto = new ProfileUpdateCommand();
 
         Profile profile = new Profile();
         profile.setVersion(5);

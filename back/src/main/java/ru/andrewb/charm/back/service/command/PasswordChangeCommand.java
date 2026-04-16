@@ -1,4 +1,4 @@
-package ru.andrewb.charm.back.dto;
+package ru.andrewb.charm.back.service.command;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +8,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PasswordChangeDto {
+public class PasswordChangeCommand {
+
     String currentPassword;
     String newPassword;
     String confirmPassword;

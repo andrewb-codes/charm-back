@@ -8,7 +8,7 @@ import ru.andrewb.charm.back.model.Status;
 
 import java.util.List;
 
-import static ru.andrewb.charm.back.normalizer.ProfileFilterDefaults.AVAILABLE_PAGE_SIZES;
+import static ru.andrewb.charm.back.normalizer.ProfilesFilterDefaults.AVAILABLE_PAGE_SIZES;
 
 @ControllerAdvice
 public class MvcModelGlobalAttributes {

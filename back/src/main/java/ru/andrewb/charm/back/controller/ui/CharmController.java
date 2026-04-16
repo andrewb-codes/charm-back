@@ -1,17 +1,20 @@
 package ru.andrewb.charm.back.controller.ui;
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import ru.andrewb.charm.back.dto.Action;
-import ru.andrewb.charm.back.dto.CharmDto;
-import ru.andrewb.charm.back.normalizer.CharmDtoDefaults;
+import ru.andrewb.charm.back.controller.request.CharmRequest;
+import ru.andrewb.charm.back.mapper.CharmRequestToCommandMapper;
+import ru.andrewb.charm.back.normalizer.CharmCommandDefaults;
 import ru.andrewb.charm.back.security.AuthUser;
 import ru.andrewb.charm.back.service.CharmService;
+import ru.andrewb.charm.back.service.command.CharmCommand;
 
 import static ru.andrewb.charm.back.web.Urls.CHARM_URL;
 import static ru.andrewb.charm.back.web.Views.CHARM;
@@ -22,9 +25,14 @@ import static ru.andrewb.charm.back.web.Views.CHARM_EMPTY;
 public class CharmController {
 
     private final CharmService service;
+    private final CharmRequestToCommandMapper mapper;
 
-    public CharmController(CharmService service) {
+    public CharmController(
+            CharmService service,
+            CharmRequestToCommandMapper mapper
+    ) {
         this.service = service;
+        this.mapper = mapper;
     }
 
     @GetMapping
@@ -32,32 +40,32 @@ public class CharmController {
             @AuthenticationPrincipal AuthUser user,
             Model model
     ) {
-        return handle(user,null, null, model);
+        return handle(user,new CharmRequest(), model);
     }
 
     @PostMapping
     public String postCharm(
             @AuthenticationPrincipal AuthUser user,
-            @RequestParam(name = "action", required = false) Action action,
-            @RequestParam(name = "toProfileId", required = false) Long toProfileId,
+            @Valid @ModelAttribute("charmRequest") CharmRequest request,
+            BindingResult br,
             Model model
     ) {
-        return handle(user, action, toProfileId, model);
+        if (br.hasErrors()) {
+            return CHARM_EMPTY;
+        }
+        return handle(user, request, model);
     }
 
     private String handle(
             AuthUser user,
-            Action action,
-            Long toProfileId,
+            CharmRequest request,
             Model model
     ) {
-        var charmDto = new CharmDto();
-        charmDto.setFromProfileId(user.getId());
-        charmDto.setAction(action);
-        charmDto.setToProfileId(toProfileId);
-        CharmDtoDefaults.normalize(charmDto);
+        CharmCommand command = mapper.map(request);
+        command.setFromProfileId(user.getId());
+        CharmCommandDefaults.normalize(command);
         
-        var nextOpt = service.getNext(charmDto);
+        var nextOpt = service.getNext(command);
         if (nextOpt.isPresent()) {
             model.addAttribute("next", nextOpt.get());
             return CHARM;
