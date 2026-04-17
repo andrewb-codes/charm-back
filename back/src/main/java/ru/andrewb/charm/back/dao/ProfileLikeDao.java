@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.dao;
 
 import org.springframework.stereotype.Repository;
+import ru.andrewb.charm.back.model.exception.BadRequestException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -28,7 +29,7 @@ public class ProfileLikeDao {
 
 
     public void likeOrDislike(Long fromId, Long toId, boolean isLike) {
-        if (fromId.equals(toId)) throw new IllegalArgumentException("self-like is not allowed");
+        if (fromId.equals(toId)) throw new BadRequestException("error.charm.self-like");
 
         long a = Math.min(fromId, toId);
         long b = Math.max(fromId, toId);

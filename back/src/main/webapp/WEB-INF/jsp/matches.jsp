@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <html lang="${empty cookie.lang ? 'en' : cookie.lang.value}">
 <head>
     <title>Charm Matches</title>
@@ -15,7 +16,7 @@
         <input type="hidden" name="page" value="1"/>
 
         <div class="field">
-            <label for="f-pageSize">${wordBundle.getWord('pageSize')}</label>
+            <label for="f-pageSize"><spring:message code="pageSize"/></label>
             <select id="f-pageSize" name="pageSize" style="width:88px;">
                 <c:forEach var="size" items="${availablePageSizes}">
                     <option value="${size}" <c:if test="${size == filter.pageSize}">selected</c:if>>${size}</option>
@@ -24,7 +25,7 @@
         </div>
 
         <div class="actions">
-            <button type="submit" class="btn-reset" title="${wordBundle.getWord('update')}" aria-label="Apply">
+            <button type="submit" class="btn-reset" title="<spring:message code='update'/>" aria-label="Apply">
                 <img class="icon-lg" src="${cpath}/img/filter.png" alt="">
             </button>
             <a class="btn-reset" href="${cpath}/matches" title="Reset" aria-label="Reset">
@@ -36,7 +37,7 @@
     <c:choose>
         <c:when test="${empty matches}">
             <p style="opacity:.7;margin:12px 0;">
-                ${wordBundle.getWord('no-matches-yet')}
+                <spring:message code="no-matches-yet"/>
             </p>
         </c:when>
 
@@ -52,12 +53,12 @@
                 </colgroup>
 
                 <tr>
-                    <td><h3>${wordBundle.getWord('email')}</h3></td>
-                    <td><h3>${wordBundle.getWord('name')}</h3></td>
-                    <td><h3>${wordBundle.getWord('surname')}</h3></td>
-                    <td><h3>${wordBundle.getWord('age')}</h3></td>
-                    <td><h3>${wordBundle.getWord('photo')}</h3></td>
-                    <td><h3>${wordBundle.getWord('about')}</h3></td>
+                    <td><h3><spring:message code="email"/></h3></td>
+                    <td><h3><spring:message code="name"/></h3></td>
+                    <td><h3><spring:message code="surname"/></h3></td>
+                    <td><h3><spring:message code="age"/></h3></td>
+                    <td><h3><spring:message code="photo"/></h3></td>
+                    <td><h3><spring:message code="about"/></h3></td>
                 </tr>
 
                 <c:forEach var="m" items="${matches}">
@@ -69,14 +70,14 @@
                         <td>
                             <c:if test="${not empty m.photo}">
                                 <details>
-                                    <summary>${wordBundle.getWord('show')}</summary>
+                                    <summary><spring:message code="show"/></summary>
                                     <img src="${cpath}/content/profile/${m.id}/${m.photo}" style="max-height:250px;max-width:100%;object-fit:cover;border-radius:8px;">
                                 </details>
                             </c:if>
                         </td>
                         <td>
                             <details>
-                                <summary>${wordBundle.getWord('show')}</summary>
+                                <summary><spring:message code="show"/></summary>
                                 <textarea cols="100" rows="5" wrap="soft" disabled
                                           style="width:100%;resize:vertical;"><c:out value="${m.about}"/></textarea>
                             </details>
@@ -88,9 +89,9 @@
             <!-- Go to page -->
             <form method="get" action="${cpath}/matches" class="row" style="gap:12px; align-items:center; margin:12px 0;">
                 <input type="hidden" name="pageSize" value="${filter.pageSize}">
-                <label for="go-page">${wordBundle.getWord('page')}</label>
+                <label for="go-page"><spring:message code="page"/></label>
                 <input id="go-page" type="number" name="page" min="1" value="${filter.page}" style="width:72px;">
-                <button type="submit" class="btn-reset">${wordBundle.getWord('update')}</button>
+                <button type="submit" class="btn-reset"><spring:message code="update"/></button>
             </form>
 
             <!-- Pager -->
@@ -107,24 +108,24 @@
                 <c:choose>
                     <c:when test="${hasPrev}">
                         <a class="btn-reset" href="${prevUrl}" title="Prev" aria-label="Prev">
-                            ← ${wordBundle.getWord('prev')}
+                            ← <spring:message code="prev"/>
                         </a>
                     </c:when>
                     <c:otherwise>
-                        <button class="btn-reset" disabled>← ${wordBundle.getWord('prev')}</button>
+                        <button class="btn-reset" disabled>← <spring:message code="prev"/></button>
                     </c:otherwise>
                 </c:choose>
 
-                <span>${wordBundle.getWord('page')}: <b>${filter.page}</b></span>
+                <span><spring:message code="page"/>: <b>${filter.page}</b></span>
 
                 <c:choose>
                     <c:when test="${hasNext}">
                         <a class="btn-reset" href="${nextUrl}" title="Next" aria-label="Next">
-                            ${wordBundle.getWord('next')} →
+                            <spring:message code="next"/> →
                         </a>
                     </c:when>
                     <c:otherwise>
-                        <button class="btn-reset" disabled>${wordBundle.getWord('next')} →</button>
+                        <button class="btn-reset" disabled><spring:message code="next"/> →</button>
                     </c:otherwise>
                 </c:choose>
             </div>

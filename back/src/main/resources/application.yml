@@ -9,6 +9,11 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+  messages:
+    basename: words
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    use-code-as-default-message: true
 
 server:
   port: 8080
