@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <html lang="${empty cookie.lang ? 'en' : cookie.lang.value}">
 <head>
     <title>Charm</title>
@@ -16,7 +17,7 @@
         <input type="hidden" name="toProfileId" value="${next.id}"/>
 
         <h3 style="margin:0;">
-            ${wordBundle.getWord("how-about")}
+            <spring:message code="how-about"/>
             <c:out value="${next.name}"/>
             <c:out value="${next.surname}"/>
             <c:if test="${not empty next.age}">, ${next.age}</c:if>

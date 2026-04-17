@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <html lang="${empty cookie.lang ? 'en' : cookie.lang.value}">
 <head>
     <title>Charm Profiles</title>
@@ -19,25 +20,25 @@
 
 
         <div class="field">
-            <label for="f-email">${wordBundle.getWord("email")}</label>
+            <label for="f-email"><spring:message code="email"/></label>
             <input id="f-email" type="text" name="emailStartsWith"
                    value="${filter != null ? filter.emailStartsWith : ''}">
         </div>
 
         <div class="field">
-            <label for="f-name">${wordBundle.getWord("name")}</label>
+            <label for="f-name"><spring:message code="name"/></label>
             <input id="f-name" type="text" name="nameStartsWith"
                    value="${filter != null ? filter.nameStartsWith : ''}">
         </div>
 
         <div class="field">
-            <label for="f-surname">${wordBundle.getWord("surname")}</label>
+            <label for="f-surname"><spring:message code="surname"/></label>
             <input id="f-surname" type="text" name="surnameStartsWith"
                    value="${filter != null ? filter.surnameStartsWith : ''}">
         </div>
 
         <div class="field field--age">
-            <label for="f-gteAge">${wordBundle.getWord("age")}</label>
+            <label for="f-gteAge"><spring:message code="age"/></label>
             <input id="f-gteAge" type="number" name="gteAge" min="18" max="120"
                    value="${filter != null && filter.greaterAndEqualAgeBound != null ? filter.greaterAndEqualAgeBound : ''}"
                    style="width:72px;">
@@ -48,31 +49,31 @@
         </div>
 
         <div class="field">
-            <label for="f-role">${wordBundle.getWord("role")}</label>
+            <label for="f-role"><spring:message code="role"/></label>
             <select id="f-role" name="role">
                 <option value=""></option>
                 <c:forEach var="r" items="${roles}">
                     <option value="${r}" <c:if test="${r == filter.role}">selected</c:if>>
-                        ${wordBundle.getWord(r)}
+                        <spring:message code="${r}"/>
                     </option>
                 </c:forEach>
             </select>
         </div>
 
         <div class="field">
-            <label for="f-status">${wordBundle.getWord("status")}</label>
+            <label for="f-status"><spring:message code="status"/></label>
             <select id="f-status" name="status">
                 <option value=""></option>
                 <c:forEach var="st" items="${statuses}">
                     <option value="${st}" <c:if test="${st == filter.status}">selected</c:if>>
-                        ${wordBundle.getWord(st)}
+                        <spring:message code="${st}"/>
                     </option>
                 </c:forEach>
             </select>
         </div>
 
         <div class="field">
-            <label for="f-pageSize">${wordBundle.getWord("pageSize")}</label>
+            <label for="f-pageSize"><spring:message code="pageSize"/></label>
             <select id="f-pageSize" name="pageSize" style="width:88px;">
                 <c:forEach var="size" items="${availablePageSizes}">
                     <option value="${size}" <c:if test="${size == filter.pageSize}">selected</c:if>>${size}</option>
@@ -81,7 +82,7 @@
         </div>
 
         <div class="actions">
-            <button type="submit" class="btn-reset" title="${wordBundle.getWord('update')}" aria-label="Apply">
+            <button type="submit" class="btn-reset" title="<spring:message code='update'/>" aria-label="Apply">
                 <img class="icon-lg" src="${cpath}/img/filter.png" alt="">
             </button>
             <a class="btn-reset" href="${cpath}/admin/profiles" title="Reset" aria-label="Reset">
@@ -103,7 +104,7 @@
 
         <!-- Save -->
         <div class="row" style="justify-content:flex-end;margin:8px 0;">
-            <button type="submit" class="btn-reset">${wordBundle.getWord('save')}</button>
+            <button type="submit" class="btn-reset"><spring:message code="save"/></button>
         </div>
         <table class="table--list">
             <colgroup>
@@ -218,22 +219,22 @@
                 <td><a class="th-sort" href="${urlId}">id
                     <span class="arrow"><c:if test="${sortBy=='ID'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlEmail}">${wordBundle.getWord('email')}
+                <td><a class="th-sort" href="${urlEmail}"><spring:message code="email"/>
                     <span class="arrow"><c:if test="${sortBy=='EMAIL'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlName}">${wordBundle.getWord('name')}
+                <td><a class="th-sort" href="${urlName}"><spring:message code="name"/>
                     <span class="arrow"><c:if test="${sortBy=='NAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlSurname}">${wordBundle.getWord('surname')}
+                <td><a class="th-sort" href="${urlSurname}"><spring:message code="surname"/>
                     <span class="arrow"><c:if test="${sortBy=='SURNAME'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlBirthdate}">${wordBundle.getWord('age')}
+                <td><a class="th-sort" href="${urlBirthdate}"><spring:message code="age"/>
                     <span class="arrow"><c:if test="${sortBy=='BIRTHDATE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlRole}">${wordBundle.getWord('role')}
+                <td><a class="th-sort" href="${urlRole}"><spring:message code="role"/>
                     <span class="arrow"><c:if test="${sortBy=='ROLE'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
-                <td><a class="th-sort" href="${urlStatus}">${wordBundle.getWord('status')}
+                <td><a class="th-sort" href="${urlStatus}"><spring:message code="status"/>
                     <span class="arrow"><c:if test="${sortBy=='STATUS'}">${sortOrder=='ASC'?'▲':'▼'}</c:if></span>
                 </a></td>
             </tr>
@@ -252,25 +253,25 @@
                     <td><h4><c:out value="${profile.name}"/></h4></td>
                     <td><h4><c:out value="${profile.surname}"/></h4></td>
                     <td><h4><c:out value="${profile.age}"/></h4></td>
-                    <td><h4><c:out value="${wordBundle.getWord(profile.role)}"/></h4></td>
+                    <td><h4><spring:message code="${profile.role}"/></h4></td>
                     <td class="row" style="gap:12px; align-items:center;">
                         <select name="statusesWithIds" aria-label="Set status">
                             <option value="skip" selected>—</option>
                             <c:forEach var="status" items="${statuses}">
                                 <option value="${status}_${profile.id}">
-                                    <c:out value="${wordBundle.getWord(status)}"/>
+                                    <spring:message code="${status}"/>
                                 </option>
                             </c:forEach>
                         </select>
                         <span style="opacity:.6; margin-left:8px;">
-                            (<c:out value="${wordBundle.getWord(profile.status)}"/>)
+                            (<spring:message code="${profile.status}"/>)
                         </span>
                     </td>
                 </tr>
             </c:forEach>
         </table>
         <div class="row" style="justify-content:flex-end;margin:8px 0;">
-            <button type="submit" class="btn-reset">${wordBundle.getWord('save')}</button>
+            <button type="submit" class="btn-reset"><spring:message code="save"/></button>
         </div>
     </form>
 
@@ -287,9 +288,9 @@
         <input type="hidden" name="status" value="${filter.status}">
         <input type="hidden" name="pageSize" value="${filter.pageSize}">
 
-        <label for="go-page">${wordBundle.getWord('page')}</label>
+        <label for="go-page"><spring:message code="page"/></label>
         <input id="go-page" type="number" name="page" min="1" value="${filter.page}" style="width:72px;">
-        <button type="submit" class="btn-reset">${wordBundle.getWord('update')}</button>
+        <button type="submit" class="btn-reset"><spring:message code="update"/></button>
     </form>
 
     <!-- Pager -->
@@ -325,24 +326,24 @@
         <c:choose>
             <c:when test="${hasPrev}">
                 <a class="btn-reset" href="${prevUrl}" title="Prev" aria-label="Prev">
-                    ← ${wordBundle.getWord('prev')}
+                    ← <spring:message code="prev"/>
                 </a>
             </c:when>
             <c:otherwise>
-                <button class="btn-reset" disabled>← ${wordBundle.getWord('prev')}</button>
+                <button class="btn-reset" disabled>← <spring:message code="prev"/></button>
             </c:otherwise>
         </c:choose>
 
-        <span>${wordBundle.getWord('page')}: <b>${filter.page}</b></span>
+        <span><spring:message code="page"/>: <b>${filter.page}</b></span>
 
         <c:choose>
             <c:when test="${hasNext}">
                 <a class="btn-reset" href="${nextUrl}" title="Next" aria-label="Next">
-                    ${wordBundle.getWord('next')} →
+                    <spring:message code="next"/> →
                 </a>
             </c:when>
             <c:otherwise>
-                <button class="btn-reset" disabled>${wordBundle.getWord('next')} →</button>
+                <button class="btn-reset" disabled><spring:message code="next"/> →</button>
             </c:otherwise>
         </c:choose>
     </div>
