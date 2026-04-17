@@ -4,6 +4,7 @@ import jakarta.servlet.ServletOutputStream;
 import org.springframework.stereotype.Service;
 import ru.andrewb.charm.back.config.AppContentProperties;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
+import ru.andrewb.charm.back.model.exception.InfrastructureException;
 import ru.andrewb.charm.back.model.exception.NotFoundException;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class ContentService {
         } catch (IllegalArgumentException | SecurityException e) {
             throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -57,7 +58,7 @@ public class ContentService {
         } catch (IllegalArgumentException | SecurityException e) {
             throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -89,7 +90,7 @@ public class ContentService {
         try {
             Files.deleteIfExists(resolve(contentPath));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -97,7 +98,7 @@ public class ContentService {
         try {
             Files.deleteIfExists(resolve(segments));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -110,11 +111,11 @@ public class ContentService {
                         try {
                             Files.deleteIfExists(p);
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            throw new InfrastructureException("error.internal", e);
                         }
                     });
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
