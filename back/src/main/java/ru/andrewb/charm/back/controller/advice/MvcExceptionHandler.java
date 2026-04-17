@@ -12,7 +12,7 @@ import static ru.andrewb.charm.back.web.Views.*;
 public class MvcExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
-    public String handleBadRequest(RuntimeException e, HttpServletResponse resp, Model model) {
+    public String handleBadRequest(BadRequestException e, HttpServletResponse resp, Model model) {
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         model.addAttribute("errorCode", HttpServletResponse.SC_BAD_REQUEST);
         model.addAttribute("errorMessage", e.getMessage());
@@ -35,7 +35,23 @@ public class MvcExceptionHandler {
         return ERROR_409;
     }
 
-    @ExceptionHandler({Exception.class, StorageException.class})
+    @ExceptionHandler(InfrastructureException.class)
+    public String handleInfrastructure(InfrastructureException e, HttpServletResponse resp, Model model) {
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorMessage", "error.internal");
+        return ERROR_500;
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public String handleStorage(StorageException e, HttpServletResponse resp, Model model) {
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorMessage", "error.internal");
+        return ERROR_500;
+    }
+
+    @ExceptionHandler(Exception.class)
     public String handleUnexpected(Exception e, HttpServletResponse resp, Model model) {
         resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         model.addAttribute("errorCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

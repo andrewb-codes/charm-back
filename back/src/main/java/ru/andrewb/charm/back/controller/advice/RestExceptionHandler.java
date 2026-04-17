@@ -52,7 +52,7 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler({DuplicateEmailException.class, OptimisticLockException.class})
-    public ResponseEntity<ApiErrorResponse> handleConflict(Exception e) {
+    public ResponseEntity<ApiErrorResponse> handleConflict(RuntimeException e) {
         String code = e instanceof OptimisticLockException ? "error.optimistic-lock" : e.getMessage();
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(errorResponse(code));
@@ -62,6 +62,12 @@ public class RestExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleStorage(StorageException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(InfrastructureException.class)
+    public ResponseEntity<ApiErrorResponse> handleInfrastructure(InfrastructureException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(errorResponse("error.internal"));
     }
 
     @ExceptionHandler(Exception.class)

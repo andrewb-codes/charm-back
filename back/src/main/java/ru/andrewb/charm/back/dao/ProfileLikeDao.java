@@ -2,6 +2,7 @@ package ru.andrewb.charm.back.dao;
 
 import org.springframework.stereotype.Repository;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
+import ru.andrewb.charm.back.model.exception.InfrastructureException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -45,7 +46,7 @@ public class ProfileLikeDao {
             ps.setObject(4, likedB);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 }

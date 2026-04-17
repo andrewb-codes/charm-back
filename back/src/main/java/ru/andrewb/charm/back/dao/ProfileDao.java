@@ -6,6 +6,7 @@ import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
 import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
 import ru.andrewb.charm.back.model.Profile;
+import ru.andrewb.charm.back.model.exception.InfrastructureException;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 import ru.andrewb.charm.back.service.command.ProfileUpdateStatusCommand;
 
@@ -103,7 +104,7 @@ public class ProfileDao {
             }
             return profile;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -118,7 +119,7 @@ public class ProfileDao {
                 return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -133,7 +134,7 @@ public class ProfileDao {
                 return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -160,7 +161,7 @@ public class ProfileDao {
                 return profiles;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -181,7 +182,7 @@ public class ProfileDao {
                 return profiles;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -204,7 +205,7 @@ public class ProfileDao {
                 throw new OptimisticLockException("error.optimistic-lock");
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -239,7 +240,7 @@ public class ProfileDao {
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ignored) {}
             }
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         } finally {
             if (conn != null) {
                 try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
@@ -254,7 +255,7 @@ public class ProfileDao {
             int deleted = ps.executeUpdate();
             return deleted > 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -271,7 +272,7 @@ public class ProfileDao {
                 return rs.next();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -288,7 +289,7 @@ public class ProfileDao {
                 return profiles;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
