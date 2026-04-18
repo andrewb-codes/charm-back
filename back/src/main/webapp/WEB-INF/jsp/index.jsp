@@ -9,6 +9,7 @@
 <body>
 <%@ include file="header.jsp" %>
 <c:set var="cpath" value="${pageContext.request.contextPath}"/>
+<c:set var="isAdmin" value="${pageContext.request.isUserInRole('ROLE_ADMIN')}"/>
 
 <div class="container">
     <c:choose>
@@ -38,12 +39,21 @@
                 <a class="btn btn--ghost" href="${cpath}/settings">
                     <spring:message code="settings"/>
                 </a>
-                <a class="btn btn" href="${cpath}/charm">
-                    <spring:message code="charm"/>
-                </a>
-                <a class="btn btn--ghost" href="${cpath}/matches">
-                    <spring:message code="matches"/>
-                </a>
+                <c:choose>
+                    <c:when test="${isAdmin}">
+                        <a class="btn" href="${cpath}/admin/profiles">
+                            <spring:message code="admin.panel"/>
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <a class="btn btn" href="${cpath}/charm">
+                            <spring:message code="charm"/>
+                        </a>
+                        <a class="btn btn--ghost" href="${cpath}/matches">
+                            <spring:message code="matches"/>
+                        </a>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </c:otherwise>
     </c:choose>

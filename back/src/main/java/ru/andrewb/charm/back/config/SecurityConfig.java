@@ -59,7 +59,7 @@ public class SecurityConfig {
                         .loginProcessingUrl(LOGIN_URL)
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl(PROFILE_URL, true)
+                        .defaultSuccessUrl(INDEX_URL, true)
                         .failureUrl(LOGIN_URL + "?error")
                         .permitAll()
                 )
