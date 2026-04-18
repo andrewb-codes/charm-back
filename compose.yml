@@ -73,6 +73,7 @@ services:
       APP_REDIS_HOST: ${APP_REDIS_HOST}
       APP_REDIS_PORT: ${APP_REDIS_PORT}
       APP_CONTENT_BASE_PATH: ${APP_CONTENT_BASE_PATH}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
     volumes:
       - charm-content:${APP_CONTENT_BASE_PATH}
     networks:
