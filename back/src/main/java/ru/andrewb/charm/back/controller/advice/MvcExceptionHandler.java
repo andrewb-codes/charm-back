@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.controller.advice;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +46,14 @@ public class MvcExceptionHandler {
 
     @ExceptionHandler(StorageException.class)
     public String handleStorage(StorageException e, HttpServletResponse resp, Model model) {
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        model.addAttribute("errorMessage", "error.internal");
+        return ERROR_500;
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public String handleDataAccess(DataAccessException e, HttpServletResponse resp, Model model) {
         resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         model.addAttribute("errorCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         model.addAttribute("errorMessage", "error.internal");

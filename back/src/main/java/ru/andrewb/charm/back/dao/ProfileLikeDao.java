@@ -1,21 +1,16 @@
 package ru.andrewb.charm.back.dao;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
-import ru.andrewb.charm.back.model.exception.InfrastructureException;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 @Repository
 public class ProfileLikeDao {
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
-    public ProfileLikeDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public ProfileLikeDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     //language=POSTGRES-PSQL
@@ -38,15 +33,6 @@ public class ProfileLikeDao {
         Boolean likedA = (fromId == a) ? isLike : null;
         Boolean likedB = (fromId == b) ? isLike : null;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(LIKE)) {
-            ps.setLong(1, a);
-            ps.setLong(2, b);
-            ps.setObject(3, likedA);
-            ps.setObject(4, likedB);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        jdbcTemplate.update(LIKE, a, b, likedA, likedB);
     }
 }

@@ -1,54 +1,57 @@
 package ru.andrewb.charm.back.dao;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.andrewb.charm.back.config.AppDataSourceProperties;
 import ru.andrewb.charm.back.dto.*;
-import ru.andrewb.charm.back.mapper.ResultSetToProfileMapper;
-import ru.andrewb.charm.back.mapper.ResultSetToProfileSimpleDtoMapper;
+import ru.andrewb.charm.back.mapper.ProfileRowMapper;
+import ru.andrewb.charm.back.mapper.ProfileSimpleDtoRowMapper;
 import ru.andrewb.charm.back.model.Profile;
-import ru.andrewb.charm.back.model.exception.InfrastructureException;
 import ru.andrewb.charm.back.model.exception.OptimisticLockException;
 import ru.andrewb.charm.back.service.command.ProfileUpdateStatusCommand;
 
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Queue;
 
 @Repository
 public class ProfileDao {
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
     private final AppDataSourceProperties properties;
-    private final ResultSetToProfileMapper rsToProfileMapper;
-    private final ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper;
+    private final ProfileRowMapper profileRowMapper;
+    private final ProfileSimpleDtoRowMapper profileSimpleDtoRowMapper;
 
     public ProfileDao(
-            DataSource dataSource,
+            JdbcTemplate jdbcTemplate,
             AppDataSourceProperties properties,
-            ResultSetToProfileMapper rsToProfileMapper,
-            ResultSetToProfileSimpleDtoMapper rsToProfileSimpleDtoMapper
+            ProfileRowMapper profileRowMapper,
+            ProfileSimpleDtoRowMapper profileSimpleDtoRowMapper
     ) {
-        this.dataSource = dataSource;
+        this.jdbcTemplate = jdbcTemplate;
         this.properties = properties;
-        this.rsToProfileMapper = rsToProfileMapper;
-        this.rsToProfileSimpleDtoMapper = rsToProfileSimpleDtoMapper;
+        this.profileRowMapper = profileRowMapper;
+        this.profileSimpleDtoRowMapper = profileSimpleDtoRowMapper;
     }
 
     //language=POSTGRES-PSQL
     private static final String SQL_INSERT =
             "INSERT INTO profile(email, password) VALUES (?, ?) RETURNING id";
     //language=POSTGRES-PSQL
-    public static final String SQL_UPDATE_STATUSES =
+    private static final String SQL_UPDATE_STATUSES =
             "UPDATE profile SET status = ?, version = version + 1 WHERE id = ? AND version = ?";
     //language=POSTGRES-PSQL
     private static final String SQL_DELETE_BY_ID =
             "DELETE FROM profile WHERE id = ?";
     //language=POSTGRES-PSQL
     private static final String SQL_EXISTS_EMAIL =
-            "SELECT 1 FROM profile WHERE email = ?";
+            "SELECT COUNT(*) FROM profile WHERE email = ?";
     //language=POSTGRES-PSQL
     private static final String SQL_EXISTS_EMAIL_EXCLUDING_ID =
-            "SELECT 1 FROM profile WHERE email = ? AND id <> ?";
+            "SELECT COUNT(*) FROM profile WHERE email = ? AND id <> ?";
     //language=POSTGRES-PSQL
     private static final String SQL_FIND_SUITABLE = """
             WITH me AS (
@@ -93,49 +96,39 @@ public class ProfileDao {
 
 
     public Profile save(Profile profile) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_INSERT)) {
-            ps.setString(1, profile.getEmail());
-            ps.setString(2, profile.getPassword());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    profile.setId(rs.getLong(1));
-                }
-            }
-            return profile;
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        Long id = jdbcTemplate.queryForObject(
+                SQL_INSERT,
+                Long.class,
+                profile.getEmail(),
+                profile.getPassword()
+        );
+
+        profile.setId(id);
+        return profile;
     }
 
     public Optional<Profile> findById(Long id) {
         Query query = new ProfileSelectQueryBuilder().addIdFilter(id).build();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = prepareStatement(conn, query)) {
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(rsToProfileMapper.map(rs));
-                }
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+
+        List<Profile> result = jdbcTemplate.query(
+                query.sql(),
+                profileRowMapper,
+                query.args().toArray()
+        );
+
+        return result.stream().findFirst();
     }
 
     public Optional<Profile> findByEmail(String email) {
         Query query = new ProfileSelectQueryBuilder().addEmailFilter(email).build();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = prepareStatement(conn, query)) {
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(rsToProfileMapper.map(rs));
-                }
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+
+        List<Profile> result = jdbcTemplate.query(
+                query.sql(),
+                profileRowMapper,
+                query.args().toArray()
+        );
+
+        return result.stream().findFirst();
     }
 
     public List<Profile> findAll(ProfilesFilter filter) {
@@ -151,39 +144,35 @@ public class ProfileDao {
                 .pageAndPageSize(filter.getPage(), filter.getPageSize())
                 .build();
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = prepareStatement(conn, query)) {
-            try (ResultSet rs = ps.executeQuery()) {
-                List<Profile> profiles = new ArrayList<>();
-                while (rs.next()) {
-                    profiles.add(rsToProfileMapper.map(rs));
-                }
-                return profiles;
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        return jdbcTemplate.query(
+                con -> {
+                    PreparedStatement ps = con.prepareStatement(query.sql());
+                    if (properties.getFetchSize() != null) {
+                        ps.setFetchSize(properties.getFetchSize());
+                    }
+                    if (properties.getMaxRows() != null) {
+                        ps.setMaxRows(properties.getMaxRows());
+                    }
+                    if (properties.getQueryTimeout() != null) {
+                        ps.setQueryTimeout(properties.getQueryTimeout());
+                    }
+
+                    Object[] args = query.args().toArray();
+                    for (int i = 0; i < args.length; i++) {
+                        ps.setObject(i + 1, args[i]);
+                    }
+                    return ps;
+                },
+                profileRowMapper
+        );
     }
 
     public List<Profile> findMatches(Long id, int limit, int offset) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_MATCHES)) {
-            ps.setLong(1, id);
-            ps.setLong(2, id);
-            ps.setLong(3, id);
-            ps.setInt(4, limit);
-            ps.setInt(5, offset);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                List<Profile> profiles = new ArrayList<>();
-                while (rs.next()) {
-                    profiles.add(rsToProfileMapper.map(rs));
-                }
-                return profiles;
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        return jdbcTemplate.query(
+                SQL_FIND_MATCHES,
+                profileRowMapper,
+                id, id, id, limit, offset
+        );
     }
 
     public void update(Profile profile) {
@@ -198,119 +187,63 @@ public class ProfileDao {
                 .addStatus(profile.getStatus())
                 .addPhoto(profile.getPhoto())
                 .build(profile.getId(), profile.getVersion());
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = prepareStatement(conn, query)) {
-            int updated =  ps.executeUpdate();
-            if (updated == 0) {
-                throw new OptimisticLockException("error.optimistic-lock");
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
+
+        int updated = jdbcTemplate.update(
+                query.sql(),
+                query.args().toArray()
+        );
+
+        if (updated == 0) {
+            throw new OptimisticLockException("error.optimistic-lock");
         }
     }
 
     public void updateStatuses(List<ProfileUpdateStatusCommand> dtoList) {
-        Connection conn = null;
-        try {
-            conn = dataSource.getConnection();
-            conn.setAutoCommit(false);
+        if (dtoList.isEmpty()) return;
 
-            try (PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_STATUSES)) {
-                for (ProfileUpdateStatusCommand dto : dtoList) {
-                    ps.setString(1, dto.getStatus().toString());
-                    ps.setLong(2, dto.getId());
-                    ps.setInt(3, dto.getVersion());
-                    ps.addBatch();
-                }
-                int[] res = ps.executeBatch();
+        List<Object[]> batchArgs = dtoList.stream()
+                .map(dto -> new Object[] {
+                        dto.getStatus().toString(),
+                        dto.getId(),
+                        dto.getVersion()
+                })
+                .toList();
 
-                List<Long> conflicted = new ArrayList<>();
-                for (int i = 0; i < res.length; i++) {
-                    if (res[i] == 0 || res[i] == Statement.EXECUTE_FAILED) {
-                        conflicted.add(dtoList.get(i).getId());
-                    }
-                }
-                if (!conflicted.isEmpty()) {
-                    conn.rollback();
-                    throw new OptimisticLockException("error.optimistic-lock");
-                }
-                conn.commit();
-            }
-        } catch (SQLException e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
-            }
-            throw new InfrastructureException("error.internal", e);
-        } finally {
-            if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+        int[] result = jdbcTemplate.batchUpdate(
+                SQL_UPDATE_STATUSES,
+                batchArgs
+        );
+
+        for (int updateCount : result) {
+            if (updateCount == 0 || updateCount == Statement.EXECUTE_FAILED) {
+                throw new OptimisticLockException("error.optimistic-lock");
             }
         }
     }
 
     public boolean delete(Long id) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_DELETE_BY_ID)) {
-            ps.setLong(1, id);
-            int deleted = ps.executeUpdate();
-            return deleted > 0;
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        int deleted = jdbcTemplate.update(SQL_DELETE_BY_ID, id);
+        return deleted > 0;
     }
 
     public boolean existsEmail(String email, Long excludeId) {
         final String sql = (excludeId == null) ? SQL_EXISTS_EMAIL : SQL_EXISTS_EMAIL_EXCLUDING_ID;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, email);
-            if (excludeId != null) {
-                ps.setLong(2, excludeId);
-            }
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
+        Integer count = (excludeId == null)
+                ? jdbcTemplate.queryForObject(sql, Integer.class, email)
+                : jdbcTemplate.queryForObject(sql, Integer.class, email, excludeId);
+
+        return count != null && count > 0;
     }
 
     public Queue<ProfileSimpleDto> findSuitableForUser(Long userId, int limit) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_SUITABLE)) {
-            ps.setObject(1, userId);
-            ps.setInt(2, Math.max(1, limit));
-            try (ResultSet rs = ps.executeQuery()) {
-                Queue<ProfileSimpleDto> profiles = new LinkedList<>();
-                while (rs.next()) {
-                    profiles.offer(rsToProfileSimpleDtoMapper.map(rs));
-                }
-                return profiles;
-            }
-        } catch (SQLException e) {
-            throw new InfrastructureException("error.internal", e);
-        }
-    }
+        List<ProfileSimpleDto> result = jdbcTemplate.query(
+                SQL_FIND_SUITABLE,
+                profileSimpleDtoRowMapper,
+                userId,
+                Math.max(1, limit)
+        );
 
-    private PreparedStatement prepareStatement(Connection conn, Query query) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(query.sql());
-
-        if (properties.getFetchSize() != null) {
-            ps.setFetchSize(properties.getFetchSize());
-        }
-        if (properties.getMaxRows() != null) {
-            ps.setMaxRows(properties.getMaxRows());
-        }
-        if (properties.getQueryTimeout() != null) {
-            ps.setQueryTimeout(properties.getQueryTimeout());
-        }
-
-        var args = query.args();
-        for (int i = 0; i < args.size(); i++) {
-            ps.setObject(i + 1, args.get(i));
-        }
-
-        return ps;
+        return new LinkedList<>(result);
     }
 }
