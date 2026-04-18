@@ -1,12 +1,18 @@
+server:
+  port: 8080
+
 app:
   datasource:
     url: jdbc:postgresql://localhost:5432/charm
     username: charm
     password: charmpass
-
-  content:
-    base-path: C:/Users/1saga/apps
-
   redis:
     host: localhost
     port: 6379
+  content:
+    base-path: C:/Users/1saga/apps
+
+logging:
+  level:
+    root: INFO
+    ru.andrewb.charm.back: DEBUG

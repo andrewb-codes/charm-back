@@ -16,7 +16,6 @@ spring:
     use-code-as-default-message: true
 
 server:
-  port: 8080
   forward-headers-strategy: framework
   servlet:
     session:
@@ -30,9 +29,7 @@ app:
     driver-class-name: org.postgresql.Driver
     pool-impl: hikari
     pool-size: 10
-
   redis:
-    port: 6379
     timeout-ms: 2000
     charm-queue-ttl-sec: 300
     charm-empty-ttl-sec: 60
