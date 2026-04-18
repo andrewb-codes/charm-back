@@ -16,6 +16,7 @@ build/
 Thumbs.db
 
 # Local config / secrets
-back/src/main/resources/application-local.properties
-back/src/main/resources/application-*.local.properties
-back/src/main/resources/application-*.secret.properties
+.env
+back/src/main/resources/application-local.yml
+back/src/main/resources/application-*.local.yml
+back/src/main/resources/application-*.secret.yml
