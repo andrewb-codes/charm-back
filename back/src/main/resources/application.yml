@@ -39,6 +39,8 @@ app:
       max-idle: 16
       min-idle: 0
       test-on-borrow: true
+  jwt:
+    access-token-ttl-min: 60
 
 logging:
   level:

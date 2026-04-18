@@ -20,8 +20,10 @@ public class Urls {
     public static final String MATCHES_URL = "/matches";
     public static final String ADMIN_URL = "/admin";
     public static final String ADMIN_PROFILES_URL = ADMIN_URL + PROFILES_URL;
+    public static final String AUTH_URL = "/auth";
 
     public static final String REST_PREFIX = "/api/v1";
+    public static final String AUTH_REST_URL = REST_PREFIX + AUTH_URL;
     public static final String REGISTRATION_REST_URL = REST_PREFIX + REGISTRATION_URL;
     public static final String PROFILE_REST_URL = REST_PREFIX + PROFILE_URL;
     public static final String PROFILES_REST_URL = REST_PREFIX + PROFILES_URL;

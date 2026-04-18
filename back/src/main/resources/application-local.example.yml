@@ -11,6 +11,8 @@ app:
     port: 6379
   content:
     base-path: C:/Users/1saga/apps
+  jwt:
+    secret: change-me-change-me-change-me-change-me
 
 logging:
   level:
