@@ -2,6 +2,7 @@ package ru.andrewb.charm.back.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.andrewb.charm.back.dao.ProfileDao;
 import ru.andrewb.charm.back.dto.ProfileGetDto;
@@ -53,11 +54,11 @@ public class ProfileService {
         String pwd = PasswordUtils.requireValidOrThrow(command.getPassword(), 6);
         String hash = passwordEncoder.encode(pwd);
 
-        Profile p = new Profile();
-        p.setEmail(email);
-        p.setPassword(hash);
+        var profile = new Profile();
+        profile.setEmail(email);
+        profile.setPassword(hash);
 
-        return dao.save(p).getId();
+        return dao.save(profile).getId();
     }
 
     public Optional<ProfileGetDto> findById(Long id) {
@@ -89,7 +90,7 @@ public class ProfileService {
             throw new BadRequestException("error.param.required");
         }
 
-        Profile p = profileUpdateCommandToProfileMapper.map(command, existing);
+        Profile profile = profileUpdateCommandToProfileMapper.map(command, existing);
 
         if (photo != null && !photo.isEmpty()) {
             try {
@@ -100,29 +101,23 @@ public class ProfileService {
 
                 String fileName = Paths.get(photo.getOriginalFilename()).getFileName().toString();
                 contentService.upload(photo.getInputStream(), "profile", String.valueOf(id), fileName);
-                p.setPhoto(fileName);
+                profile.setPhoto(fileName);
             } catch (Exception e) {
                 throw new StorageException("error.profile.photo", e);
             }
         }
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
-        dao.update(p);
+        dao.update(profile);
     }
 
+    @Transactional
     public void updateStatuses(List<ProfileUpdateStatusCommand> commandsList) {
         if (commandsList.isEmpty()) return;
         dao.updateStatuses(commandsList);
     }
 
-    public boolean delete(Long id) {
-        if (id == null) return false;
-        contentService.deleteTree("profile", String.valueOf(id));
-        boolean deleted = dao.delete(id);
-        if (!deleted) throw new NotFoundException("error.profile.not-found");
-        return true;
-    }
-
+    @Transactional
     public void changeEmail(Long id, EmailChangeCommand command) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
@@ -151,6 +146,7 @@ public class ProfileService {
         dao.update(existing);
     }
 
+    @Transactional
     public void changePassword(Long id, PasswordChangeCommand command) {
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
@@ -182,5 +178,13 @@ public class ProfileService {
         String newHash = passwordEncoder.encode(newPwd);
         existing.setPassword(newHash);
         dao.update(existing);
+    }
+
+    public boolean delete(Long id) {
+        if (id == null) return false;
+        contentService.deleteTree("profile", String.valueOf(id));
+        boolean deleted = dao.delete(id);
+        if (!deleted) throw new NotFoundException("error.profile.not-found");
+        return true;
     }
 }

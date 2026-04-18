@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -66,6 +67,11 @@ public class InfraConfig {
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to create custom DataSource", e);
         }
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 
     @Bean
