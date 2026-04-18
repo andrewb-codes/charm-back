@@ -2,41 +2,31 @@
 
 Учебный pet-проект в формате mini-Tinder на `Java 21`.
 
-Приложение собрано как multi-module Maven-репозиторий:
+Проект собран как multi-module Maven-репозиторий:
 
-- `back` - основное web-приложение на `Jakarta Servlet/JSP`, собирается в `war`
+- `back` - основное web-приложение на `Spring Boot`, `Spring MVC`, `Spring Security`, `JSP`
 - `pool` - собственный JDBC connection pool
 - `linecount-maven-plugin` - кастомный Maven plugin для подсчета строк и выгрузки маршрутов
-
-## Быстрый старт
-
-1. Поднять PostgreSQL и Redis
-2. Создать `back/src/main/resources/application-local.properties`
-3. Применить миграции Flyway
-4. Запустить приложение через Cargo
-
-```powershell
-docker run -d --name charm-postgres -e POSTGRES_DB=charm -e POSTGRES_USER=charm -e POSTGRES_PASSWORD=charmpass -p 5432:5432 postgres:17
-docker run -d --name charm-redis -p 6379:6379 redis:7 redis-server --appendonly yes
-.\mvnw.cmd -f back\pom.xml "-Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm" "-Dapp.datasource.username=charm" "-Dapp.datasource.password=charmpass" flyway:migrate
-.\mvnw.cmd -pl back -Dapp.profile.active=local cargo:run
-```
 
 ## Стек
 
 - Java 21
 - Maven Wrapper (`mvnw`, `mvnw.cmd`)
+- Spring Boot 3
+- Spring MVC
+- Spring Security
+- Spring JDBC
 - Jakarta Servlet / JSP / JSTL
 - PostgreSQL
 - Redis
 - Flyway
 - HikariCP или `pool`-модуль
-- SLF4J Simple
 - Jackson
 - jBCrypt
 - iTextPDF
 - JUnit 5
 - Mockito
+- Docker / Docker Compose
 
 ## Что умеет приложение
 
@@ -45,24 +35,29 @@ docker run -d --name charm-redis -p 6379:6379 redis:7 redis-server --appendonly 
 - смена email и пароля
 - загрузка фото профиля в локальное файловое хранилище
 - выгрузка профиля в PDF
-- список анкет и список матчей
-- механика рекомендаций, лайков и матчей
-- web-интерфейс на JSP и REST API в `/api/v1/*`
+- список анкет и список matches
+- механика рекомендаций, лайков и matches
+- UI на JSP и REST API в `/api/v1/*`
 - локализация через `words*.properties`
-- unit-тесты бизнес-логики и миграции БД через Flyway
 
 ## Структура репозитория
 
 ```text
 .
 |-- pom.xml
+|-- Dockerfile
+|-- compose.yml
+|-- .env.example
 |-- back/
 |   |-- pom.xml
 |   |-- src/main/java
 |   |-- src/main/resources
+|   |   |-- application.yml
+|   |   |-- application-docker.yml
+|   |   |-- application-local.example.yml
 |   |   `-- db/migration
 |   |-- src/main/webapp
-|   |-- src/test/java
+|   `-- src/test/java
 |-- pool/
 |   |-- pom.xml
 |   `-- src/main/java
@@ -76,14 +71,30 @@ docker run -d --name charm-redis -p 6379:6379 redis:7 redis-server --appendonly 
 Конфиг читается в таком порядке:
 
 1. JVM system properties: `-Dkey=value`
-2. переменные окружения: `APP_DATASOURCE_URL` для `app.datasource.url`
-3. `application-<profile>.properties`
-4. `application.properties`
+2. environment variables: например `APP_DATASOURCE_URL` для `app.datasource.url`
+3. `application-<profile>.yml`
+4. `application.yml`
 
-Базовые настройки лежат в `back/src/main/resources/application.properties`.
-Шаблон для локального профиля лежит в `back/src/main/resources/application-example.properties`.
+Базовый конфиг лежит в:
 
-Обязательные параметры:
+- `back/src/main/resources/application.yml`
+
+Профили:
+
+- `local` - локальный запуск вне Docker
+- `docker` - запуск в Docker Compose
+
+Шаблон локального конфига:
+
+- `back/src/main/resources/application-local.example.yml`
+
+Локальный файл нужно создать как:
+
+- `back/src/main/resources/application-local.yml`
+
+И не коммитить его в репозиторий.
+
+Обязательные параметры приложения:
 
 - `app.datasource.url`
 - `app.datasource.username`
@@ -91,182 +102,116 @@ docker run -d --name charm-redis -p 6379:6379 redis:7 redis-server --appendonly 
 - `app.content.base-path`
 - `app.redis.host`
 
-Полезные опции:
+Полезные параметры:
 
-- `app.profile.active=local`
-- `app.datasource.pool.impl=hikari` или другое значение для собственного `pool`
-- `app.datasource.pool.size=10`
+- `spring.profiles.active=local`
+- `app.datasource.pool-impl=hikari`
+- `app.datasource.pool-size=10`
 - `app.redis.port=6379`
 
-Настройки Redis, которые влияют на механику `charm`:
+## Быстрый старт через Docker
 
-- `app.redis.charm-queue-ttl-sec` - TTL очереди кандидатов для пользователя
-- `app.redis.charm-empty-ttl-sec` - TTL "пустого маркера", чтобы временно не ходить в БД, если кандидатов нет
-- `app.redis.charm-lock-ttl-sec` - TTL Redis-лока на refill очереди кандидатов
-
-Пример локального файла:
-
-```properties
-app.datasource.url=jdbc:postgresql://localhost:5432/charm
-app.datasource.username=charm
-app.datasource.password=charmpass
-app.datasource.driver-class-name=org.postgresql.Driver
-
-app.content.base-path=C:/tmp/charm-content
-
-app.redis.host=localhost
-app.redis.port=6379
-
-app.profile.active=local
-```
-
-Локальный файл лучше создать как:
-
-- `back/src/main/resources/application-local.properties`
-
-и не коммитить его в репозиторий.
-
-## Подготовка инфраструктуры
-
-Нужны:
-
-- PostgreSQL с пустой БД `charm`
-- Redis
-- директория для файлового контента, указанная в `app.content.base-path`
-
-### Docker-инфраструктура
-
-Создать volume и сеть:
+1. Создать локальный `.env` на основе `.env.example`
+2. Запустить окружение через Docker Compose
 
 ```powershell
-docker volume create charm-postgres-data
-docker volume create charm-redis-data
-docker network create charm-net
+cp .env.example .env
+docker compose up --build
 ```
 
-Поднять PostgreSQL:
+Что поднимется:
 
-```powershell
-docker run -d `
-  --name charm-postgres `
-  --network charm-net `
-  -e POSTGRES_DB=charm `
-  -e POSTGRES_USER=charm `
-  -e POSTGRES_PASSWORD=charmpass `
-  -p 5432:5432 `
-  -v charm-postgres-data:/var/lib/postgresql/data `
-  postgres:17
-```
+- `postgres`
+- `redis`
+- `flyway`
+- `app`
 
-Поднять Redis:
-
-```powershell
-docker run -d `
-  --name charm-redis `
-  --network charm-net `
-  -p 6379:6379 `
-  -v charm-redis-data:/data `
-  redis:7 redis-server --appendonly yes
-```
-
-Загрузить схему и тестовые данные в PostgreSQL через Flyway:
-
-```powershell
-.\mvnw.cmd -f back\pom.xml "-Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm" "-Dapp.datasource.username=charm" "-Dapp.datasource.password=charmpass" flyway:migrate
-```
-
-Файлы миграций находятся в:
-- `back/src/main/resources/db/migration`
-
-Текущие миграции:
-- `V1__create_profile_tables.sql`
-- `V2__seed_dev_profiles.sql`
-
-При первом запуске Flyway создаст схему и применит dev-данные, при повторных запусках будут применяться только новые миграции.
-
-Дополнительный bulk seed не входит в обязательные миграции и может использоваться отдельно для локального наполнения тестовыми данными:
-- `back/src/main/resources/sql/seed_bulk_1k.sql`
-
-Тестовые данные:
-
-- `V2__seed_dev_profiles.sql` создает несколько тестовых пользователей:
-  - `admin@charm.ru / qwerty`
-  - `ivanov@mail.ru / 123456`
-  - `sidorova@mail.ru / 456789`
-- `back/src/main/resources/sql/seed_bulk_1k.sql` создает тысячу тестовых пользователей
-
-## Запуск
-
-Перед запуском приложения нужно применить миграции Flyway:
-
-```powershell
-.\mvnw.cmd -f back\pom.xml "-Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm" "-Dapp.datasource.username=charm" "-Dapp.datasource.password=charmpass" flyway:migrate
-```
-
-Запуск через embedded Tomcat 11 и Cargo:
-
-```powershell
-.\mvnw.cmd -pl back -am package
-```
-```powershell
-.\mvnw.cmd -pl back -Dapp.profile.active=local cargo:run
-```
-
-По умолчанию приложение поднимается на:
+После старта приложение доступно на:
 
 - `http://localhost:8080/`
 
-Если конфиг удобнее передавать через переменные окружения:
+## Локальный запуск вне Docker
+
+1. Поднять PostgreSQL и Redis локально
+2. Создать `back/src/main/resources/application-local.yml` на основе `application-local.example.yml`
+3. Собрать и запустить приложение
+
+Сборка и запуск:
 
 ```powershell
-$env:APP_PROFILE_ACTIVE="local"
-$env:APP_DATASOURCE_PASSWORD="charmpass"
-$env:APP_CONTENT_BASE_PATH="C:\tmp\charm-content"
-.\mvnw.cmd -pl back -am cargo:run
+./mvnw -pl back -am clean package
+java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 ```
 
-## Maven-профили
+## Flyway
 
-- `fast` - пропускает тесты
-- `quality` - запускает кастомный plugin с целями `routes` и `count`
-- `release` - тесты включены
+Миграции лежат в:
 
-Примеры:
+- `back/src/main/resources/db/migration`
+
+Текущие миграции:
+
+- `V1__create_profile_tables.sql`
+- `V2__seed_dev_profiles.sql`
+
+В Docker Compose миграции применяются автоматически отдельным `flyway` сервисом.
+
+Для локального запуска вне Docker можно прогнать их вручную:
 
 ```powershell
-.\mvnw.cmd -Pfast -pl back -am package
-.\mvnw.cmd -Pquality -pl back -am verify
+./mvnw -f back/pom.xml -Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm -Dapp.datasource.username=charm -Dapp.datasource.password=charmpass flyway:migrate
 ```
 
-## Тесты
+Тестовые пользователи из `V2__seed_dev_profiles.sql`:
 
-Основные команды:
+- `admin@charm.ru / qwerty`
+- `ivanov@mail.ru / 123456`
+- `sidorova@mail.ru / 456789`
+
+Дополнительный bulk seed:
+
+- `back/src/main/resources/db/sql/seed_bulk_1k.sql`
+
+## Maven команды
+
+Сборка:
 
 ```powershell
-.\mvnw.cmd -pl back test
-.\mvnw.cmd -Pquality -pl back -am verify
+./mvnw -pl back -am clean package
 ```
 
-Проект покрыт unit-тестами для:
+Быстрая сборка без тестов:
 
-- validator и normalizer слоев
-- security helper-классов
-- mapper-классов
-- `ProfileService` и `CharmService`
-- `AuthUtils` и `RequestParamUtils`
+```powershell
+./mvnw -Pfast -pl back -am package
+```
+
+Тесты:
+
+```powershell
+./mvnw -pl back test
+```
+
+Проверка с quality profile:
+
+```powershell
+./mvnw -Pquality -pl back -am verify
+```
 
 ## Основные маршруты
 
 UI:
 
+- `/`
 - `/index`
 - `/login`
 - `/registration`
 - `/profile`
-- `/profiles`
 - `/settings`
 - `/charm`
 - `/matches`
+- `/admin/profile/*`
+- `/admin/profiles`
 - `/content/*`
 
 REST:
@@ -274,42 +219,38 @@ REST:
 - `/api/v1/login`
 - `/api/v1/logout`
 - `/api/v1/registration`
-- `/api/v1/profile/*`
-- `/api/v1/profiles`
 - `/api/v1/charm`
 - `/api/v1/matches`
+- `/api/v1/admin/profile/*`
+- `/api/v1/admin/profiles`
 
 ## Особенности реализации
 
-- при старте `SetupCheck` валидирует обязательный конфиг, создает каталог контента и делает `ping` в PostgreSQL и Redis
-- профиль можно экспортировать в PDF через `GET /profile/pdf`, а для админа целевой профиль выбирается параметром `?id=...`
+- приложение использует `Spring JDBC`
+- основной DAO-слой построен на `JdbcTemplate`
+- bulk update статусов работает через Spring transaction boundary на service-слое
+- Redis используется как быстрый слой для механики `charm`, а не как основное хранилище
 - файловое хранилище работает поверх локальной директории из `app.content.base-path`
-- освобождение ресурсов пулов и Redis выполняется в `ApplicationListener`
+- профиль `docker` предназначен для запуска через Docker Compose
 
-## Как используется Redis
+## Тесты
 
-Redis в проекте используется не как основное хранилище, а как быстрый слой для механики `charm`.
+Проект покрыт unit-тестами для:
 
-- для каждого пользователя кэшируется очередь следующих кандидатов в ключах вида `charm:queue:<userId>`
-- если подходящих анкет сейчас нет, ставится временный маркер `charm:empty:<userId>`, чтобы не дергать БД на каждый запрос
-- при refill очереди используется Redis-lock `charm:lock:<userId>`, чтобы несколько параллельных запросов одного пользователя не пересобирали очередь одновременно
+- validator и normalizer слоев
+- mapper-классов
+- `ProfileService`
+- `CharmService`
 
-Лок настроен так:
+Запуск:
 
-- захват делается через `SET key value NX EX <ttl>`
-- значение лока - случайный token
-- освобождение делается Lua-скриптом: ключ удаляется только если token совпал
-
-Практический смысл TTL:
-
-- `charm-queue-ttl-sec` ограничивает жизнь кэша очереди кандидатов
-- `charm-empty-ttl-sec` задает cooldown, когда приложение не пытается заново искать кандидатов в БД
-- `charm-lock-ttl-sec` ограничивает время жизни лока, чтобы он не завис навсегда при падении обработчика
+```powershell
+./mvnw -pl back test
+```
 
 ## Дальнейшие шаги
 
-- миграция приложения на Spring Boot
-- перевод конфигурации и инфраструктурных компонентов на Spring beans
-- использование Flyway как единственного источника правды для схемы БД
-- контейнеризация приложения через Docker и запуск полного окружения через `docker compose`
-- расширение тестов integration- и web-уровня
+- дальнейший cleanup конфигурации и infrastructure beans
+- возможная миграция с JSP на более современный view layer
+- расширение integration- и web-тестов
+- дальнейшее развитие Docker-окружения
