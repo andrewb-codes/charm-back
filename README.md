@@ -20,6 +20,7 @@
 - PostgreSQL
 - Redis
 - Flyway
+- JJWT
 - HikariCP или `pool`-модуль
 - Jackson
 - jBCrypt
@@ -37,7 +38,10 @@
 - выгрузка профиля в PDF
 - список анкет и список matches
 - механика рекомендаций, лайков и matches
-- UI на JSP и REST API в `/api/v1/*`
+- UI на JSP
+- REST API в `/api/v1/*`
+- session-based аутентификация для UI
+- JWT Bearer аутентификация для REST API
 - локализация через `words*.properties`
 
 ## Структура репозитория
@@ -101,6 +105,7 @@
 - `app.datasource.password`
 - `app.content.base-path`
 - `app.redis.host`
+- `app.jwt.secret`
 
 Полезные параметры:
 
@@ -108,11 +113,13 @@
 - `app.datasource.pool-impl=hikari`
 - `app.datasource.pool-size=10`
 - `app.redis.port=6379`
+- `app.jwt.access-token-ttl-min=60`
 
 ## Быстрый старт через Docker
 
 1. Создать локальный `.env` на основе `.env.example`
-2. Запустить окружение через Docker Compose
+2. Убедиться, что `APP_JWT_SECRET` задан длинным значением не короче `32` символов
+3. Запустить окружение через Docker Compose
 
 ```powershell
 cp .env.example .env
@@ -130,13 +137,19 @@ docker compose up --build
 
 - `http://localhost:8080/`
 
+Проверка контейнеров:
+
+```powershell
+docker compose ps
+docker compose logs app --tail=100
+```
+
 ## Локальный запуск вне Docker
 
 1. Поднять PostgreSQL и Redis локально
 2. Создать `back/src/main/resources/application-local.yml` на основе `application-local.example.yml`
-3. Собрать и запустить приложение
-
-Сборка и запуск:
+3. Указать локальный `app.jwt.secret`
+4. Собрать и запустить приложение
 
 ```powershell
 ./mvnw -pl back -am clean package
@@ -205,6 +218,7 @@ UI:
 - `/`
 - `/index`
 - `/login`
+- `/logout`
 - `/registration`
 - `/profile`
 - `/settings`
@@ -216,19 +230,43 @@ UI:
 
 REST:
 
-- `/api/v1/login`
-- `/api/v1/logout`
-- `/api/v1/registration`
-- `/api/v1/charm`
-- `/api/v1/matches`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/registration`
+- `GET /api/v1/profile`
+- `GET /api/v1/profiles`
+- `GET /api/v1/charm`
+- `GET /api/v1/matches`
 - `/api/v1/admin/profile/*`
 - `/api/v1/admin/profiles`
+
+## JWT для REST API
+
+REST API работает stateless и ожидает Bearer token в заголовке `Authorization`.
+
+Получение токена:
+
+```powershell
+curl -X POST http://localhost:8080/api/v1/auth/login `
+  -H "Content-Type: application/json" `
+  -d "{\"email\":\"admin@charm.ru\",\"password\":\"qwerty\"}"
+```
+
+Пример использования токена:
+
+```powershell
+curl http://localhost:8080/api/v1/profile `
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+Без токена защищенные REST endpoints должны возвращать `401`.
 
 ## Особенности реализации
 
 - приложение использует `Spring JDBC`
 - основной DAO-слой построен на `JdbcTemplate`
 - bulk update статусов работает через Spring transaction boundary на service-слое
+- UI остается на form login и HTTP session
+- `/api/v1/**` использует отдельную stateless security chain с JWT filter
 - Redis используется как быстрый слой для механики `charm`, а не как основное хранилище
 - файловое хранилище работает поверх локальной директории из `app.content.base-path`
 - профиль `docker` предназначен для запуска через Docker Compose
@@ -242,15 +280,9 @@ REST:
 - `ProfileService`
 - `CharmService`
 
-Запуск:
-
-```powershell
-./mvnw -pl back test
-```
-
 ## Дальнейшие шаги
 
+- integration- и web-тесты для JWT и Docker flow
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
-- расширение integration- и web-тестов
 - дальнейшее развитие Docker-окружения
