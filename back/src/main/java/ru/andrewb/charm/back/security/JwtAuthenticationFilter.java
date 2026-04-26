@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtService.isValid(token)) {
+            log.warn("JWT rejected for {} {}: invalid bearer token", req.getMethod(), req.getRequestURI());
             filterChain.doFilter(req, resp);
             return;
         }
@@ -57,6 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("JWT authenticated userId={} email={} for {} {}",
+                    user.getId(),
+                    user.getUsername(),
+                    req.getMethod(),
+                    req.getRequestURI());
         }
 
         filterChain.doFilter(req, resp);

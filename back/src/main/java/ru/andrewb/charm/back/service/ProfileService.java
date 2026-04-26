@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class ProfileService {
 
@@ -58,7 +60,9 @@ public class ProfileService {
         profile.setEmail(email);
         profile.setPassword(hash);
 
-        return dao.save(profile).getId();
+        Long profileId = dao.save(profile).getId();
+        log.info("Profile registered userId={} email={}", profileId, email);
+        return profileId;
     }
 
     public Optional<ProfileGetDto> findById(Long id) {
@@ -83,6 +87,10 @@ public class ProfileService {
     }
 
     public void update(Long id, ProfileUpdateCommand command, MultipartFile photo) {
+        log.info("Updating profile userId={} version={} withPhoto={}",
+                id,
+                command.getVersion(),
+                photo != null && !photo.isEmpty());
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -109,16 +117,19 @@ public class ProfileService {
 
         // TODO: БИЗНЕС-ПРАВИЛО (при переходе в ACTIVE требуем заполненность обязательных полей)
         dao.update(profile);
+        log.info("Profile updated userId={}", id);
     }
 
     @Transactional
     public void updateStatuses(List<ProfileUpdateStatusCommand> commandsList) {
         if (commandsList.isEmpty()) return;
+        log.info("Bulk profile status update count={}", commandsList.size());
         dao.updateStatuses(commandsList);
     }
 
     @Transactional
     public void changeEmail(Long id, EmailChangeCommand command) {
+        log.info("Changing email for userId={} version={}", id, command.getVersion());
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -144,6 +155,7 @@ public class ProfileService {
 
         existing.setEmail(newEmail);
         dao.update(existing);
+        log.info("Email changed for userId={} newEmail={}", id, newEmail);
     }
 
     @Transactional
