@@ -1,5 +1,6 @@
 package ru.andrewb.charm.back.controller.advice;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataAccessException;
@@ -17,6 +18,7 @@ import ru.andrewb.charm.back.model.exception.*;
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice(basePackages = "ru.andrewb.charm.back.controller.rest")
 public class RestExceptionHandler {
 
@@ -28,18 +30,21 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(NotFoundException e) {
+        log.warn("REST not found: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(errorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        log.warn("REST validation failed: {}", e.getMessage());
         return ResponseEntity.badRequest()
                 .body(validationErrorResponse(e.getBindingResult()));
     }
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiErrorResponse> handleBindException(BindException e) {
+        log.warn("REST bind failed: {}", e.getMessage());
         return ResponseEntity.badRequest()
                 .body(validationErrorResponse(e.getBindingResult()));
     }
@@ -48,6 +53,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception e) {
         String code = e instanceof BadRequestException bre ? bre.getMessage() : "error.param.invalid";
+        log.warn("REST bad request: code={} message={}", code, e.getMessage());
         return ResponseEntity.badRequest()
                 .body(errorResponse(code));
     }
@@ -55,30 +61,35 @@ public class RestExceptionHandler {
     @ExceptionHandler({DuplicateEmailException.class, OptimisticLockException.class})
     public ResponseEntity<ApiErrorResponse> handleConflict(RuntimeException e) {
         String code = e instanceof OptimisticLockException ? "error.optimistic-lock" : e.getMessage();
+        log.warn("REST conflict: code={} message={}", code, e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(errorResponse(code));
     }
 
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ApiErrorResponse> handleStorage(StorageException e) {
+        log.error("REST storage error: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(InfrastructureException.class)
     public ResponseEntity<ApiErrorResponse> handleInfrastructure(InfrastructureException e) {
+        log.error("REST infrastructure error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorResponse("error.internal"));
     }
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ApiErrorResponse> handleDataAccess(DataAccessException e) {
+        log.error("REST data access error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorResponse("error.internal"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception e) {
+        log.error("REST unexpected error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
                 body(errorResponse("error.internal"));
     }

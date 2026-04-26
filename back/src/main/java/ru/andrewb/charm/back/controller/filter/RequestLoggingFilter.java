@@ -22,6 +22,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             HttpServletResponse resp,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        long startedAt = System.currentTimeMillis();
 
         String rid = UUID.randomUUID().toString().substring(0, 8);
 
@@ -31,12 +32,21 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String uri = req.getRequestURI();
         String qs = req.getQueryString();
         String method = req.getMethod();
+        String remoteAddr = req.getRemoteAddr();
 
-        log.info("[{}] -> {} {}{}", rid, method, uri, (qs == null ? "" : "?" + qs));
+        log.info("[{}] -> {} {}{} from {}", rid, method, uri, (qs == null ? "" : "?" + qs), remoteAddr);
 
         try {
             filterChain.doFilter(req, resp);
         } finally {
+            long durationMs = System.currentTimeMillis() - startedAt;
+            log.info("[{}] <- {} {}{} status={} durationMs={}",
+                    rid,
+                    method,
+                    uri,
+                    (qs == null ? "" : "?" + qs),
+                    resp.getStatus(),
+                    durationMs);
             MDC.remove("rid");
         }
     }

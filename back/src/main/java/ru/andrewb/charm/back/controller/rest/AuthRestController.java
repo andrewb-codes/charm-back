@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.controller.rest;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import ru.andrewb.charm.back.security.JwtService;
 import static ru.andrewb.charm.back.web.Urls.AUTH_REST_URL;
 import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
 
+@Slf4j
 @RestController
 @RequestMapping(AUTH_REST_URL)
 public class AuthRestController {
@@ -35,6 +37,7 @@ public class AuthRestController {
 
     @PostMapping(LOGIN_URL)
     public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody JwtLoginRequest request) {
+        log.info("REST login attempt email={}", request.getEmail());
         try {
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -45,11 +48,13 @@ public class AuthRestController {
 
             AuthUser user = (AuthUser) authentication.getPrincipal();
             String token = jwtService.generateToken(user);
+            log.info("REST login succeeded userId={} email={}", user.getId(), user.getUsername());
 
             return ResponseEntity.ok(
                     new JwtTokenResponse(token, "Bearer", jwtService.getAccessTokenTtlSeconds())
             );
         } catch (BadCredentialsException e) {
+            log.warn("REST login failed email={}", request.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

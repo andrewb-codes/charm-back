@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.service;
 
 import jakarta.servlet.ServletOutputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.andrewb.charm.back.config.AppContentProperties;
 import ru.andrewb.charm.back.model.exception.BadRequestException;
@@ -17,6 +18,7 @@ import java.util.Comparator;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
+@Slf4j
 @Service
 public class ContentService {
 
@@ -24,6 +26,7 @@ public class ContentService {
 
     public ContentService(AppContentProperties properties) {
         this.basePath = Path.of(properties.getBasePath()).toAbsolutePath().normalize();
+        log.info("Content storage initialized basePath={}", this.basePath);
     }
 
     public void upload(InputStream inputStream, String contentPath) {
@@ -34,9 +37,12 @@ public class ContentService {
                  OutputStream out = Files.newOutputStream(full, CREATE, TRUNCATE_EXISTING)) {
                 in.transferTo(out);
             }
+            log.debug("Content uploaded path={}", full);
         } catch (IllegalArgumentException | SecurityException e) {
+            log.warn("Content upload rejected path={}", contentPath);
             throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
+            log.error("Content upload failed path={}", contentPath, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -49,15 +55,19 @@ public class ContentService {
         try {
             Path full = getAbsolutePath(contentPath);
             if (!Files.exists(full)) {
+                log.warn("Content not found path={}", full);
                 throw new NotFoundException("error.content.not-found");
             }
             try (InputStream in = Files.newInputStream(full)) {
                 in.transferTo(out);
                 out.flush();
             }
+            log.debug("Content downloaded path={}", full);
         } catch (IllegalArgumentException | SecurityException e) {
+            log.warn("Content download rejected path={}", contentPath);
             throw new BadRequestException("error.content.invalid-path");
         } catch (IOException e) {
+            log.error("Content download failed path={}", contentPath, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -88,23 +98,32 @@ public class ContentService {
 
     public void delete(String contentPath) {
         try {
-            Files.deleteIfExists(resolve(contentPath));
+            Path path = resolve(contentPath);
+            boolean deleted = Files.deleteIfExists(path);
+            log.debug("Content delete path={} deleted={}", path, deleted);
         } catch (IOException e) {
+            log.error("Content delete failed path={}", contentPath, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
 
     public void delete(String... segments) {
         try {
-            Files.deleteIfExists(resolve(segments));
+            Path path = resolve(segments);
+            boolean deleted = Files.deleteIfExists(path);
+            log.debug("Content delete path={} deleted={}", path, deleted);
         } catch (IOException e) {
+            log.error("Content delete failed path={}", String.join("/", segments), e);
             throw new InfrastructureException("error.internal", e);
         }
     }
 
     public void deleteTree(String... segments) {
         Path dir = resolve(segments);
-        if (!Files.exists(dir)) return;
+        if (!Files.exists(dir)) {
+            log.debug("Content delete tree skipped path={} reason=not-found", dir);
+            return;
+        }
         try (var walk = Files.walk(dir)) {
             walk.sorted(Comparator.reverseOrder())
                     .forEach(p -> {
@@ -114,7 +133,9 @@ public class ContentService {
                             throw new InfrastructureException("error.internal", e);
                         }
                     });
+            log.debug("Content tree deleted path={}", dir);
         } catch (IOException e) {
+            log.error("Content delete tree failed path={}", dir, e);
             throw new InfrastructureException("error.internal", e);
         }
     }

@@ -1,6 +1,7 @@
 package ru.andrewb.charm.back.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -12,6 +13,7 @@ import ru.andrewb.charm.back.model.exception.InfrastructureException;
 import java.util.Queue;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ProfileCacheService {
 
@@ -40,8 +42,12 @@ public class ProfileCacheService {
 
         try (Jedis jedis = jedisPool.getResource()) {
             String res = jedis.set(lockKey, token, SetParams.setParams().nx().ex(properties.getCharmLockTtlSec()));
+            if (!"OK".equals(res)) {
+                log.debug("Redis lock busy key={}", lockKey);
+            }
             return "OK".equals(res) ? token : null;
         } catch (Exception e) {
+            log.error("Redis lock acquire failed key={}", lockKey, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -61,8 +67,13 @@ public class ProfileCacheService {
 
         try (Jedis jedis = jedisPool.getResource()) {
             Object res = jedis.eval(lua, 1, lockKey, token);
-            return res.equals(1L);
+            boolean released = res.equals(1L);
+            if (!released) {
+                log.debug("Redis lock release skipped key={} tokenMismatchOrExpired=true", lockKey);
+            }
+            return released;
         } catch (Exception e) {
+            log.error("Redis lock release failed key={}", lockKey, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -76,6 +87,7 @@ public class ProfileCacheService {
             if (json == null) return null;
             return objectMapper.readValue(json, ProfileSimpleDto.class);
         } catch (Exception e) {
+            log.error("Redis queue poll failed key={}", key, e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -95,6 +107,7 @@ public class ProfileCacheService {
             p.expire(key, properties.getCharmQueueTtlSec());
             p.sync();
         } catch (Exception e) {
+            log.error("Redis queue replace failed key={} size={}", key, queue.size(), e);
             throw new InfrastructureException("error.internal", e);
         }
     }
@@ -105,6 +118,9 @@ public class ProfileCacheService {
 
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.exists(key);
+        } catch (Exception e) {
+            log.error("Redis empty cooldown exists check failed key={}", key, e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -113,6 +129,10 @@ public class ProfileCacheService {
 
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.setex(key, properties.getCharmEmptyTtlSec(), "1");
+            log.debug("Redis empty cooldown set key={} ttl={}", key, properties.getCharmEmptyTtlSec());
+        } catch (Exception e) {
+            log.error("Redis empty cooldown set failed key={}", key, e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 
@@ -121,6 +141,9 @@ public class ProfileCacheService {
 
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.del(key);
+        } catch (Exception e) {
+            log.error("Redis empty cooldown clear failed key={}", key, e);
+            throw new InfrastructureException("error.internal", e);
         }
     }
 }
