@@ -15,8 +15,8 @@ CREATE TABLE profile (
 );
 
 CREATE TABLE profile_like (
-    a_profile       BIGINT NOT NULL REFERENCES profile (id),
-    b_profile       BIGINT NOT NULL REFERENCES profile (id),
+    a_profile       BIGINT NOT NULL,
+    b_profile       BIGINT NOT NULL,
     liked_a         BOOLEAN,
     liked_b         BOOLEAN,
     created_at      TIMESTAMP NOT NULL DEFAULT now(),
