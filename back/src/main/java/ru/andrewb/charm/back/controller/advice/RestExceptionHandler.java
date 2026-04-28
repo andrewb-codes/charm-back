@@ -49,7 +49,6 @@ public class RestExceptionHandler {
                 .body(validationErrorResponse(e.getBindingResult()));
     }
 
-
     @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception e) {
         String code = e instanceof BadRequestException bre ? bre.getMessage() : "error.param.invalid";

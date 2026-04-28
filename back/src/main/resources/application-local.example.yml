@@ -1,14 +1,17 @@
-server:
-  port: 8080
-
-app:
+spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/charm
     username: charm
     password: charmpass
-  redis:
-    host: localhost
-    port: 6379
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: 8080
+
+app:
   content:
     base-path: C:/Users/1saga/apps
   jwt:

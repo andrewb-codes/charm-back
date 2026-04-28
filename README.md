@@ -23,10 +23,10 @@
 - JJWT
 - HikariCP или `pool`-модуль
 - Jackson
-- jBCrypt
 - iTextPDF
 - JUnit 5
 - Mockito
+- Testcontainers
 - Docker / Docker Compose
 
 ## Что умеет приложение
@@ -115,15 +115,36 @@
 - `app.redis.port=6379`
 - `app.jwt.access-token-ttl-min=60`
 
-## Быстрый старт через Docker
+## Запуск готового образа из Docker Hub (без локальной сборки)
 
 1. Создать локальный `.env` на основе `.env.example`
-2. Убедиться, что `APP_JWT_SECRET` задан длинным значением не короче `32` символов
-3. Запустить окружение через Docker Compose
+2. Запустить окружение через Docker Compose 
 
 ```powershell
-cp .env.example .env
-docker compose up --build
+git clone <repo-url>
+cd charm-back
+Copy-Item .env.example .env
+```
+
+В `compose.dockerhub.yml` по умолчанию лежит:
+
+```yaml
+services:
+  app:
+    image: andrewbcodes/charm-back:latest 
+```
+
+Запуск:
+
+```powershell
+docker compose -f compose.yml -f compose.dockerhub.yml pull app
+docker compose -f compose.yml -f compose.dockerhub.yml up -d --no-build
+```
+
+Остановка:
+
+```powershell
+docker compose -f compose.yml -f compose.dockerhub.yml down
 ```
 
 Что поднимется:
@@ -137,21 +158,26 @@ docker compose up --build
 
 - `http://localhost:8080/`
 
-Проверка контейнеров:
+## Быстрый старт через Docker (с локальной сборкой)
+
+1. Создать локальный `.env` на основе `.env.example`
+2. Убедиться, что `APP_JWT_SECRET` задан значением длиной не менее `32` символов
+3. Запустить окружение через Docker Compose
 
 ```powershell
-docker compose ps
-docker compose logs app --tail=100
+Copy-Item .env.example .env
+docker compose up --build
 ```
 
 ## Локальный запуск вне Docker
 
 1. Поднять PostgreSQL и Redis локально
 2. Создать `back/src/main/resources/application-local.yml` на основе `application-local.example.yml`
-3. Указать локальный `app.jwt.secret`
+3. Указать локальный `app.jwt.secret` (длиной не менее `32` символов)
 4. Собрать и запустить приложение
 
 ```powershell
+Copy-Item back/src/main/resources/application-local.example.yml back/src/main/resources/application-local.yml
 ./mvnw -pl back -am clean package
 java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 ```
@@ -172,7 +198,11 @@ java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 Для локального запуска вне Docker можно прогнать их вручную:
 
 ```powershell
-./mvnw -f back/pom.xml -Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm -Dapp.datasource.username=charm -Dapp.datasource.password=charmpass flyway:migrate
+./mvnw -f back/pom.xml `
+  -Dapp.datasource.url=jdbc:postgresql://localhost:5432/charm `
+  -Dapp.datasource.username=charm `
+  -Dapp.datasource.password=charmpass `
+  flyway:migrate
 ```
 
 Тестовые пользователи из `V2__seed_dev_profiles.sql`:
@@ -196,20 +226,39 @@ java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 Быстрая сборка без тестов:
 
 ```powershell
-./mvnw -Pfast -pl back -am package
+./mvnw -pl back -am package -DskipTests
 ```
 
-Тесты:
+Unit-тесты:
 
 ```powershell
 ./mvnw -pl back test
 ```
 
-Проверка с quality profile:
+Полная проверка включая integration-тесты:
 
 ```powershell
-./mvnw -Pquality -pl back -am verify
+./mvnw -pl back verify
 ```
+
+## Тесты
+
+Проект покрыт:
+
+- unit-тестами для `validator`, `normalizer`, `mapper`, `security`, `service`, exception handlers
+- integration-тестами для auth flow, profile flow, admin access, DAO-слоя и `charm` flow
+
+Схема запуска тестов:
+
+- `mvn test` - только unit-тесты через `surefire`
+- `mvn verify` - unit + integration-тесты через `failsafe`
+
+Integration-тесты используют Testcontainers:
+
+- `PostgreSQLContainer`
+- `GenericContainer` для Redis
+
+Для `mvn verify` нужен доступный Docker. Если Docker недоступен, используйте `mvn test` для запуска unit-тестов.
 
 ## Основные маршруты
 
@@ -233,11 +282,16 @@ REST:
 - `POST /api/v1/auth/login`
 - `POST /api/v1/registration`
 - `GET /api/v1/profile`
-- `GET /api/v1/profiles`
+- `PUT /api/v1/profile`
+- `PUT /api/v1/profile/email`
+- `PUT /api/v1/profile/password`
 - `GET /api/v1/charm`
+- `POST /api/v1/charm`
 - `GET /api/v1/matches`
-- `/api/v1/admin/profile/*`
-- `/api/v1/admin/profiles`
+- `GET /api/v1/admin/profiles`
+- `GET /api/v1/admin/profiles/{id}`
+- `PUT /api/v1/admin/profiles/{id}`
+- `DELETE /api/v1/admin/profiles/{id}`
 
 ## JWT для REST API
 
@@ -271,18 +325,8 @@ curl http://localhost:8080/api/v1/profile `
 - файловое хранилище работает поверх локальной директории из `app.content.base-path`
 - профиль `docker` предназначен для запуска через Docker Compose
 
-## Тесты
-
-Проект покрыт unit-тестами для:
-
-- validator и normalizer слоев
-- mapper-классов
-- `ProfileService`
-- `CharmService`
-
 ## Дальнейшие шаги
 
-- integration- и web-тесты для JWT и Docker flow
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
-- дальнейшее развитие Docker-окружения
+- развитие Docker-окружения и CI
