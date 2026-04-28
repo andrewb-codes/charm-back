@@ -1,5 +1,9 @@
 package ru.andrewb.charm.back.controller.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,7 @@ import static ru.andrewb.charm.back.web.Urls.AUTH_REST_URL;
 import static ru.andrewb.charm.back.web.Urls.LOGIN_URL;
 
 @Slf4j
+@Tag(name = "Auth", description = "JWT authentication")
 @RestController
 @RequestMapping(AUTH_REST_URL)
 public class AuthRestController {
@@ -35,6 +40,12 @@ public class AuthRestController {
         this.jwtService = jwtService;
     }
 
+    @Operation(summary = "Login", description = "Authenticates a user and returns a JWT access token.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping(LOGIN_URL)
     public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody JwtLoginRequest request) {
         log.info("REST login attempt email={}", request.getEmail());

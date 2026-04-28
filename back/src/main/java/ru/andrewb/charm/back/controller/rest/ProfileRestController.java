@@ -1,5 +1,9 @@
 package ru.andrewb.charm.back.controller.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,8 +23,11 @@ import ru.andrewb.charm.back.service.command.EmailChangeCommand;
 import ru.andrewb.charm.back.service.command.PasswordChangeCommand;
 import ru.andrewb.charm.back.service.command.ProfileUpdateCommand;
 
+import static ru.andrewb.charm.back.config.OpenApiConfig.BEARER_AUTH;
 import static ru.andrewb.charm.back.web.Urls.PROFILE_REST_URL;
 
+@Tag(name = "Profile", description = "Current user profile")
+@SecurityRequirement(name = BEARER_AUTH)
 @RestController
 @RequestMapping(PROFILE_REST_URL)
 public class ProfileRestController {
@@ -42,14 +49,16 @@ public class ProfileRestController {
         this.passwordChangeRequestToCommandMapper = passwordChangeRequestToCommandMapper;
     }
 
+    @Operation(summary = "Get current profile")
     @GetMapping
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal AuthUser user) {
+    public ResponseEntity<?> getProfile(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser user) {
         return ResponseEntity.ok(service.findByIdOrThrow(user.getId()));
     }
 
+    @Operation(summary = "Update current profile")
     @PutMapping
     public ResponseEntity<?> updateProfile(
-            @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody ProfileUpdateRequest request
     ) {
         ProfileUpdateCommand command = profileUpdateRequestToCommandMapper.map(request);
@@ -57,9 +66,10 @@ public class ProfileRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Change current user email")
     @PutMapping("/email")
     public ResponseEntity<?> changeEmail(
-            @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody EmailChangeRequest request
     ) {
         EmailChangeCommand command = emailChangeRequestToCommandMapper.map(request);
@@ -67,9 +77,10 @@ public class ProfileRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Change current user password")
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(
-            @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
             @Valid @RequestBody PasswordChangeRequest request
     ) {
         PasswordChangeCommand command = passwordChangeRequestToCommandMapper.map(request);
@@ -77,11 +88,12 @@ public class ProfileRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete current profile")
     @DeleteMapping
     public ResponseEntity<?> deleteProfile(
-            @AuthenticationPrincipal AuthUser user,
-            HttpServletRequest req,
-            HttpServletResponse resp
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) HttpServletRequest req,
+            @Parameter(hidden = true) HttpServletResponse resp
     ) {
         service.delete(user.getId());
         new SecurityContextLogoutHandler().logout(req, resp, null);

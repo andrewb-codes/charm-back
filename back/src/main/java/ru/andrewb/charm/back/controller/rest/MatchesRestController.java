@@ -1,5 +1,10 @@
 package ru.andrewb.charm.back.controller.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +17,11 @@ import ru.andrewb.charm.back.service.ProfileService;
 
 import java.util.List;
 
+import static ru.andrewb.charm.back.config.OpenApiConfig.BEARER_AUTH;
 import static ru.andrewb.charm.back.web.Urls.MATCHES_REST_URL;
 
+@Tag(name = "Matches", description = "Mutual likes")
+@SecurityRequirement(name = BEARER_AUTH)
 @RestController
 @RequestMapping(MATCHES_REST_URL)
 public class MatchesRestController {
@@ -24,12 +32,16 @@ public class MatchesRestController {
         this.service = service;
     }
 
+    @Schema(description = "Paged matches response")
     public record MatchesResponse(List<ProfileGetDto> items, boolean hasNext) {}
 
+    @Operation(summary = "Get current user matches")
     @GetMapping
     public ResponseEntity<?> getMatches(
-            @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
+            @Parameter(description = "Page number, starting from 1", example = "1")
             @RequestParam(name = "page", required = false) Integer page,
+            @Parameter(description = "Items per page", example = "10")
             @RequestParam(name = "pageSize", required = false) Integer pageSize
     ) {
         int normalizedPage = (page == null || page < 1) ? 1 : page;

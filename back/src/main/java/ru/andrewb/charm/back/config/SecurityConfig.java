@@ -80,7 +80,10 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/assets/**",
                                 "/fonts/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(ADMIN_URL + "/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
