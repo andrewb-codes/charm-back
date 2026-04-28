@@ -24,6 +24,7 @@
 - HikariCP или `pool`-модуль
 - Jackson
 - iTextPDF
+- OpenAPI / Swagger UI
 - JUnit 5
 - Mockito
 - Testcontainers
@@ -313,6 +314,19 @@ curl http://localhost:8080/api/v1/profile `
 ```
 
 Без токена защищенные REST endpoints должны возвращать `401`.
+
+## Swagger / OpenAPI
+
+REST API документируется через `springdoc-openapi`.
+
+После запуска приложения доступны:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- OpenAPI YAML: `http://localhost:8080/v3/api-docs.yaml`
+- Группа REST API: `http://localhost:8080/v3/api-docs/rest-api`
+
+В Swagger UI можно получить JWT через `POST /api/v1/auth/login`, нажать `Authorize` и вставить токен в формате `Bearer <token>`.
 
 ## Особенности реализации
 
