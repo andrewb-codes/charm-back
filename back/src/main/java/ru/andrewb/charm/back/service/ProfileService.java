@@ -160,6 +160,7 @@ public class ProfileService {
 
     @Transactional
     public void changePassword(Long id, PasswordChangeCommand command) {
+        log.info("Changing password for userId={} version={}", id, command.getVersion());
         var existing = dao.findById(id)
                 .orElseThrow(() -> new NotFoundException("error.profile.not-found"));
 
@@ -190,6 +191,7 @@ public class ProfileService {
         String newHash = passwordEncoder.encode(newPwd);
         existing.setPassword(newHash);
         dao.update(existing);
+        log.info("Password changed for userId={}", id);
     }
 
     public boolean delete(Long id) {
