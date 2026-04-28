@@ -1,6 +1,22 @@
 spring:
   application:
     name: charm-back
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+  data:
+    redis:
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 16
+          min-idle: 0
   mvc:
     view:
       prefix: /WEB-INF/jsp/
@@ -25,20 +41,10 @@ server:
         same-site: lax
 
 app:
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    pool-impl: hikari
-    pool-size: 10
   redis:
-    timeout-ms: 2000
     charm-queue-ttl-sec: 300
     charm-empty-ttl-sec: 60
     charm-lock-ttl-sec: 10
-    pool:
-      max-total: 16
-      max-idle: 16
-      min-idle: 0
-      test-on-borrow: true
   jwt:
     access-token-ttl-min: 60
 

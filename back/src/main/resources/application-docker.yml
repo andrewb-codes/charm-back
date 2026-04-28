@@ -1,3 +1,13 @@
+spring:
+  datasource:
+    url: ${APP_DATASOURCE_URL}
+    username: ${APP_DATASOURCE_USERNAME}
+    password: ${APP_DATASOURCE_PASSWORD}
+  data:
+    redis:
+      host: ${APP_REDIS_HOST}
+      port: ${APP_REDIS_PORT}
+
 app:
   jwt:
     secret: ${APP_JWT_SECRET}

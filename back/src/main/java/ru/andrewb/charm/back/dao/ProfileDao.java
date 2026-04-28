@@ -2,7 +2,6 @@ package ru.andrewb.charm.back.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.andrewb.charm.back.config.AppDataSourceProperties;
 import ru.andrewb.charm.back.dto.*;
 import ru.andrewb.charm.back.mapper.ProfileRowMapper;
 import ru.andrewb.charm.back.mapper.ProfileSimpleDtoRowMapper;
@@ -21,18 +20,15 @@ import java.util.Queue;
 public class ProfileDao {
 
     private final JdbcTemplate jdbcTemplate;
-    private final AppDataSourceProperties properties;
     private final ProfileRowMapper profileRowMapper;
     private final ProfileSimpleDtoRowMapper profileSimpleDtoRowMapper;
 
     public ProfileDao(
             JdbcTemplate jdbcTemplate,
-            AppDataSourceProperties properties,
             ProfileRowMapper profileRowMapper,
             ProfileSimpleDtoRowMapper profileSimpleDtoRowMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
-        this.properties = properties;
         this.profileRowMapper = profileRowMapper;
         this.profileSimpleDtoRowMapper = profileSimpleDtoRowMapper;
     }
@@ -147,16 +143,6 @@ public class ProfileDao {
         return jdbcTemplate.query(
                 con -> {
                     PreparedStatement ps = con.prepareStatement(query.sql());
-                    if (properties.getFetchSize() != null) {
-                        ps.setFetchSize(properties.getFetchSize());
-                    }
-                    if (properties.getMaxRows() != null) {
-                        ps.setMaxRows(properties.getMaxRows());
-                    }
-                    if (properties.getQueryTimeout() != null) {
-                        ps.setQueryTimeout(properties.getQueryTimeout());
-                    }
-
                     Object[] args = query.args().toArray();
                     for (int i = 0; i < args.length; i++) {
                         ps.setObject(i + 1, args[i]);
