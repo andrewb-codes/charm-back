@@ -13,7 +13,7 @@ server:
 
 app:
   content:
-    base-path: C:/Users/1saga/apps
+    base-path: C:/Users/your-user/charm-local-dir
   jwt:
     secret: change-me-change-me-change-me-change-me
 

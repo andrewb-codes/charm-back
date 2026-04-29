@@ -54,8 +54,10 @@
 |-- Dockerfile
 |-- compose.yml
 |-- compose.dockerhub.yml
+|-- compose.prod.yml
 |-- .dockerignore
 |-- .env.example
+|-- .env.prod.example
 |-- .github/
 |   `-- workflows/
 |       |-- ci.yml
@@ -141,6 +143,8 @@
 
 ## Запуск готового образа из Docker Hub (без локальной сборки)
 
+### Локально
+
 1. Создать локальный `.env` на основе `.env.example`
 2. Запустить окружение через Docker Compose 
 
@@ -155,7 +159,7 @@ Copy-Item .env.example .env
 ```yaml
 services:
   app:
-    image: andrewbcodes/charm-back:latest 
+    image: andrewbcodes/charm-back:${APP_IMAGE_TAG:-latest}
 ```
 
 Запуск:
@@ -181,6 +185,64 @@ docker compose -f compose.yml -f compose.dockerhub.yml down
 После старта приложение доступно на:
 
 - `http://localhost:8080/`
+
+### На VPS
+
+Для production-запуска используется отдельный compose-файл:
+
+- `compose.prod.yml`
+
+Он отличается от локального окружения:
+
+- PostgreSQL и Redis не публикуют порты наружу и доступны только внутри Docker network
+- миграции Flyway применяются самим Spring Boot приложением из classpath
+- для контейнеров включен `restart: unless-stopped`
+
+На сервере (предварительно создать пользователя deploy):
+
+```bash
+sudo mkdir -p /opt/charm
+sudo chown -R deploy:deploy /opt/charm
+cd /opt/charm
+```
+
+Скопировать файлы:
+
+```powershell
+scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 compose.prod.yml deploy@SERVER_IP:/opt/charm/compose.yml
+scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 .env.prod.example deploy@SERVER_IP:/opt/charm/.env
+```
+
+На сервере заполнить реальные значения в `.env`:
+
+```bash
+nano /opt/charm/.env
+```
+
+Обязательные production-секреты:
+
+- `POSTGRES_PASSWORD`
+- `APP_DATASOURCE_PASSWORD`
+- `APP_JWT_SECRET`
+
+`POSTGRES_PASSWORD` и `APP_DATASOURCE_PASSWORD` должны совпадать.
+
+Запуск:
+
+```bash
+cd /opt/charm
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+Обновление после публикации нового Docker image:
+
+```bash
+cd /opt/charm
+docker compose pull
+docker compose up -d
+```
 
 ## Быстрый старт через Docker (с локальной сборкой)
 
@@ -217,7 +279,9 @@ java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 - `V1__create_profile_tables.sql`
 - `V2__seed_dev_profiles.sql`
 
-В Docker Compose миграции применяются автоматически отдельным `flyway` сервисом.
+В локальном Docker Compose миграции применяются автоматически отдельным `flyway` сервисом.
+
+В production compose миграции применяются самим Spring Boot приложением при старте.
 
 Для локального запуска вне Docker можно прогнать их вручную:
 
@@ -256,13 +320,13 @@ java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 Unit-тесты:
 
 ```powershell
-./mvnw -pl back test
+./mvnw -pl back -am test
 ```
 
 Полная проверка включая integration-тесты:
 
 ```powershell
-./mvnw -pl back verify
+./mvnw -pl back -am verify
 ```
 
 ## Тесты
@@ -292,8 +356,8 @@ Integration-тесты используют Testcontainers:
 `CI` проверяет проект автоматически:
 
 ```powershell
-./mvnw -pl back test
-./mvnw -pl back verify
+./mvnw -pl back -am test
+./mvnw -pl back -am verify
 ```
 
 `test` запускает unit-тесты через Surefire. `verify` запускает unit- и integration-тесты через Surefire/Failsafe.
@@ -312,14 +376,19 @@ andrewbcodes/charm-back
 Для публикации используются GitHub Actions secrets:
 
 ```text
-DOCKERHUB_USERNAME
 DOCKERHUB_TOKEN
+```
+
+Имя пользователя Docker Hub берется из GitHub Actions variable:
+
+```text
+DOCKERHUB_USERNAME
 ```
 
 Чтобы выпустить новую версию Docker image:
 
 ```powershell
-git tag v0.4.0
+git tag -a v0.4.0 -m "Release v0.4.0"
 git push origin v0.4.0
 ```
 
@@ -403,6 +472,9 @@ REST API документируется через `springdoc-openapi`.
 
 ## Дальнейшие шаги
 
+- настройка домена и HTTPS для VPS-deploy
+- добавление CD workflow для автоматического обновления VPS после публикации Docker image
+- отключение dev-only возможностей в production
+- настройка backup PostgreSQL volume и пользовательского content volume
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
-- развитие Docker-окружения и CI
