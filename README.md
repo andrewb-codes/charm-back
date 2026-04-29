@@ -29,6 +29,7 @@
 - Mockito
 - Testcontainers
 - Docker / Docker Compose
+- GitHub Actions
 
 ## Что умеет приложение
 
@@ -52,23 +53,45 @@
 |-- pom.xml
 |-- Dockerfile
 |-- compose.yml
+|-- compose.dockerhub.yml
+|-- .dockerignore
 |-- .env.example
+|-- .github/
+|   `-- workflows/
+|       |-- ci.yml
+|       `-- docker-publish.yml
 |-- back/
 |   |-- pom.xml
-|   |-- src/main/java
-|   |-- src/main/resources
+|   |-- src/main/java/ru/andrewb/charm/back
+|   |   |-- config
+|   |   |-- controller
+|   |   |-- dao
+|   |   |-- dto
+|   |   |-- mapper
+|   |   |-- model
+|   |   |-- normalizer
+|   |   |-- security
+|   |   |-- service
+|   |   |-- validator
+|   |   `-- web
+|   |-- src/main/resources/
 |   |   |-- application.yml
 |   |   |-- application-docker.yml
 |   |   |-- application-local.example.yml
-|   |   `-- db/migration
-|   |-- src/main/webapp
-|   `-- src/test/java
+|   |   |-- db/migration
+|   |   |-- db/sql
+|   |   `-- words*.properties
+|   |-- src/main/webapp/
+|   |   |-- WEB-INF/jsp
+|   |   |-- img
+|   |   `-- favicon.ico
+|   `-- src/test/java/ru/andrewb/charm/back
 |-- pool/
 |   |-- pom.xml
-|   `-- src/main/java
+|   `-- src/main/java/ru/andrewb/charm/pool
 `-- linecount-maven-plugin/
     |-- pom.xml
-    `-- src/main/java
+    `-- src/main/java/ru/andrewb/charm/plugin/linecount
 ```
 
 ## Конфигурация
@@ -251,15 +274,54 @@ Unit-тесты:
 
 Схема запуска тестов:
 
-- `mvn test` - только unit-тесты через `surefire`
-- `mvn verify` - unit + integration-тесты через `failsafe`
+- `./mvnw test` - только unit-тесты через `surefire`
+- `./mvnw verify` - unit + integration-тесты через `failsafe`
 
 Integration-тесты используют Testcontainers:
 
 - `PostgreSQLContainer`
 - `GenericContainer` для Redis
 
-Для `mvn verify` нужен доступный Docker. Если Docker недоступен, используйте `mvn test` для запуска unit-тестов.
+## CI/CD
+
+В проекте настроены GitHub Actions workflows:
+
+- `CI` - запускается на pull request и push в `main`
+- `Docker Publish` - запускается на push в `main` и на git tags вида `v*.*.*`
+
+`CI` проверяет проект автоматически:
+
+```powershell
+./mvnw -pl back test
+./mvnw -pl back verify
+```
+
+`test` запускает unit-тесты через Surefire. `verify` запускает unit- и integration-тесты через Surefire/Failsafe.
+
+`Docker Publish` собирает Docker image и публикует его в Docker Hub:
+
+- при push в `main` публикуются теги `latest` и `dev`
+- при push git tag вида `v0.4.0` публикуется Docker tag `0.4.0`
+
+Docker image:
+
+```text
+andrewbcodes/charm-back
+```
+
+Для публикации используются GitHub Actions secrets:
+
+```text
+DOCKERHUB_USERNAME
+DOCKERHUB_TOKEN
+```
+
+Чтобы выпустить новую версию Docker image:
+
+```powershell
+git tag v0.4.0
+git push origin v0.4.0
+```
 
 ## Основные маршруты
 
