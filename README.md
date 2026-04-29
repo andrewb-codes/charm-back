@@ -244,6 +244,8 @@ docker compose pull
 docker compose up -d
 ```
 
+После merge в `main` это обновление выполняется автоматически через GitHub Actions `Docker Publish`.
+
 ## Быстрый старт через Docker (с локальной сборкой)
 
 1. Создать локальный `.env` на основе `.env.example`
@@ -362,10 +364,12 @@ Integration-тесты используют Testcontainers:
 
 `test` запускает unit-тесты через Surefire. `verify` запускает unit- и integration-тесты через Surefire/Failsafe.
 
-`Docker Publish` собирает Docker image и публикует его в Docker Hub:
+`Docker Publish` собирает Docker image, публикует его в Docker Hub и деплоит `latest` на VPS:
 
 - при push в `main` публикуются теги `latest` и `dev`
+- после успешной публикации из `main` сервер выполняет `docker compose pull app` и `docker compose up -d`
 - при push git tag вида `v0.4.0` публикуется Docker tag `0.4.0`
+- при push git tag автодеплой на VPS не выполняется
 
 Docker image:
 
@@ -385,11 +389,18 @@ DOCKERHUB_TOKEN
 DOCKERHUB_USERNAME
 ```
 
-Чтобы выпустить новую версию Docker image:
+Для автодеплоя на VPS используются GitHub Actions variables:
 
-```powershell
-git tag -a v0.4.0 -m "Release v0.4.0"
-git push origin v0.4.0
+```text
+VPS_HOST
+VPS_USER
+VPS_APP_DIR
+```
+
+И GitHub Actions secret:
+
+```text
+VPS_SSH_KEY
 ```
 
 ## Основные маршруты
@@ -473,7 +484,6 @@ REST API документируется через `springdoc-openapi`.
 ## Дальнейшие шаги
 
 - настройка домена и HTTPS для VPS-deploy
-- добавление CD workflow для автоматического обновления VPS после публикации Docker image
 - отключение dev-only возможностей в production
 - настройка backup PostgreSQL volume и пользовательского content volume
 - дальнейший cleanup конфигурации и infrastructure beans
