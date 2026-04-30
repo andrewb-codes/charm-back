@@ -59,10 +59,36 @@ services:
     networks:
       - charm-net
 
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    container_name: charm-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - charm-prometheus-data:/prometheus
+    networks:
+      - charm-net
+
+  grafana:
+    image: grafana/grafana:12.3.0
+    container_name: charm-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - charm-grafana-data:/var/lib/grafana
+    networks:
+      - charm-net
+
 volumes:
   charm-postgres-data:
   charm-redis-data:
   charm-content:
+  charm-prometheus-data:
+  charm-grafana-data:
 
 networks:
   charm-net:

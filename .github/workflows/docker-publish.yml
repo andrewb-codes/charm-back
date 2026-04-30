@@ -72,3 +72,8 @@ jobs:
             docker compose pull app
             docker compose up -d
             docker image prune -f
+            for i in 1 2 3 4 5; do
+              curl -fsS https://charm-app.ru/ > /dev/null && exit 0
+              sleep 5
+            done
+            exit 1

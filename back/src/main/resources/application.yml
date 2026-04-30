@@ -37,6 +37,19 @@ springdoc:
   swagger-ui:
     enabled: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: charm-back
+
 server:
   forward-headers-strategy: framework
   servlet:
