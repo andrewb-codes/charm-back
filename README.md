@@ -2,6 +2,11 @@
 
 Учебный pet-проект в формате mini-Tinder на `Java 21`.
 
+Production deployment:
+
+- `https://charm-app.ru`
+- VPS + Docker Compose + host nginx + Let's Encrypt
+
 Проект собран как multi-module Maven-репозиторий:
 
 - `back` - основное web-приложение на `Spring Boot`, `Spring MVC`, `Spring Security`, `JSP`
@@ -29,7 +34,10 @@
 - Mockito
 - Testcontainers
 - Docker / Docker Compose
+- nginx
+- Let's Encrypt /Certbot
 - GitHub Actions
+- VPS deployment
 
 ## Что умеет приложение
 
@@ -146,7 +154,7 @@
 ### Локально
 
 1. Создать локальный `.env` на основе `.env.example`
-2. Запустить окружение через Docker Compose 
+2. Запустить окружение через Docker Compose
 
 ```powershell
 git clone <repo-url>
@@ -195,8 +203,25 @@ docker compose -f compose.yml -f compose.dockerhub.yml down
 Он отличается от локального окружения:
 
 - PostgreSQL и Redis не публикуют порты наружу и доступны только внутри Docker network
+- приложение публикуется только на `127.0.0.1:8080`, внешний трафик принимает host nginx
 - миграции Flyway применяются самим Spring Boot приложением из classpath
 - для контейнеров включен `restart: unless-stopped`
+
+Production-схема:
+
+```text
+Internet -> nginx 80/443 -> 127.0.0.1:8080 -> Docker app
+```
+
+Основной домен:
+
+- `https://charm-app.ru`
+
+Алиасы редиректятся на основной домен:
+
+- `https://www.charm-app.ru`
+- `https://чарм-апп.рф`
+- `https://www.чарм-апп.рф`
 
 На сервере (предварительно создать пользователя deploy):
 
@@ -245,6 +270,64 @@ docker compose up -d
 ```
 
 После merge в `main` это обновление выполняется автоматически через GitHub Actions `Docker Publish`.
+
+Host nginx настраивается отдельно от Docker Compose. Минимальная схема:
+
+```nginx
+server {
+    listen 80;
+    server_name charm-app.ru www.charm-app.ru xn----7sbb0crac8c.xn--p1ai www.xn----7sbb0crac8c.xn--p1ai;
+
+    return 301 https://charm-app.ru$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name www.charm-app.ru xn----7sbb0crac8c.xn--p1ai www.xn----7sbb0crac8c.xn--p1ai;
+
+    ssl_certificate /etc/letsencrypt/live/charm-app.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/charm-app.ru/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    return 301 https://charm-app.ru$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name charm-app.ru;
+
+    ssl_certificate /etc/letsencrypt/live/charm-app.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/charm-app.ru/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 10m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+HTTPS-сертификат выпускается через Let's Encrypt:
+
+```bash
+sudo certbot --nginx \
+  -d charm-app.ru \
+  -d www.charm-app.ru \
+  -d xn----7sbb0crac8c.xn--p1ai \
+  -d www.xn----7sbb0crac8c.xn--p1ai
+```
 
 ## Быстрый старт через Docker (с локальной сборкой)
 
@@ -483,7 +566,6 @@ REST API документируется через `springdoc-openapi`.
 
 ## Дальнейшие шаги
 
-- настройка домена и HTTPS для VPS-deploy
 - отключение dev-only возможностей в production
 - настройка backup PostgreSQL volume и пользовательского content volume
 - дальнейший cleanup конфигурации и infrastructure beans
