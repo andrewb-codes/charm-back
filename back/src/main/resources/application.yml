@@ -31,6 +31,12 @@ spring:
     fallback-to-system-locale: false
     use-code-as-default-message: true
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 server:
   forward-headers-strategy: framework
   servlet:
