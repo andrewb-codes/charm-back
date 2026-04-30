@@ -61,6 +61,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Copy deployment files to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "deploy/*"
+          target: ${{ vars.VPS_APP_DIR }}
+          strip_components: 1
+
       - name: Deploy latest image on VPS
         uses: appleboy/ssh-action@v1
         with:
@@ -69,7 +82,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ${{ vars.VPS_APP_DIR }}
-            docker compose pull app
+            docker compose pull
             docker compose up -d
             docker image prune -f
             for i in 1 2 3 4 5; do

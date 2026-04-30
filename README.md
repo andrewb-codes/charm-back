@@ -61,10 +61,14 @@ Production deployment:
 |-- Dockerfile
 |-- compose.yml
 |-- compose.dockerhub.yml
-|-- compose.prod.yml
 |-- .dockerignore
 |-- .env.example
 |-- .env.prod.example
+|-- deploy/
+|   |-- compose.yml
+|   `-- monitoring/
+|       `-- prometheus/
+|           `-- prometheus.yml
 |-- .github/
 |   `-- workflows/
 |       |-- ci.yml
@@ -193,7 +197,7 @@ docker compose -f compose.yml -f compose.dockerhub.yml down
 
 Для production-запуска используется отдельный compose-файл:
 
-- `compose.prod.yml`
+- `deploy/compose.yml`
 
 Он отличается от локального окружения:
 
@@ -226,10 +230,9 @@ sudo chown -R deploy:deploy /opt/charm
 cd /opt/charm
 ```
 
-Скопировать файлы:
+Создать production `.env` на сервере:
 
 ```powershell
-scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 compose.prod.yml deploy@SERVER_IP:/opt/charm/compose.yml
 scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 .env.prod.example deploy@SERVER_IP:/opt/charm/.env
 ```
 
@@ -252,6 +255,11 @@ nano /opt/charm/.env
 - `SPRINGDOC_API_DOCS_ENABLED=false`
 - `SPRINGDOC_SWAGGER_UI_ENABLED=false`
 
+Grafana credentials задаются через:
+
+- `GRAFANA_ADMIN_USER`
+- `GRAFANA_ADMIN_PASSWORD`
+
 Запуск:
 
 ```bash
@@ -261,15 +269,8 @@ docker compose up -d
 docker compose ps
 ```
 
-Обновление после публикации нового Docker image:
-
-```bash
-cd /opt/charm
-docker compose pull
-docker compose up -d
-```
-
-После merge в `main` это обновление выполняется автоматически через GitHub Actions `Docker Publish`.
+После merge в `main` обновление выполняется автоматически через GitHub Actions `Docker Publish`.
+Workflow копирует `deploy/*` в `/opt/charm`, не трогая серверный `.env`, затем выполняет `docker compose pull`, `docker compose up -d` и HTTPS healthcheck `https://charm-app.ru/`.
 
 Host nginx настраивается отдельно от Docker Compose. Минимальная схема:
 
@@ -327,6 +328,29 @@ sudo certbot --nginx \
   -d www.charm-app.ru \
   -d xn----7sbb0crac8c.xn--p1ai \
   -d www.xn----7sbb0crac8c.xn--p1ai
+```
+
+Prometheus и Grafana поднимаются тем же production compose:
+
+- Prometheus собирает метрики с `app:8080/actuator/prometheus` внутри Docker network
+- Grafana публикуется только на `127.0.0.1:3000`
+
+Доступ к Grafana на VPS выполняется через SSH tunnel:
+
+```powershell
+ssh -i $env:USERPROFILE\.ssh\charm_vps_ed25519 -L 3000:127.0.0.1:3000 deploy@SERVER_IP
+```
+
+После открытия туннеля Grafana доступна локально:
+
+```text
+http://localhost:3000
+```
+
+Prometheus datasource в Grafana:
+
+```text
+http://prometheus:9090
 ```
 
 ## Быстрый старт через Docker (с локальной сборкой)
@@ -450,7 +474,8 @@ Integration-тесты используют Testcontainers:
 `Docker Publish` собирает Docker image, публикует его в Docker Hub и деплоит `latest` на VPS:
 
 - при push в `main` публикуются теги `latest` и `dev`
-- после успешной публикации из `main` сервер выполняет `docker compose pull app` и `docker compose up -d`
+- после успешной публикации из `main` workflow копирует `deploy/*` на сервер
+- сервер выполняет `docker compose pull`, `docker compose up -d` и HTTPS healthcheck
 - при push git tag вида `v0.4.0` публикуется Docker tag `0.4.0`
 - при push git tag автодеплой на VPS не выполняется
 
@@ -571,7 +596,7 @@ REST API документируется через `springdoc-openapi`.
 
 ## Дальнейшие шаги
 
-- добавление Spring Boot Actuator, Prometheus и Grafana для production-метрик
 - настройка backup PostgreSQL volume и пользовательского content volume
+- добавление k6 smoke/load tests
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
