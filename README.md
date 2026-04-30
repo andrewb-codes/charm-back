@@ -247,6 +247,11 @@ nano /opt/charm/.env
 
 `POSTGRES_PASSWORD` и `APP_DATASOURCE_PASSWORD` должны совпадать.
 
+В production OpenAPI endpoints отключаются через переменные окружения:
+
+- `SPRINGDOC_API_DOCS_ENABLED=false`
+- `SPRINGDOC_SWAGGER_UI_ENABLED=false`
+
 Запуск:
 
 ```bash
@@ -539,7 +544,7 @@ curl http://localhost:8080/api/v1/profile `
 
 REST API документируется через `springdoc-openapi`.
 
-После запуска приложения доступны:
+Локально и в dev-окружении доступны:
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
@@ -547,6 +552,11 @@ REST API документируется через `springdoc-openapi`.
 - Группа REST API: `http://localhost:8080/v3/api-docs/rest-api`
 
 В Swagger UI можно получить JWT через `POST /api/v1/auth/login`, нажать `Authorize` и вставить токен в формате `Bearer <token>`.
+
+В production Swagger UI и OpenAPI endpoints отключены через:
+
+- `SPRINGDOC_API_DOCS_ENABLED=false`
+- `SPRINGDOC_SWAGGER_UI_ENABLED=false`
 
 ## Особенности реализации
 
@@ -561,7 +571,7 @@ REST API документируется через `springdoc-openapi`.
 
 ## Дальнейшие шаги
 
-- отключение dev-only возможностей в production
+- добавление Spring Boot Actuator, Prometheus и Grafana для production-метрик
 - настройка backup PostgreSQL volume и пользовательского content volume
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
