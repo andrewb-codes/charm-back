@@ -11,7 +11,6 @@
 
     <modules>
         <module>back</module>
-        <module>pool</module>
         <module>linecount-maven-plugin</module>
     </modules>
 
@@ -58,15 +57,6 @@
                 <artifactId>jakarta.servlet.jsp.jstl</artifactId>
                 <version>${jstl.impl.version}</version>
             </dependency>
-
-
-            <!-- Database -->
-            <dependency>
-                <groupId>ru.andrewb.charm</groupId>
-                <artifactId>pool</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
 
             <!-- Other -->
             <dependency>

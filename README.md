@@ -10,7 +10,6 @@ Production deployment:
 Проект собран как multi-module Maven-репозиторий:
 
 - `back` - основное web-приложение на `Spring Boot`, `Spring MVC`, `Spring Security`, `JSP`
-- `pool` - собственный JDBC connection pool
 - `linecount-maven-plugin` - кастомный Maven plugin для подсчета строк и выгрузки маршрутов
 
 ## Стек
@@ -26,7 +25,7 @@ Production deployment:
 - Redis
 - Flyway
 - JJWT
-- HikariCP или `pool`-модуль
+- HikariCP
 - Jackson
 - iTextPDF
 - OpenAPI / Swagger UI
@@ -96,9 +95,6 @@ Production deployment:
 |   |   |-- img
 |   |   `-- favicon.ico
 |   `-- src/test/java/ru/andrewb/charm/back
-|-- pool/
-|   |-- pom.xml
-|   `-- src/main/java/ru/andrewb/charm/pool
 `-- linecount-maven-plugin/
     |-- pom.xml
     `-- src/main/java/ru/andrewb/charm/plugin/linecount
@@ -144,8 +140,7 @@ Production deployment:
 Полезные параметры:
 
 - `spring.profiles.active=local`
-- `app.datasource.pool-impl=hikari`
-- `app.datasource.pool-size=10`
+- `spring.datasource.hikari.maximum-pool-size=10`
 - `app.redis.port=6379`
 - `app.jwt.access-token-ttl-min=60`
 
