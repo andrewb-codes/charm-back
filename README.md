@@ -35,7 +35,7 @@ Production deployment:
 - Testcontainers
 - Docker / Docker Compose
 - nginx
-- Let's Encrypt /Certbot
+- Let's Encrypt / Certbot
 - GitHub Actions
 - VPS deployment
 
