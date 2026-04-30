@@ -7,10 +7,8 @@ COPY .mvn .mvn
 COPY mvnw .
 COPY mvnw.cmd .
 COPY back/pom.xml back/pom.xml
-COPY pool/pom.xml pool/pom.xml
 COPY linecount-maven-plugin/pom.xml linecount-maven-plugin/pom.xml
 COPY back/src back/src
-COPY pool/src pool/src
 COPY linecount-maven-plugin/src linecount-maven-plugin/src
 
 RUN mvn -pl back -am clean package -DskipTests
