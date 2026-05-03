@@ -6,6 +6,7 @@ Production deployment:
 
 - `https://charm-app.ru`
 - VPS + Docker Compose + host nginx + Let's Encrypt
+- Selectel S3 backups через restic
 
 Проект собран как multi-module Maven-репозиторий:
 
@@ -29,6 +30,11 @@ Production deployment:
 - Jackson
 - iTextPDF
 - OpenAPI / Swagger UI
+- Spring Boot Actuator
+- Micrometer / Prometheus
+- Grafana
+- restic
+- Selectel S3
 - JUnit 5
 - Mockito
 - Testcontainers
@@ -62,10 +68,14 @@ Production deployment:
 |-- compose.yml
 |-- compose.dockerhub.yml
 |-- .dockerignore
+|-- .gitattributes
 |-- .env.example
-|-- .env.prod.example
 |-- deploy/
+|   |-- backup.env.example
 |   |-- compose.yml
+|   |-- prod.env.example
+|   |-- scripts/
+|   |   `-- backup.sh
 |   `-- monitoring/
 |       `-- prometheus/
 |           `-- prometheus.yml
@@ -204,6 +214,9 @@ docker compose -f compose.yml -f compose.dockerhub.yml down
 - PostgreSQL и Redis не публикуют порты наружу и доступны только внутри Docker network
 - приложение публикуется только на `127.0.0.1:8080`, внешний трафик принимает host nginx
 - миграции Flyway применяются самим Spring Boot приложением из classpath
+- дополнительно поднимаются Prometheus и Grafana для мониторинга
+- Prometheus доступен только внутри Docker network и собирает метрики приложения с `/actuator/prometheus`
+- Grafana публикуется только на `127.0.0.1:3000` и открывается через SSH tunnel
 - для контейнеров включен `restart: unless-stopped`
 
 Production-схема:
@@ -233,7 +246,7 @@ cd /opt/charm
 Создать production `.env` на сервере:
 
 ```powershell
-scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 .env.prod.example deploy@SERVER_IP:/opt/charm/.env
+scp -i $env:USERPROFILE\.ssh\charm_vps_ed25519 deploy/prod.env.example deploy@SERVER_IP:/opt/charm/.env
 ```
 
 На сервере заполнить реальные значения в `.env`:
@@ -304,6 +317,10 @@ server {
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     client_max_body_size 10m;
+
+    location /actuator {
+        return 404;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:8080;
@@ -411,6 +428,171 @@ java -jar back/target/back-1.0-SNAPSHOT.war --spring.profiles.active=local
 Дополнительный bulk seed:
 
 - `back/src/main/resources/db/sql/seed_bulk_1k.sql`
+
+## Backup и restore
+
+Production backup настроен на VPS через `restic` в S3-compatible bucket Selectel:
+
+- endpoint: `s3.ru-7.storage.selcloud.ru`
+- region: `ru-7`
+- bucket: `charm-backup`
+- restic repository: `s3:https://s3.ru-7.storage.selcloud.ru/charm-backup`
+
+В репозитории лежат шаблоны production backup-конфигурации:
+
+- `deploy/scripts/backup.sh` - backup-скрипт
+- `deploy/backup.env.example` - пример env-файла для restic и S3
+
+При деплое GitHub Actions копирует содержимое `deploy/*` в `/opt/charm`, поэтому backup-скрипт попадает на VPS как:
+
+```bash
+/opt/charm/scripts/backup.sh
+```
+
+Перед первым запуском на VPS должен быть установлен `restic`:
+
+```bash
+sudo apt update
+sudo apt install -y restic
+restic version
+```
+
+Файл с реальными S3-ключами создается на VPS вручную из шаблона и не хранится в git:
+
+```bash
+cp /opt/charm/backup.env.example /opt/charm/.backup.env
+nano /opt/charm/.backup.env
+chmod 600 /opt/charm/.backup.env
+chmod +x /opt/charm/scripts/backup.sh
+```
+
+После заполнения `/opt/charm/.backup.env` restic-репозиторий нужно инициализировать один раз:
+
+```bash
+source /opt/charm/.backup.env
+restic init
+restic snapshots
+```
+
+Если репозиторий уже был создан раньше, `restic init` повторно выполнять не нужно.
+
+Backup состоит из двух частей:
+
+- PostgreSQL dump в формате `pg_dump -Fc`
+- архив пользовательского файлового хранилища `charm-content`
+
+Секреты для backup хранятся на VPS в файле:
+
+```bash
+/opt/charm/.backup.env
+```
+
+Файл не должен попадать в git. В нем задаются переменные:
+
+```bash
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_DEFAULT_REGION="ru-7"
+
+export RESTIC_REPOSITORY="s3:https://s3.ru-7.storage.selcloud.ru/charm-backup"
+export RESTIC_PASSWORD="..."
+```
+
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` и `AWS_DEFAULT_REGION` используются restic для подключения к S3.
+`RESTIC_REPOSITORY` указывает, где лежит backup-репозиторий.
+`RESTIC_PASSWORD` используется restic для шифрования backup; без него восстановление невозможно.
+
+Скрипт:
+
+1. создает dump базы из контейнера `charm-postgres`
+2. создает архив файлов из контейнера `charm-back`
+3. отправляет оба файла в Selectel S3 через `restic backup`
+4. применяет retention policy через `restic forget --prune`
+5. удаляет локальные backup-файлы старше 14 дней
+
+Ручной запуск:
+
+```bash
+/opt/charm/scripts/backup.sh
+```
+
+Проверка snapshots:
+
+```bash
+source /opt/charm/.backup.env
+restic snapshots
+```
+
+Backup запускается ежедневно через cron:
+
+```cron
+20 3 * * * /opt/charm/scripts/backup.sh >> /opt/charm/backups/backup.log 2>&1
+```
+
+Локальные backup-файлы лежат в:
+
+```bash
+/opt/charm/backups/db
+/opt/charm/backups/content
+```
+
+### Restore check
+
+Восстановить последний snapshot из Selectel S3 в тестовую директорию:
+
+```bash
+source /opt/charm/.backup.env
+mkdir -p /opt/charm/restore-test
+restic restore latest --target /opt/charm/restore-test
+```
+
+После restore файлы обычно лежат по исходным абсолютным путям внутри target-директории:
+
+```bash
+/opt/charm/restore-test/opt/charm/backups/db/*.dump
+/opt/charm/restore-test/opt/charm/backups/content/*.tar.gz
+```
+
+Проверить восстановление базы в отдельном временном PostgreSQL-контейнере:
+
+```bash
+docker run --rm --name charm-restore-test \
+  -e POSTGRES_DB=charm \
+  -e POSTGRES_USER=charm \
+  -e POSTGRES_PASSWORD=charmpass \
+  -d postgres:17
+```
+
+Восстановить dump:
+
+```bash
+cat /opt/charm/restore-test/opt/charm/backups/db/*.dump | docker exec -i charm-restore-test \
+  pg_restore -U charm -d charm --clean --if-exists
+```
+
+Проверить таблицы и количество профилей:
+
+```bash
+docker exec -it charm-restore-test psql -U charm -d charm -c '\dt'
+docker exec -it charm-restore-test psql -U charm -d charm -c 'select count(*) from profile;'
+```
+
+Удалить тестовый контейнер:
+
+```bash
+docker rm -f charm-restore-test
+```
+
+Проверить архив пользовательских файлов:
+
+```bash
+mkdir -p /opt/charm/content-restore-test
+tar -tzf /opt/charm/restore-test/opt/charm/backups/content/*.tar.gz | head
+tar -xzf /opt/charm/restore-test/opt/charm/backups/content/*.tar.gz -C /opt/charm/content-restore-test
+find /opt/charm/content-restore-test -type f | head
+```
+
+Backup считается рабочим только после успешной проверки восстановления базы и пользовательских файлов.
 
 ## Maven команды
 
@@ -596,7 +778,6 @@ REST API документируется через `springdoc-openapi`.
 
 ## Дальнейшие шаги
 
-- настройка backup PostgreSQL volume и пользовательского content volume
 - добавление k6 smoke/load tests
 - дальнейший cleanup конфигурации и infrastructure beans
 - возможная миграция с JSP на более современный view layer
